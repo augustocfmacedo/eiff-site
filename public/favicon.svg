@@ -1,13 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <rect width="100" height="100" fill="#0b0b0c"/>
-  <g transform="translate(15 8) scale(0.7 0.84)">
-    <rect x="40" y="0" width="20.29" height="12.57" fill="#c84119"/>
-    <rect x="0.29" y="18.855" width="20" height="18.156" fill="#f2f0ec"/>
-    <rect x="0" y="40.922" width="20.29" height="18.156" fill="#f2f0ec"/>
-    <rect x="0.29" y="62.989" width="20.29" height="18.017" fill="#c84119"/>
-    <rect x="40" y="18.855" width="20.29" height="62.151" fill="#f2f0ec"/>
-    <rect x="40" y="87.43" width="20.29" height="12.57" fill="#f2f0ec"/>
-    <rect x="80" y="18.855" width="20" height="12.57" fill="#f2f0ec"/>
-    <rect x="80" y="36.872" width="20" height="44.134" fill="#c84119"/>
-  </g>
+  <svg x="26" y="8" width="48" height="84" viewBox="261 157 270 549">
+  <rect x="370.48" y="163.3" width="51.63" height="66.97" rx="3.75" fill="#c84119"/>
+  <rect x="267.21" y="264.82" width="51.63" height="96.61" rx="3.75" fill="#f2f0ec"/>
+  <rect x="267.21" y="383.25" width="51.63" height="96.61" rx="3.75" fill="#f2f0ec"/>
+  <rect x="267.71" y="501.67" width="51.63" height="96.61" rx="3.75" fill="#c84119"/>
+  <rect x="370.48" y="264.82" width="51.63" height="333.41" rx="3.75" fill="#f2f0ec"/>
+  <rect x="370.48" y="633.31" width="51.63" height="66.97" rx="3.75" fill="#f2f0ec"/>
+  <rect x="473.75" y="264.82" width="51.63" height="66.97" rx="3.75" fill="#f2f0ec"/>
+  <rect x="473.75" y="361.46" width="51.63" height="236.79" rx="3.75" fill="#c84119"/>
+  </svg>
 </svg>

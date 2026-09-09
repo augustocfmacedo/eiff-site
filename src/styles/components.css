@@ -9,7 +9,7 @@
   display: grid; place-items: center;
   color: var(--ink);
 }
-.preloader__symbol { width: clamp(56px, 8vw, 96px); }
+.preloader__symbol { height: clamp(72px, 12vh, 132px); width: auto; }
 .preloader__meta {
   position: absolute; left: var(--gutter); right: var(--gutter); bottom: 32px;
   display: flex; justify-content: space-between;
@@ -62,7 +62,8 @@ body.has-cursor .cursor { opacity: 1; }
 .nav.is-hidden { transform: translateY(-100%); }
 .nav__inner { width: 100%; display: flex; align-items: center; gap: clamp(20px, 3vw, 48px); }
 .brand-link { display: inline-flex; align-items: center; gap: 14px; }
-.brand-link__symbol { width: 26px; height: 22px; }
+.brand-link__symbol { height: 26px; width: auto; }
+.brand-link__logo { height: 34px; width: auto; display: block; }
 .brand-link__word { font-family: var(--font-display); font-variation-settings: "wdth" 118; font-weight: 600; font-size: 1.25rem; letter-spacing: .06em; line-height: 1; }
 .brand-link__caption { white-space: nowrap; font-family: var(--font-mono); font-size: .62rem; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3); border-left: 1px solid var(--line-2); padding-left: 14px; margin-left: 4px; }
 .nav__links { margin-left: auto; display: flex; gap: clamp(18px, 2.2vw, 36px); }
@@ -195,7 +196,7 @@ html.js .hr--grow { transform: scaleX(0); }
 .footer__col a, .footer__col p { display: block; font-size: .9rem; color: var(--ink-2); padding: 4px 0; transition: color .3s; }
 .footer__col a:hover { color: var(--ink); }
 .footer__brand { display: flex; flex-direction: column; gap: 18px; }
-.footer__brand .brand-link__symbol { width: 36px; height: 30px; }
+.footer__brand .brand-link__logo { height: 40px; }
 .footer__bottom { position: relative; z-index: 1; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: clamp(40px, 6vw, 80px); padding-top: 20px; border-top: 1px solid var(--line); font-family: var(--font-mono); font-size: .64rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
 
 /* Formulário ---------------------------------------------- */

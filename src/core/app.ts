@@ -73,8 +73,9 @@ function iniciarPreloader(lenis: Lenis | null): Promise<void> {
   const dur = rapido ? 0.7 : 1.5
 
   // Peças do símbolo entram de fora para a posição final (montagem).
+  // Deslocamentos em unidades do viewBox do símbolo (549 de altura).
   const origem = [
-    [0, -40], [-50, -8], [-60, 4], [-48, 36], [0, 50], [0, 40], [50, -12], [58, 22],
+    [0, -160], [-200, -30], [-240, 16], [-190, 140], [0, 200], [0, 160], [200, -50], [230, 90],
   ]
   pecas.forEach((p, i) => gsap.set(p, { x: origem[i][0], y: origem[i][1], opacity: 0, transformOrigin: '50% 50%' }))
 
