@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <!-- @include head -->
+  <title>Iniciar um projeto — EIFF</title>
+  <meta name="description" content="Conte o que você precisa colocar de pé: tipo de empreendimento, área, cidade e prazo. A EIFF responde com engenharia, estudo e proposta.">
+  <link rel="canonical" href="https://www.eiff.com.br/contato.html">
+  <meta property="og:title" content="Iniciar um projeto — EIFF">
+  <meta property="og:url" content="https://www.eiff.com.br/contato.html">
+  <script type="module" src="/src/page.ts"></script>
+</head>
+<body data-page="contato">
+  <!-- @include nav -->
+  <main id="conteudo">
+
+    <section class="page-hero" style="padding-bottom:0">
+      <div class="bg-grid" aria-hidden="true"></div>
+      <div class="wrap">
+        <div class="page-hero__grid">
+          <div>
+            <span class="eyebrow" data-reveal>Iniciar um projeto</span>
+            <h1 class="h1" data-split>O que você precisa colocar de pé?</h1>
+            <p class="lead" data-reveal>Um terreno, uma necessidade ou um projeto já desenhado. Quanto mais cedo a engenharia entra, mais decisões saem do canteiro.</p>
+          </div>
+          <div class="page-hero__aside" data-reveal>
+            <div><span>Base</span><strong>Goiás · Brasil</strong></div>
+            <div><span>Atendimento</span><strong>Todo o território nacional</strong></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap contato__grid">
+        <aside class="contato__aside">
+          <div>
+            <span class="eyebrow" data-reveal>O que acontece depois</span>
+            <h2 class="h3" data-split>Três passos até a proposta.</h2>
+          </div>
+          <div class="contato__fact" data-reveal><b>01 · Entendemos a necessidade</b><span>Operação, terreno, arquitetura, cargas, prazo e condicionantes. Uma conversa técnica, não comercial.</span></div>
+          <div class="contato__fact" data-reveal><b>02 · Estudo preliminar</b><span>Concepção estrutural, implantação e estimativa de escopo, área e prazo.</span></div>
+          <div class="contato__fact" data-reveal><b>03 · Proposta com engenharia</b><span>Escopo, cronograma físico-financeiro e o que fica a cargo de cada parte.</span></div>
+          <div data-reveal><a class="link-arrow" href="/projetos.html">Ver projetos executados <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 7h12M8 2l5 5-5 5"/></svg></a></div>
+        </aside>
+
+        <form class="form" name="iniciar-projeto" method="POST" data-netlify="true" netlify-honeypot="empresa-site" action="/contato.html" data-reveal>
+          <input type="hidden" name="form-name" value="iniciar-projeto">
+          <p class="sr-only" aria-hidden="true"><label>Não preencha: <input name="empresa-site" tabindex="-1" autocomplete="off"></label></p>
+
+          <div class="field"><label for="tipo">Tipo de empreendimento</label>
+            <select id="tipo" name="tipo" required>
+              <option value="" disabled selected>Selecione</option>
+              <option>Galpão industrial</option>
+              <option>Centro de distribuição / logística</option>
+              <option>Loja, academia ou varejo</option>
+              <option>Agro: armazenagem ou apoio</option>
+              <option>Cobertura ou estrutura especial</option>
+              <option>Produto EIFF</option>
+              <option>Outro</option>
+            </select>
+          </div>
+          <div class="field"><label for="area">Área aproximada (m²)</label><input id="area" name="area" type="text" inputmode="numeric" placeholder="ex.: 2.400"></div>
+          <div class="field"><label for="cidade">Cidade / UF</label><input id="cidade" name="cidade" type="text" required placeholder="ex.: Aparecida de Goiânia, GO"></div>
+          <div class="field"><label for="prazo">Prazo desejado</label><input id="prazo" name="prazo" type="text" placeholder="ex.: operação em 6 meses"></div>
+          <div class="field"><label for="nome">Nome</label><input id="nome" name="nome" type="text" required autocomplete="name"></div>
+          <div class="field"><label for="empresa">Empresa</label><input id="empresa" name="empresa" type="text" autocomplete="organization"></div>
+          <div class="field"><label for="email">E-mail</label><input id="email" name="email" type="email" required autocomplete="email"></div>
+          <div class="field"><label for="telefone">Telefone / WhatsApp</label><input id="telefone" name="telefone" type="tel" autocomplete="tel"></div>
+          <div class="field field--full"><label for="mensagem">Contexto do projeto</label><textarea id="mensagem" name="mensagem" placeholder="Terreno, operação prevista, projeto existente, restrições…"></textarea></div>
+
+          <div class="form__actions">
+            <button class="btn btn--primary btn--lg" type="submit" data-magnetic><span>Enviar</span><svg class="btn__arrow" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 12 12 2M4 2h8v8"/></svg></button>
+            <p class="form__note">Seus dados são usados apenas para responder a esta solicitação.</p>
+          </div>
+          <div class="form__ok"><span class="eyebrow">Recebido</span><p class="lead" style="margin-top:14px">Obrigado. A engenharia da EIFF vai analisar o contexto e retornar com os próximos passos.</p></div>
+        </form>
+      </div>
+    </section>
+
+  </main>
+  <!-- @include footer -->
+</body>
+</html>

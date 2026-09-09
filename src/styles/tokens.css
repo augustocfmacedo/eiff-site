@@ -1,0 +1,33 @@
+/* =========================================================
+   EIFF — Industrial Noir
+   Preto profundo · grafite · aço · branco quente · laranja EIFF como assinatura
+========================================================= */
+:root {
+  --bg: #0a0a0b;
+  --bg-2: #101113;
+  --bg-3: #17181b;
+  --bg-4: #1f2024;
+  --line: rgba(242, 240, 236, 0.10);
+  --line-2: rgba(242, 240, 236, 0.18);
+  --ink: #f2f0ec;
+  --ink-2: rgba(242, 240, 236, 0.66);
+  --ink-3: rgba(242, 240, 236, 0.40);
+  --ink-4: rgba(242, 240, 236, 0.22);
+  --steel: #8f949b;
+  --brand: #c84119;
+  --brand-2: #e2582d;
+  --brand-dim: rgba(200, 65, 25, 0.16);
+
+  --font-display: "Archivo", "Inter", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+
+  --gutter: clamp(20px, 5vw, 80px);
+  --section: clamp(96px, 14vw, 200px);
+  --section-s: clamp(64px, 9vw, 128px);
+  --radius: 2px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.76, 0, 0.24, 1);
+  --nav-h: 76px;
+}

@@ -1,0 +1,65 @@
+<a class="skip" href="#conteudo">Ir para o conteúdo</a>
+
+<div class="preloader" id="preloader" aria-hidden="true">
+  <svg class="preloader__symbol" viewBox="0 0 100.29 100" aria-hidden="true">
+    <rect class="pz" x="40" y="0" width="20.29" height="12.57" fill="#c84119"/>
+    <rect class="pz" x="0.29" y="18.855" width="20" height="18.156" fill="#f2f0ec"/>
+    <rect class="pz" x="0" y="40.922" width="20.29" height="18.156" fill="#f2f0ec"/>
+    <rect class="pz" x="0.29" y="62.989" width="20.29" height="18.017" fill="#c84119"/>
+    <rect class="pz" x="40" y="18.855" width="20.29" height="62.151" fill="#f2f0ec"/>
+    <rect class="pz" x="40" y="87.43" width="20.29" height="12.57" fill="#f2f0ec"/>
+    <rect class="pz" x="80" y="18.855" width="20" height="12.57" fill="#f2f0ec"/>
+    <rect class="pz" x="80" y="36.872" width="20" height="44.134" fill="#c84119"/>
+  </svg>
+  <div class="preloader__meta"><span>EIFF · Engenharia, fabricação e construção</span><span id="preloaderPct">00</span></div>
+  <div class="preloader__bar" id="preloaderBar"></div>
+</div>
+<div class="curtain" id="curtain" aria-hidden="true"></div>
+<div class="cursor" id="cursor" aria-hidden="true"><span class="cursor__label" id="cursorLabel">Ver</span></div>
+
+<header class="nav" id="nav">
+  <div class="nav__inner">
+    <a class="brand-link" href="/" aria-label="EIFF — página inicial">
+      <!-- @include simbolo -->
+      <span class="brand-link__word">EIFF</span>
+      <span class="brand-link__caption">Precision in Motion</span>
+    </a>
+    <nav class="nav__links" aria-label="Principal">
+      <a href="/empresa.html" data-nav="empresa">Empresa</a>
+      <a href="/engenharia.html" data-nav="engenharia">Engenharia</a>
+      <a href="/fabricacao.html" data-nav="fabricacao">Fabricação</a>
+      <a href="/solucoes.html" data-nav="solucoes">Soluções</a>
+      <a href="/produtos.html" data-nav="produtos">Produtos</a>
+      <a href="/projetos.html" data-nav="projetos">Projetos</a>
+      <a href="/tecnologia.html" data-nav="tecnologia">Tecnologia</a>
+    </nav>
+    <a class="btn btn--sm nav__cta" href="/contato.html" data-magnetic>
+      <span>Iniciar um projeto</span>
+      <svg class="btn__arrow" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 12 12 2M4 2h8v8"/></svg>
+    </a>
+    <button class="nav__burger" id="burger" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<div class="menu" id="menu" aria-hidden="true">
+  <nav class="menu__links" aria-label="Menu">
+    <a href="/" style="--i:0"><small>00</small>Início</a>
+    <a href="/empresa.html" style="--i:1"><small>01</small>Empresa</a>
+    <a href="/engenharia.html" style="--i:2"><small>02</small>Engenharia</a>
+    <a href="/fabricacao.html" style="--i:3"><small>03</small>Fabricação</a>
+    <a href="/solucoes.html" style="--i:4"><small>04</small>Soluções</a>
+    <a href="/produtos.html" style="--i:5"><small>05</small>Produtos</a>
+    <a href="/projetos.html" style="--i:6"><small>06</small>Projetos</a>
+    <a href="/tecnologia.html" style="--i:7"><small>07</small>Tecnologia</a>
+    <a href="/contato.html" style="--i:8"><small>08</small>Contato</a>
+  </nav>
+  <div class="menu__foot">
+    <span class="mono muted">Do terreno à estrutura pronta.</span>
+    <a class="btn btn--primary btn--sm" href="/contato.html"><span>Iniciar um projeto</span></a>
+  </div>
+</div>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Vídeo do projeto" aria-hidden="true">
+  <button class="btn btn--sm lightbox__close" id="lightboxClose"><span>Fechar</span></button>
+  <div class="lightbox__frame" id="lightboxFrame"></div>
+</div>

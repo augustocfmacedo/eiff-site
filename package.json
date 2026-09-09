@@ -1,0 +1,24 @@
+{
+  "name": "eiff-site",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Site institucional da EIFF — engenharia, fabricação e construção industrializada.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "gsap": "^3.13.0",
+    "lenis": "^1.3.0",
+    "three": "^0.180.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.5.0",
+    "@types/three": "^0.180.0",
+    "typescript": "^5.9.0",
+    "vite": "^7.1.0"
+  }
+}

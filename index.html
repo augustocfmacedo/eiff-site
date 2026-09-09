@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <!-- @include head -->
+  <title>EIFF — Do terreno à estrutura pronta</title>
+  <meta name="description" content="EIFF: engenharia, fabricação e construção industrializada. Concepção, detalhamento, fabricação, logística e montagem de estruturas metálicas e edificações em um único processo.">
+  <link rel="canonical" href="https://www.eiff.com.br/">
+  <meta property="og:title" content="EIFF — Do terreno à estrutura pronta">
+  <meta property="og:description" content="Engenharia, fabricação e construção industrializada em um único processo.">
+  <meta property="og:url" content="https://www.eiff.com.br/">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "EIFF",
+    "url": "https://www.eiff.com.br",
+    "logo": "https://www.eiff.com.br/img/eiff-logo.png",
+    "description": "Engenharia, fabricação e construção industrializada de estruturas metálicas e edificações.",
+    "address": { "@type": "PostalAddress", "addressRegion": "GO", "addressCountry": "BR" },
+    "slogan": "Do terreno à estrutura pronta."
+  }
+  </script>
+  <script type="module" src="/src/home.ts"></script>
+</head>
+<body data-page="home">
+  <!-- @include nav -->
+
+  <main id="conteudo">
+
+    <!-- ============================================================
+         01 · HERO
+    ============================================================ -->
+    <section class="hero" id="inicio" aria-label="Apresentação">
+      <div class="hero__ground" aria-hidden="true"></div>
+      <div class="hero__veil" aria-hidden="true"></div>
+      <canvas class="hero__canvas" id="heroCanvas" aria-hidden="true"></canvas>
+      <div class="corners" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+
+      <div class="hero__content">
+        <div>
+          <span class="eyebrow" data-reveal>Engenharia · Fabricação · Construção</span>
+          <h1 class="h1 hero__title" data-split="hero">Do terreno à estrutura pronta.</h1>
+          <p class="lead hero__lead" data-reveal data-reveal-delay=".9">Transformamos uma necessidade de construção em uma solução de engenharia executável, fabricável e montável. Concepção, detalhamento, fabricação, logística e montagem em um único processo.</p>
+          <div class="hero__actions" data-reveal data-reveal-delay="1.05">
+            <a class="btn btn--primary" href="/contato.html" data-magnetic><span>Iniciar um projeto</span><svg class="btn__arrow" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 12 12 2M4 2h8v8"/></svg></a>
+            <a class="btn" href="#processo" data-magnetic data-scroll><span>Conheça o processo</span></a>
+          </div>
+        </div>
+        <div class="hero__hud" id="heroHud" aria-label="Capacidades de referência" data-reveal data-reveal-delay="1.2">
+          <div class="is-on"><span>Vão livre</span><strong class="num">40,00 m</strong></div>
+          <div><span>Pé-direito</span><strong class="num">12,00 m</strong></div>
+          <div><span>Ligações em campo</span><strong>Parafusadas</strong></div>
+        </div>
+      </div>
+      <div class="hero__scroll" aria-hidden="true"><span>Scroll</span><i></i></div>
+    </section>
+
+    <!-- ============================================================
+         02 · MANIFESTO
+    ============================================================ -->
+    <section class="manifesto section" id="manifesto">
+      <div class="bg-grid" aria-hidden="true"></div>
+      <div class="wrap">
+        <span class="eyebrow" data-reveal>Manifesto</span>
+        <p class="manifesto__text" id="manifestoText" style="margin-top:28px">
+          A EIFF não vende estrutura metálica. Transforma uma necessidade de construção em uma solução de engenharia executável, fabricável e montável. Quem projeta, fabrica. Quem fabrica, monta. Quem monta participou da engenharia. <span class="w--brand">O produto é previsibilidade.</span>
+        </p>
+        <div class="manifesto__pillars">
+          <div class="pillar" data-reveal><span class="pillar__idx">01</span><span class="pillar__name">Engineering</span><p class="pillar__text">Resolver antes de executar. Quanto mais decisões corretas no modelo, menos problemas na obra.</p></div>
+          <div class="pillar" data-reveal data-reveal-delay=".1"><span class="pillar__idx">02</span><span class="pillar__name">Fabrication</span><p class="pillar__text">Transformar projeto em precisão física, em ambiente controlado e rastreável.</p></div>
+          <div class="pillar" data-reveal data-reveal-delay=".2"><span class="pillar__idx">03</span><span class="pillar__name">Execution</span><p class="pillar__text">Fazer o projeto existir no mundo real, com logística e montagem na sequência planejada.</p></div>
+          <div class="pillar" data-reveal data-reveal-delay=".3"><span class="pillar__idx">04</span><span class="pillar__name">Control</span><p class="pillar__text">Integrar as etapas e reduzir incertezas de custo, prazo e resultado.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         03 · PROCESSO (filme conduzido pelo scroll)
+    ============================================================ -->
+    <section class="filme" id="processo" aria-label="Processo EIFF">
+      <div class="filme__pin" id="filmePin">
+        <div class="filme__stage" id="filmeStage" aria-hidden="true">
+          <canvas class="filme__canvas" id="filmeCanvas"></canvas>
+          <div class="filme__veil"></div>
+        </div>
+
+        <div class="filme__ui">
+          <div class="filme__top">
+            <span class="eyebrow eyebrow--ink">Processo EIFF</span>
+            <div class="filme__index"><span>Etapa <b id="filmeCur">01</b> / 07</span><span id="filmeName">Entender</span></div>
+          </div>
+
+          <div class="filme__body">
+            <div>
+              <div class="filme__num" id="filmeNum" aria-hidden="true">
+                <span>01</span><span>02</span><span>03</span><span>04</span><span>05</span><span>06</span><span>07</span>
+              </div>
+              <div class="filme__step" id="filmeStep">
+                <div><h3 class="h2">Entender</h3><p class="lead">Necessidade, terreno, operação, arquitetura, cargas, prazo e condicionantes. Antes de qualquer linha, o problema certo.</p></div>
+                <div><h3 class="h2">Projetar</h3><p class="lead">Requisitos viram solução de engenharia: sistema estrutural, cálculo, modelagem e detalhamento de cada peça.</p></div>
+                <div><h3 class="h2">Validar</h3><p class="lead">Arquitetura, estrutura, fundações, instalações e sequência de execução compatibilizadas antes da primeira peça sair da fábrica.</p></div>
+                <div><h3 class="h2">Fabricar</h3><p class="lead">Produção industrial em ambiente controlado, com rastreabilidade por peça e controle dimensional por estação.</p></div>
+                <div><h3 class="h2">Transportar</h3><p class="lead">Logística planejada conforme a sequência de montagem. Cada carga chega na ordem em que sobe.</p></div>
+                <div><h3 class="h2">Montar</h3><p class="lead">Componentes industriais viram estrutura no local. Ligações parafusadas, içamento planejado, menos improviso em campo.</p></div>
+                <div><h3 class="h2">Entregar</h3><p class="lead">Inspeção, finalização e documentação. A obra entregue exatamente como foi decidida na engenharia.</p></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="filme__rail" id="filmeRail" role="tablist" aria-label="Etapas do processo">
+            <button type="button" role="tab" data-go="0" class="is-active"><span>01</span>Entender</button>
+            <button type="button" role="tab" data-go="1"><span>02</span>Projetar</button>
+            <button type="button" role="tab" data-go="2"><span>03</span>Validar</button>
+            <button type="button" role="tab" data-go="3"><span>04</span>Fabricar</button>
+            <button type="button" role="tab" data-go="4"><span>05</span>Transportar</button>
+            <button type="button" role="tab" data-go="5"><span>06</span>Montar</button>
+            <button type="button" role="tab" data-go="6"><span>07</span>Entregar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         04 · ENGENHARIA
+    ============================================================ -->
+    <section class="eng section" id="engenharia">
+      <div class="wrap">
+        <div class="eng__grid">
+          <div class="eng__copy">
+            <span class="eyebrow" data-reveal>Engenharia</span>
+            <h2 class="h2" data-split>Antes de fabricar, nós resolvemos.</h2>
+            <p class="lead" data-reveal>Antes da primeira peça sair da fábrica, uma quantidade enorme de decisões precisa estar correta. Quanto mais problemas forem resolvidos no ambiente de engenharia, menos problemas chegam à obra.</p>
+            <ol class="eng__list" id="engList">
+              <li class="eng__item is-active"><span class="idx">01</span><h3 class="h4">Concepção</h3><p>Sistema estrutural, modulação e implantação definidos a partir da operação do cliente, do terreno e das cargas.</p></li>
+              <li class="eng__item"><span class="idx">02</span><h3 class="h4">Cálculo e modelagem</h3><p>Modelo tridimensional único: geometria, cargas, combinações e verificação de cada elemento.</p></li>
+              <li class="eng__item"><span class="idx">03</span><h3 class="h4">Detalhamento</h3><p>Cada peça, cada ligação e cada furo definidos antes da fábrica. É aqui que a montagem parafusada começa.</p></li>
+              <li class="eng__item"><span class="idx">04</span><h3 class="h4">Compatibilização</h3><p>Arquitetura, fundações, instalações e fechamentos resolvidos no mesmo modelo, sem interferências para descobrir em campo.</p></li>
+              <li class="eng__item"><span class="idx">05</span><h3 class="h4">Planejamento de fabricação</h3><p>Sequência de produção, lotes, marcas e rastreabilidade definidas com a montagem em vista.</p></li>
+              <li class="eng__item"><span class="idx">06</span><h3 class="h4">Planejamento de montagem</h3><p>Içamento, cargas, romaneio e sequência de campo. A obra sobe na ordem em que foi pensada.</p></li>
+            </ol>
+            <div style="margin-top:36px" data-reveal><a class="link-arrow" href="/engenharia.html">Como fazemos engenharia <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 7h12M8 2l5 5-5 5"/></svg></a></div>
+          </div>
+
+          <figure class="eng__fig" id="engFig" aria-label="Sequência de engenharia: concepção, modelagem, detalhamento, compatibilização, fabricação e montagem">
+            <div class="hud"><span>EIFF · Modelo estrutural</span><span id="engHudA">01 · Concepção</span></div>
+            <svg viewBox="0 0 800 600" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <defs>
+                <pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="rgba(242,240,236,.25)" stroke-width="1"/></pattern>
+              </defs>
+              <!-- L1 · Concepção: grade, eixos, terreno -->
+              <g data-layer="1" stroke="rgba(242,240,236,.16)" stroke-width="1">
+                <g class="draw" data-order="1">
+                  <path d="M80 100V520M200 100V520M320 100V520M440 100V520M560 100V520M680 100V520"/>
+                  <path d="M60 140H740M60 260H740M60 380H740M60 500H740"/>
+                </g>
+                <g class="draw" data-order="2" stroke="rgba(242,240,236,.55)" stroke-width="1.2">
+                  <path d="M80 500H680" stroke-dasharray="2 6"/>
+                  <path d="M60 560 L740 560"/>
+                </g>
+                <g class="txt" data-order="2" fill="rgba(242,240,236,.55)" stroke="none" font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="1.5">
+                  <text x="76" y="86" text-anchor="middle">A</text><text x="200" y="86" text-anchor="middle">B</text><text x="320" y="86" text-anchor="middle">C</text><text x="440" y="86" text-anchor="middle">D</text><text x="560" y="86" text-anchor="middle">E</text><text x="680" y="86" text-anchor="middle">F</text>
+                  <text x="40" y="144">1</text><text x="40" y="264">2</text><text x="40" y="384">3</text><text x="40" y="504">4</text>
+                  <text x="80" y="580">Nível 0,00 · Terreno</text>
+                </g>
+              </g>
+              <!-- L2 · Modelagem: pórtico principal e cotas -->
+              <g data-layer="2" stroke="#f2f0ec" stroke-width="2">
+                <g class="draw" data-order="3">
+                  <path d="M120 500V240"/><path d="M640 500V240"/>
+                  <path d="M120 240 L380 150 L640 240"/>
+                  <path d="M120 240 L134 240 L134 500" stroke-width="1"/><path d="M640 240 L626 240 L626 500" stroke-width="1"/>
+                  <path d="M120 240 L380 162 L640 240" stroke-width="1" opacity=".5"/>
+                </g>
+                <g class="draw" data-order="4" stroke="rgba(242,240,236,.5)" stroke-width="1">
+                  <path d="M185 218 L185 222M250 195 L250 199M315 172 L315 176M445 172 L445 176M510 195 L510 199M575 218 L575 222"/>
+                  <path d="M120 300 L200 260M200 300 L120 260" opacity=".6"/><path d="M640 300 L560 260M560 300 L640 260" opacity=".6"/>
+                </g>
+                <g class="draw" data-order="4" stroke="#c84119" stroke-width="1">
+                  <path d="M120 540 H640"/><path d="M120 534V546M640 534V546"/>
+                  <path d="M700 500 V150"/><path d="M694 500H706M694 150H706"/>
+                </g>
+                <g class="txt" data-order="4" fill="#c84119" stroke="none" font-family="JetBrains Mono, monospace" font-size="12" letter-spacing="1.5">
+                  <text x="380" y="530" text-anchor="middle">40,00 m</text>
+                  <text x="716" y="330" transform="rotate(-90 716 330)" text-anchor="middle">12,00 m</text>
+                </g>
+              </g>
+              <!-- L3 · Detalhamento: nós e ligações -->
+              <g data-layer="3" stroke="#f2f0ec" stroke-width="1.2">
+                <g class="draw" data-order="5">
+                  <circle cx="120" cy="240" r="16"/><circle cx="640" cy="240" r="16"/><circle cx="380" cy="150" r="16"/><circle cx="120" cy="500" r="16"/><circle cx="640" cy="500" r="16"/>
+                </g>
+                <g class="draw" data-order="6" stroke="rgba(242,240,236,.6)" stroke-width="1">
+                  <path d="M380 150 L520 60"/><rect x="520" y="20" width="200" height="110" rx="1"/>
+                  <path d="M560 40 V110M600 40V110" stroke-width="2" stroke="#f2f0ec"/><path d="M540 55H620M540 75H620M540 95H620" stroke-width="1"/>
+                  <circle cx="548" cy="55" r="2.6"/><circle cx="548" cy="75" r="2.6"/><circle cx="548" cy="95" r="2.6"/><circle cx="612" cy="55" r="2.6"/><circle cx="612" cy="75" r="2.6"/><circle cx="612" cy="95" r="2.6"/>
+                  <path d="M640 40 L700 40 L700 110" stroke-dasharray="2 4"/>
+                </g>
+                <g class="txt" data-order="6" fill="rgba(242,240,236,.7)" stroke="none" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.5">
+                  <text x="640" y="60">LIG-03</text><text x="640" y="76">CUMEEIRA</text><text x="640" y="92">PARAFUSADA</text>
+                </g>
+              </g>
+              <!-- L4 · Compatibilização: fundações, piso e instalações -->
+              <g data-layer="4" stroke="rgba(242,240,236,.6)" stroke-width="1">
+                <g class="draw" data-order="7">
+                  <rect x="90" y="500" width="60" height="40" fill="url(#hatch)"/><rect x="610" y="500" width="60" height="40" fill="url(#hatch)"/>
+                  <path d="M150 512 H610" stroke-dasharray="6 6"/>
+                  <path d="M160 226 H600" stroke="#c84119" stroke-dasharray="3 5" opacity=".8"/>
+                  <path d="M320 226 V300M440 226 V300" stroke="#c84119" opacity=".8"/>
+                </g>
+                <g class="txt" data-order="7" fill="rgba(242,240,236,.55)" stroke="none" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.5">
+                  <text x="160" y="528">PISO · 7 t/m²</text><text x="500" y="528">BLOCO · FUNDAÇÃO</text><text x="160" y="214" fill="#c84119">INSTALAÇÕES · INTERFACE</text>
+                </g>
+              </g>
+              <!-- L5 · Planejamento de fabricação: marcas e lotes -->
+              <g data-layer="5" stroke="rgba(242,240,236,.7)" stroke-width="1">
+                <g class="draw" data-order="8">
+                  <rect x="70" y="330" width="46" height="18"/><rect x="644" y="330" width="46" height="18"/><rect x="226" y="176" width="46" height="18"/><rect x="488" y="176" width="46" height="18"/>
+                  <path d="M116 339 H120M644 339 H640M249 194 V206M511 194 V206"/>
+                </g>
+                <g class="txt" data-order="8" fill="rgba(242,240,236,.8)" stroke="none" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1">
+                  <text x="93" y="343" text-anchor="middle">P-01</text><text x="667" y="343" text-anchor="middle">P-02</text><text x="249" y="189" text-anchor="middle">V-01</text><text x="511" y="189" text-anchor="middle">V-02</text>
+                  <text x="80" y="120" fill="rgba(242,240,236,.55)">LOTE 01 · PILARES → LOTE 02 · VIGAS → LOTE 03 · TERÇAS</text>
+                </g>
+              </g>
+              <!-- L6 · Planejamento de montagem: sequência e içamento -->
+              <g data-layer="6" stroke="#c84119" stroke-width="1.2">
+                <g class="draw" data-order="9">
+                  <path d="M380 150 V96"/><path d="M380 96 H300 L282 60"/><path d="M370 100 L380 88 L390 100"/>
+                  <circle cx="120" cy="470" r="11"/><circle cx="640" cy="470" r="11"/><circle cx="380" cy="120" r="11" fill="#0a0a0b"/>
+                </g>
+                <g class="txt" data-order="9" fill="#c84119" stroke="none" font-family="JetBrains Mono, monospace" font-size="10" text-anchor="middle">
+                  <text x="120" y="474">1</text><text x="640" y="474">2</text><text x="380" y="124">3</text>
+                </g>
+              </g>
+            </svg>
+            <div class="hud hud--b"><span id="engHudB">Grade e eixos</span><b>EIFF</b></div>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         05 · PROJETO DESTACADO
+    ============================================================ -->
+    <section class="destaque" id="destaque" aria-label="Projeto destacado">
+      <div class="destaque__bg" id="destaqueBg" aria-hidden="true"><img src="/img/still-entrega.jpg" alt="" loading="lazy" decoding="async"></div>
+      <div class="wrap destaque__content">
+        <div>
+          <span class="eyebrow eyebrow--ink" data-reveal>Projeto · Aparecida de Goiânia, GO</span>
+          <h2 class="h2" data-split>Complexo logístico com três galpões e vãos de até 32 m.</h2>
+          <p class="lead" data-reveal style="margin-bottom:32px">Estrutura pré-industrializada e inteiramente parafusada, pé-direito de 12 m, piso para 7 t/m², fechamento metálico e isotérmico com cobertura PIR.</p>
+          <div class="destaque__stats" data-reveal>
+            <div><b class="num">3</b><small>Galpões</small></div>
+            <div><b class="num">3.600 m²</b><small>Área</small></div>
+            <div><b class="num">12 m</b><small>Pé-direito</small></div>
+            <div><b class="num">32 m</b><small>Vão</small></div>
+            <div><b class="num">7 t/m²</b><small>Piso</small></div>
+          </div>
+        </div>
+        <button class="play" type="button" data-video="wj-hzRkOYqs" data-reveal data-cursor="Assistir"><i></i><span>Assistir à obra</span></button>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         06 · FABRICAÇÃO (horizontal)
+    ============================================================ -->
+    <section class="fab" id="fabricacao" aria-label="Fabricação">
+      <div class="fab__pin" id="fabPin">
+        <div class="fab__bg" aria-hidden="true">
+          <svg class="fab__pecas" id="fabPecas" viewBox="0 0 2400 800" fill="none" stroke="rgba(242,240,236,.22)" stroke-width="1.2" preserveAspectRatio="xMinYMid slice">
+            <g><path d="M120 200h160M120 600h160M200 200v400"/><path d="M110 190h180v20H110zM110 590h180v20H110z"/><path d="M190 220v360h20V220z"/></g>
+            <g transform="translate(420 140)"><rect x="0" y="0" width="420" height="520"/><path d="M0 260h420M210 0v520"/><circle cx="60" cy="60" r="7"/><circle cx="360" cy="60" r="7"/><circle cx="60" cy="460" r="7"/><circle cx="360" cy="460" r="7"/><circle cx="60" cy="260" r="7"/><circle cx="360" cy="260" r="7"/></g>
+            <g transform="translate(960 180)"><path d="M0 0h520v40H0zM0 400h520v40H0zM240 40v360h40V40z"/><circle cx="60" cy="20" r="6"/><circle cx="460" cy="20" r="6"/><circle cx="60" cy="420" r="6"/><circle cx="460" cy="420" r="6"/></g>
+            <g transform="translate(1600 120)" stroke="rgba(226,88,45,.5)"><path d="M0 540L260 40L520 540"/><path d="M60 540L260 160L460 540"/><path d="M160 340h200M110 440h300"/><circle cx="260" cy="40" r="10"/><circle cx="0" cy="540" r="10"/><circle cx="520" cy="540" r="10"/></g>
+            <g transform="translate(2200 200)"><rect x="0" y="0" width="120" height="400"/><path d="M0 100h120M0 200h120M0 300h120"/><circle cx="30" cy="50" r="6"/><circle cx="90" cy="50" r="6"/><circle cx="30" cy="150" r="6"/><circle cx="90" cy="150" r="6"/><circle cx="30" cy="250" r="6"/><circle cx="90" cy="250" r="6"/><circle cx="30" cy="350" r="6"/><circle cx="90" cy="350" r="6"/></g>
+            <g stroke="rgba(242,240,236,.1)"><path d="M0 740h2400M0 60h2400"/><path d="M0 60v680M600 60v680M1200 60v680M1800 60v680M2400 60v680"/></g>
+          </svg>
+        </div>
+        <div class="fab__track" id="fabTrack">
+          <div class="fab__panel fab__panel--intro">
+            <span class="eyebrow">Fabricação</span>
+            <div class="st-body">
+              <h2 class="h2">A fábrica como extensão da engenharia.</h2>
+              <p class="lead">O projeto deixa de existir só como desenho e passa a existir fisicamente dentro de um ambiente controlado de produção. Seis estações, cada uma com entrada, saída e inspeção.</p>
+            </div>
+            <span class="mono muted">Corte → Furação → Montagem → Solda → Pintura → Expedição</span>
+          </div>
+          <div class="fab__panel"><span class="st-idx">01</span><div class="st-body"><h3 class="h3">Corte</h3><p>Chapas e perfis cortados conforme a lista de materiais gerada no modelo. Nada é medido na fábrica: tudo já chega decidido.</p><dl class="spec st-spec"><dt>Entrada</dt><dd>Lista de materiais</dd><dt>Saída</dt><dd>Peças identificadas</dd></dl></div></div>
+          <div class="fab__panel"><span class="st-idx">02</span><div class="st-body"><h3 class="h3">Furação</h3><p>Furos posicionados a partir do detalhamento. É aqui que a ligação parafusada começa a existir.</p><dl class="spec st-spec"><dt>Controle</dt><dd>Dimensional por peça</dd><dt>Saída</dt><dd>Peças prontas p/ conjunto</dd></dl></div></div>
+          <div class="fab__panel"><span class="st-idx">03</span><div class="st-body"><h3 class="h3">Montagem e ponteamento</h3><p>Componentes posicionados e ponteados em gabarito. Repetibilidade de conjunto a conjunto.</p><dl class="spec st-spec"><dt>Unidade</dt><dd>Conjunto / marca</dd><dt>Rastreio</dt><dd>Por corrida do aço</dd></dl></div></div>
+          <div class="fab__panel"><span class="st-idx">04</span><div class="st-body"><h3 class="h3">Solda</h3><p>Soldagem em ambiente controlado, com inspeção visual e dimensional antes de seguir para a próxima estação.</p><dl class="spec st-spec"><dt>Inspeção</dt><dd>Por estação</dd><dt>Registro</dt><dd>kg, peças e horas</dd></dl></div></div>
+          <div class="fab__panel"><span class="st-idx">05</span><div class="st-body"><h3 class="h3">Pintura</h3><p>Preparo de superfície e proteção. O conjunto sai pronto para o campo e é marcado como fabricado.</p><dl class="spec st-spec"><dt>Status</dt><dd>Conjunto fabricado</dd><dt>Saída</dt><dd>Pronto p/ expedição</dd></dl></div></div>
+          <div class="fab__panel"><span class="st-idx">06</span><div class="st-body"><h3 class="h3">Expedição</h3><p>Romaneio por carga na ordem de montagem. O caminhão chega com o que a obra vai içar naquele dia.</p><dl class="spec st-spec"><dt>Documento</dt><dd>Romaneio por carga</dd><dt>Sequência</dt><dd>A da montagem</dd></dl><a class="link-arrow" href="/fabricacao.html" style="margin-top:20px">Ver a fábrica <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 7h12M8 2l5 5-5 5"/></svg></a></div></div>
+        </div>
+        <div class="fab__progress" aria-hidden="true"><i id="fabProgress"></i></div>
+        <span class="fab__hint" aria-hidden="true">Scroll para percorrer</span>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         07 · CAPACIDADES
+    ============================================================ -->
+    <section class="cap section" id="capacidades">
+      <div class="wrap">
+        <div class="section-head">
+          <div><span class="eyebrow" data-reveal>Capacidades</span><h2 class="h2" data-split style="margin-top:22px">Mostrar, não afirmar.</h2></div>
+          <div class="section-head__side" data-reveal><p class="body">Números de obras executadas pela equipe EIFF, incluindo a trajetória operacional anterior à marca. Cada valor tem um projeto correspondente.</p></div>
+        </div>
+        <div class="cap__grid">
+          <div class="stat" data-reveal><span class="stat__value"><span data-count="40" data-decimals="0">0</span><sub>m</sub></span><span class="stat__label">Vão livre em projeto</span><span class="stat__note">Solução para operação logística</span></div>
+          <div class="stat" data-reveal><span class="stat__value"><span data-count="12">0</span><sub>m</sub></span><span class="stat__label">Pé-direito livre executado</span><span class="stat__note">Complexo logístico · Aparecida de Goiânia</span></div>
+          <div class="stat" data-reveal><span class="stat__value"><span data-count="7">0</span><sub>t/m²</sub></span><span class="stat__label">Piso industrial executado</span><span class="stat__note">Complexo logístico · Aparecida de Goiânia</span></div>
+          <div class="stat" data-reveal><span class="stat__value"><span data-count="65">0</span><sub>dias</sub></span><span class="stat__label">Da fundação ao fechamento completo</span><span class="stat__note">Smart Fit · Cabo Frio</span></div>
+          <div class="stat" data-reveal><span class="stat__value"><span data-count="100">0</span><sub>%</sub></span><span class="stat__label">Ligações parafusadas em campo</span><span class="stat__note">Sistema pré-industrializado EIFF</span></div>
+          <div class="stat" data-reveal><span class="stat__value"><span data-count="3600" data-format="pt">0</span><sub>m²</sub></span><span class="stat__label">Em um único complexo</span><span class="stat__note">3 galpões · Aparecida de Goiânia</span></div>
+        </div>
+        <div class="cap__foot" data-reveal>
+          <p class="body">Capacidade fabril mensal, toneladas acumuladas e área total executada estão em consolidação e serão publicadas com a documentação correspondente.</p>
+          <p class="body">Rastreabilidade por corrida do aço, apontamento por estação e romaneio por carga fazem parte do controle de produção da EIFF.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         08 · SOLUÇÕES
+    ============================================================ -->
+    <section class="sol section" id="solucoes">
+      <div class="wrap">
+        <div class="section-head">
+          <div><span class="eyebrow" data-reveal>Soluções</span><h2 class="h2" data-split style="margin-top:22px">O que você precisa colocar de pé?</h2></div>
+          <div class="section-head__side" data-reveal><p class="body">Indústria, logística, varejo, agro, incorporadores e escritórios de arquitetura e engenharia. A estrutura é o meio. O produto é a edificação operando.</p></div>
+        </div>
+        <div class="sol__rows" id="solRows">
+          <a class="sol__row" href="/solucoes.html#industrial" data-img="/img/still-estrutura.jpg"><span class="idx">01</span><h3 class="h3">Industrial</h3><p>Galpões, plantas, ampliações, coberturas e áreas produtivas com pontes rolantes, cargas e interfaces de processo.</p><span class="link-arrow">Ver <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 7h12M8 2l5 5-5 5"/></svg></span></a>
+          <a class="sol__row" href="/solucoes.html#logistica" data-img="/img/poster-04-execucao-coordenada.jpg"><span class="idx">02</span><h3 class="h3">Logística</h3><p>Centros de distribuição, armazéns e hubs com grandes vãos, pé-direito alto e piso para operação pesada.</p><span class="link-arrow">Ver <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 7h12M8 2l5 5-5 5"/></svg></span></a>
+          <a class="sol__row" href="/solucoes.html#comercial" data-img="/img/still-entrega.jpg"><span class="idx">03</span><h3 class="h3">Comercial</h3><p>Lojas, academias, supermercados e operações de varejo com prazo curto e fechamento completo.</p><span class="link-arrow">Ver <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 7h12M8 2l5 5-5 5"/></svg></span></a>
+          <a class="sol__row" href="/solucoes.html#especiais" data-img="/img/still-montagem.jpg"><span class="idx">04</span><h3 class="h3">Estruturas especiais</h3><p>Coberturas, marquises, mezaninos, passarelas e soluções específicas de engenharia para arquitetura e indústria.</p><span class="link-arrow">Ver <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 7h12M8 2l5 5-5 5"/></svg></span></a>
+        </div>
+      </div>
+      <div class="sol__float" id="solFloat" aria-hidden="true"></div>
+    </section>
+
+    <!-- ============================================================
+         09 · PROJETOS
+    ============================================================ -->
+    <section class="proj section" id="projetos">
+      <div class="wrap">
+        <div class="section-head">
+          <div><span class="eyebrow" data-reveal>Projetos</span><h2 class="h2" data-split style="margin-top:22px">Modelo, fabricação, montagem, resultado.</h2></div>
+          <div class="section-head__side" data-reveal><a class="link-arrow" href="/projetos.html">Todos os projetos <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 7h12M8 2l5 5-5 5"/></svg></a></div>
+        </div>
+        <div class="proj__grid">
+          <a class="case" href="/projetos.html#logistico" data-cursor="Ver" data-reveal>
+            <div class="case__media"><span class="case__tag">Logística</span><img src="https://img.youtube.com/vi/wj-hzRkOYqs/hqdefault.jpg" alt="Complexo logístico em Aparecida de Goiânia" loading="lazy" decoding="async"></div>
+            <div class="case__body"><span class="case__title">Complexo logístico</span><span class="case__meta">Aparecida de Goiânia, GO · 3.600 m² · 3 galpões</span><span class="case__num">01</span></div>
+          </a>
+          <a class="case" href="/projetos.html#smartfit" data-cursor="Ver" data-reveal data-reveal-delay=".1">
+            <div class="case__media"><span class="case__tag">Comercial</span><img src="https://img.youtube.com/vi/9JIeaj2HZbo/hqdefault.jpg" alt="Academia Smart Fit em Cabo Frio" loading="lazy" decoding="async"></div>
+            <div class="case__body"><span class="case__title">Smart Fit Cabo Frio</span><span class="case__meta">Cabo Frio, RJ · 1.200 m² · 65 dias</span><span class="case__num">02</span></div>
+          </a>
+          <a class="case" href="/projetos.html#painelizada" data-cursor="Ver" data-reveal data-reveal-delay=".2">
+            <div class="case__media"><span class="case__tag">Tecnologia EIFF</span><img src="https://img.youtube.com/vi/4fM9Oz83_74/hqdefault.jpg" alt="Edificação painelizada em Goiânia" loading="lazy" decoding="async"></div>
+            <div class="case__body"><span class="case__title">Edificação painelizada</span><span class="case__meta">Goiânia, GO · 600 m² · área urbana central</span><span class="case__num">03</span></div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         10 · DUAS FRENTES
+    ============================================================ -->
+    <section class="duas section" id="produtos">
+      <div class="bg-grid" aria-hidden="true"></div>
+      <div class="wrap">
+        <div class="section-head">
+          <div><span class="eyebrow" data-reveal>Duas frentes</span><h2 class="h2" data-split style="margin-top:22px">Duas frentes. Um único processo.</h2></div>
+          <div class="section-head__side" data-reveal><p class="body">Projetos desenvolvidos para uma necessidade específica e soluções previamente desenvolvidas e industrializadas. A mesma engenharia, a mesma fábrica.</p></div>
+        </div>
+        <div class="duas__grid">
+          <div class="duas__col" data-reveal>
+            <span class="eyebrow">Projetos especiais</span>
+            <div>
+              <h3 class="h3">Soluções desenvolvidas para a sua operação.</h3>
+              <ul style="margin-top:24px">
+                <li>Galpões industriais e logísticos</li>
+                <li>Plantas, ampliações e áreas produtivas</li>
+                <li>Lojas, academias e operações de varejo</li>
+                <li>Coberturas, marquises e estruturas especiais</li>
+                <li>Edificações metálicas completas, com fundações, fechamentos e interfaces</li>
+              </ul>
+            </div>
+            <a class="link-arrow" href="/solucoes.html">Ver soluções <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 7h12M8 2l5 5-5 5"/></svg></a>
+          </div>
+          <div class="duas__col" data-reveal data-reveal-delay=".12">
+            <span class="eyebrow">Produtos EIFF</span>
+            <div class="duas__fig" aria-hidden="true">
+              <svg viewBox="0 0 220 200" fill="none" stroke="rgba(242,240,236,.7)" stroke-width="1.2" stroke-linejoin="round" id="produtoIso">
+                <path class="iso" d="M30 120 L110 160 L190 120 L110 80 Z"/>
+                <path class="iso" d="M30 120 V60 L110 20 L190 60 V120"/>
+                <path class="iso" d="M110 160 V100"/><path class="iso" d="M110 100 L30 60"/><path class="iso" d="M110 100 L190 60"/>
+                <path class="iso" d="M110 20 V100" stroke="#c84119"/>
+                <path class="iso" d="M50 70 V130M70 80 V140M90 90 V150M130 90 V150M150 80 V140M170 70 V130" stroke="rgba(242,240,236,.3)"/>
+                <path class="iso" d="M30 60 L110 100 L190 60" stroke="rgba(242,240,236,.3)" stroke-dasharray="2 4"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="h3">Sistemas industrializados padronizados.</h3>
+              <ul style="margin-top:24px">
+                <li>Depósito metálico modular EIFF</li>
+                <li>Módulos e construções compactas</li>
+                <li>Sistemas metálicos de fabricação seriada</li>
+              </ul>
+              <span class="duas__status" style="margin-top:24px">Em desenvolvimento</span>
+            </div>
+            <a class="link-arrow" href="/produtos.html">Linha de produtos <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 7h12M8 2l5 5-5 5"/></svg></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         11 · CTA
+    ============================================================ -->
+    <section class="cta" id="iniciar">
+      <div class="wrap cta__grid">
+        <div>
+          <span class="eyebrow" data-reveal>Iniciar um projeto</span>
+          <h2 class="h1" data-split>O que você precisa colocar de pé?</h2>
+          <p class="lead cta__lead" data-reveal>Um terreno, uma necessidade ou um projeto. A partir daí, a EIFF entra com engenharia, estudo, solução, fabricação e execução.</p>
+          <div data-reveal><a class="btn btn--primary btn--lg" href="/contato.html" data-magnetic><span>Iniciar um projeto</span><svg class="btn__arrow" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 12 12 2M4 2h8v8"/></svg></a></div>
+        </div>
+        <div class="cta__side" data-reveal>
+          <div><span>Atendemos</span><strong>Indústria · Logística · Varejo · Agro</strong></div>
+          <div><span>Parceria técnica</span><strong>Incorporadores · Arquitetos · Engenharias</strong></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- @include footer -->
+</body>
+</html>
