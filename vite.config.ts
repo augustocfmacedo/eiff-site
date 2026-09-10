@@ -26,7 +26,8 @@ function partials(): Plugin {
     configureServer(server) {
       server.middlewares.use((req, _res, next) => {
         const url = (req.url || '').split('?')[0]
-        if (/^\/[a-z0-9-]+$/.test(url) && existsSync(resolve(__dirname, `${url.slice(1)}.html`))) req.url = `${url}.html`
+        const nome = url.replace(/^\/([a-z0-9-]+)\/?$/, '$1')
+        if (nome !== url && existsSync(resolve(__dirname, `${nome}.html`))) req.url = `/${nome}.html`
         next()
       })
     },

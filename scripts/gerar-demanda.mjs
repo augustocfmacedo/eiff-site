@@ -11,11 +11,11 @@ const raiz = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const SETA = '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 7h12M8 2l5 5-5 5"/></svg>'
 
 const CASES = {
-  logistico: { href: '/projetos#logistico', tag: 'Logística', foto: 'foto-galpao-aereo', titulo: 'Complexo logístico', meta: 'Aparecida de Goiânia, GO · 3.600 m² · 3 galpões', alt: 'Complexo logístico em Aparecida de Goiânia' },
-  smartfit: { href: '/projetos#smartfit', tag: 'Comercial', foto: 'foto-smartfit', titulo: 'Smart Fit Cabo Frio', meta: 'Cabo Frio, RJ · 1.200 m² · 65 dias', alt: 'Academia Smart Fit em Cabo Frio' },
-  painelizada: { href: '/projetos#painelizada', tag: 'Tecnologia EIFF', foto: 'foto-estrutura-aerea', titulo: 'Edificação painelizada', meta: 'Goiânia, GO · 600 m² · área urbana central', alt: 'Edificação painelizada em Goiânia' },
-  skyfit: { href: '/projetos#skyfit', tag: 'Comercial', foto: 'foto-skyfit', titulo: 'SkyFit Goiânia', meta: 'Goiânia, GO · 900 m² · 90 dias', alt: 'Academia SkyFit em Goiânia' },
-  panobianco: { href: '/projetos#panobianco', tag: 'Comercial', foto: 'foto-panobianco', titulo: 'Panobianco Goiânia', meta: 'Goiânia, GO · 900 m² · 2 pavimentos · 120 dias', alt: 'Academia Panobianco em Goiânia' },
+  logistico: { href: '/projetos/#logistico', tag: 'Logística', foto: 'foto-galpao-aereo', titulo: 'Complexo logístico', meta: 'Aparecida de Goiânia, GO · 3.600 m² · 3 galpões', alt: 'Complexo logístico em Aparecida de Goiânia' },
+  smartfit: { href: '/projetos/#smartfit', tag: 'Comercial', foto: 'foto-smartfit', titulo: 'Smart Fit Cabo Frio', meta: 'Cabo Frio, RJ · 1.200 m² · 65 dias', alt: 'Academia Smart Fit em Cabo Frio' },
+  painelizada: { href: '/projetos/#painelizada', tag: 'Tecnologia EIFF', foto: 'foto-estrutura-aerea', titulo: 'Edificação painelizada', meta: 'Goiânia, GO · 600 m² · área urbana central', alt: 'Edificação painelizada em Goiânia' },
+  skyfit: { href: '/projetos/#skyfit', tag: 'Comercial', foto: 'foto-skyfit', titulo: 'SkyFit Goiânia', meta: 'Goiânia, GO · 900 m² · 90 dias', alt: 'Academia SkyFit em Goiânia' },
+  panobianco: { href: '/projetos/#panobianco', tag: 'Comercial', foto: 'foto-panobianco', titulo: 'Panobianco Goiânia', meta: 'Goiânia, GO · 900 m² · 2 pavimentos · 120 dias', alt: 'Academia Panobianco em Goiânia' },
 }
 
 const PAGINAS = [
@@ -181,10 +181,10 @@ for (const p of PAGINAS) {
   <!-- @include head -->
   <title>${esc(p.title)}</title>
   <meta name="description" content="${esc(p.description)}">
-  <link rel="canonical" href="https://eiff.com.br/${p.slug}">
+  <link rel="canonical" href="https://eiff.com.br/${p.slug}/">
   <meta property="og:title" content="${esc(p.title)}">
   <meta property="og:description" content="${esc(p.description)}">
-  <meta property="og:url" content="https://eiff.com.br/${p.slug}">
+  <meta property="og:url" content="https://eiff.com.br/${p.slug}/">
   <script type="application/ld+json">${JSON.stringify(faqLd)}</script>
   <script type="module" src="/src/page.ts"></script>
 </head>
@@ -201,8 +201,8 @@ for (const p of PAGINAS) {
             <h1 class="h1" data-split>${p.h1}</h1>
             <p class="lead" data-reveal>${p.lead}</p>
             <div style="margin-top:32px;display:flex;gap:14px;flex-wrap:wrap" data-reveal>
-              <a class="btn btn--primary" href="/contato" data-magnetic><span>Iniciar um projeto</span><svg class="btn__arrow" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 12 12 2M4 2h8v8"/></svg></a>
-              <a class="btn" href="/projetos" data-magnetic><span>Ver projetos executados</span></a>
+              <a class="btn btn--primary" href="/contato/" data-magnetic><span>Iniciar um projeto</span><svg class="btn__arrow" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 12 12 2M4 2h8v8"/></svg></a>
+              <a class="btn" href="/projetos/" data-magnetic><span>Ver projetos executados</span></a>
             </div>
           </div>
           <div class="page-hero__aside" data-reveal>
@@ -263,7 +263,7 @@ ${p.faq.map(([q, a], i) => `          <div class="list-rows__item" data-reveal><
       <div class="wrap">
         <div class="section-head">
           <div><span class="eyebrow" data-reveal>Projetos relacionados</span><h2 class="h2" data-split style="margin-top:22px">O que já ficou de pé.</h2></div>
-          <div class="section-head__side" data-reveal><a class="link-arrow" href="/projetos">Todos os projetos ${SETA}</a></div>
+          <div class="section-head__side" data-reveal><a class="link-arrow" href="/projetos/">Todos os projetos ${SETA}</a></div>
         </div>
         <div class="proj__grid">
 ${p.cases.map(cardCase).join('\n')}
