@@ -9,9 +9,6 @@ import { readFileSync, existsSync } from 'node:fs'
  */
 function partials(): Plugin {
   const dir = resolve(__dirname, 'src/partials')
-  const analytics = process.env.VITE_ANALYTICS_SRC
-    ? `<script defer data-domain="eiff.com.br" src="${process.env.VITE_ANALYTICS_SRC}"></script>`
-    : ''
   const verificacao = process.env.VITE_GOOGLE_SITE_VERIFICATION
     ? `<meta name="google-site-verification" content="${process.env.VITE_GOOGLE_SITE_VERIFICATION}">`
     : ''
