@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://www.eiff.com.br/</loc><priority>1.0</priority></url>
-  <url><loc>https://www.eiff.com.br/empresa.html</loc></url>
-  <url><loc>https://www.eiff.com.br/engenharia.html</loc></url>
-  <url><loc>https://www.eiff.com.br/fabricacao.html</loc></url>
-  <url><loc>https://www.eiff.com.br/solucoes.html</loc></url>
-  <url><loc>https://www.eiff.com.br/produtos.html</loc></url>
-  <url><loc>https://www.eiff.com.br/projetos.html</loc></url>
-  <url><loc>https://www.eiff.com.br/tecnologia.html</loc></url>
-  <url><loc>https://www.eiff.com.br/contato.html</loc></url>
+  <url><loc>https://www.eiff.com.br/</loc><lastmod>2026-09-09</lastmod><priority>1.0</priority></url>
+  <url><loc>https://www.eiff.com.br/empresa.html</loc><lastmod>2026-09-09</lastmod></url>
+  <url><loc>https://www.eiff.com.br/engenharia.html</loc><lastmod>2026-09-09</lastmod></url>
+  <url><loc>https://www.eiff.com.br/fabricacao.html</loc><lastmod>2026-09-09</lastmod></url>
+  <url><loc>https://www.eiff.com.br/solucoes.html</loc><lastmod>2026-09-09</lastmod></url>
+  <url><loc>https://www.eiff.com.br/produtos.html</loc><lastmod>2026-09-09</lastmod></url>
+  <url><loc>https://www.eiff.com.br/projetos.html</loc><lastmod>2026-09-09</lastmod></url>
+  <url><loc>https://www.eiff.com.br/tecnologia.html</loc><lastmod>2026-09-09</lastmod></url>
+  <url><loc>https://www.eiff.com.br/contato.html</loc><lastmod>2026-09-09</lastmod></url>
 </urlset>

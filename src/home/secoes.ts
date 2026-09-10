@@ -118,7 +118,7 @@ export function iniciarSolucoes(temMouse: boolean) {
   if (!rows || !flutuante || !temMouse) return
   const links = Array.from(rows.querySelectorAll<HTMLAnchorElement>('.sol__row'))
   const imgs = links.map((a) => {
-    const img = document.createElement('img'); img.src = a.dataset.img || ''; img.alt = ''; img.loading = 'lazy'
+    const img = document.createElement('img'); img.src = (a.dataset.img || '').replace(/.jpg$/, '-800.jpg'); img.alt = ''; img.loading = 'lazy'
     flutuante.appendChild(img); return img
   })
   const x = gsap.quickTo(flutuante, 'left', { duration: 0.6, ease: 'power3' })

@@ -70,7 +70,7 @@ function iniciarPreloader(lenis: Lenis | null): Promise<void> {
   const pecas = $$('.pz', pre)
   const pct = $('#preloaderPct', pre)
   const bar = $('#preloaderBar', pre)
-  const dur = rapido ? 0.7 : 1.5
+  const dur = rapido ? 0.5 : 0.95
 
   // Peças do símbolo entram de fora para a posição final (montagem).
   // Deslocamentos em unidades do viewBox do símbolo (549 de altura).
@@ -86,7 +86,7 @@ function iniciarPreloader(lenis: Lenis | null): Promise<void> {
   if (bar) tl.to(bar, { scaleX: 1, duration: dur, ease: 'power2.inOut' }, 0)
 
   const fontes = (document.fonts?.ready ?? Promise.resolve()).then(() => undefined)
-  const timeout = new Promise<void>((r) => setTimeout(r, 2200))
+  const timeout = new Promise<void>((r) => setTimeout(r, 1500))
 
   return Promise.all([fontes, Promise.race([timeout, new Promise<void>((r) => tl.eventCallback('onComplete', () => r()))])]).then(
     () =>
@@ -200,7 +200,7 @@ function iniciarCursor() {
    Reveals, split de texto, linhas e contadores
 --------------------------------------------------------------- */
 export function dividirTexto(el: HTMLElement) {
-  const split = SplitText.create(el, { type: 'lines', mask: 'lines', linesClass: 'line', autoSplit: true })
+  const split = SplitText.create(el, { type: 'lines', mask: 'lines', linesClass: 'line', autoSplit: true, aria: 'none' })
   return split
 }
 

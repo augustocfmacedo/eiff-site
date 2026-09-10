@@ -9,8 +9,14 @@ import { readFileSync, existsSync } from 'node:fs'
  */
 function partials(): Plugin {
   const dir = resolve(__dirname, 'src/partials')
+  const analytics = process.env.VITE_ANALYTICS_SRC
+    ? `<script defer data-domain="eiff.com.br" src="${process.env.VITE_ANALYTICS_SRC}"></script>`
+    : ''
+  const verificacao = process.env.VITE_GOOGLE_SITE_VERIFICATION
+    ? `<meta name="google-site-verification" content="${process.env.VITE_GOOGLE_SITE_VERIFICATION}">`
+    : ''
   const render = (html: string, depth = 0): string =>
-    html.replace(/<!--\s*@include\s+([\w-]+)\s*-->/g, (_, nome: string) => {
+    html.replace(/<!--\s*@analytics\s*-->/g, analytics).replace(/<!--\s*@verificacao\s*-->/g, verificacao).replace(/<!--\s*@include\s+([\w-]+)\s*-->/g, (_, nome: string) => {
       const arquivo = resolve(dir, `${nome}.html`)
       if (!existsSync(arquivo)) throw new Error(`Partial não encontrado: ${nome}`)
       const conteudo = readFileSync(arquivo, 'utf8')
