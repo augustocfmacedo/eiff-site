@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://eiff.com.br/</loc><lastmod>2026-09-09</lastmod><priority>1.0</priority></url>
-  <url><loc>https://eiff.com.br/empresa.html</loc><lastmod>2026-09-09</lastmod></url>
-  <url><loc>https://eiff.com.br/engenharia.html</loc><lastmod>2026-09-09</lastmod></url>
-  <url><loc>https://eiff.com.br/fabricacao.html</loc><lastmod>2026-09-09</lastmod></url>
-  <url><loc>https://eiff.com.br/solucoes.html</loc><lastmod>2026-09-09</lastmod></url>
-  <url><loc>https://eiff.com.br/produtos.html</loc><lastmod>2026-09-09</lastmod></url>
-  <url><loc>https://eiff.com.br/projetos.html</loc><lastmod>2026-09-09</lastmod></url>
-  <url><loc>https://eiff.com.br/tecnologia.html</loc><lastmod>2026-09-09</lastmod></url>
-  <url><loc>https://eiff.com.br/contato.html</loc><lastmod>2026-09-09</lastmod></url>
+  <url><loc>https://eiff.com.br/empresa</loc><lastmod>2026-09-09</lastmod></url>
+  <url><loc>https://eiff.com.br/engenharia</loc><lastmod>2026-09-09</lastmod></url>
+  <url><loc>https://eiff.com.br/fabricacao</loc><lastmod>2026-09-09</lastmod></url>
+  <url><loc>https://eiff.com.br/solucoes</loc><lastmod>2026-09-09</lastmod></url>
+  <url><loc>https://eiff.com.br/produtos</loc><lastmod>2026-09-09</lastmod></url>
+  <url><loc>https://eiff.com.br/projetos</loc><lastmod>2026-09-09</lastmod></url>
+  <url><loc>https://eiff.com.br/tecnologia</loc><lastmod>2026-09-09</lastmod></url>
+  <url><loc>https://eiff.com.br/contato</loc><lastmod>2026-09-09</lastmod></url>
+  <url><loc>https://eiff.com.br/galpao-metalico-industrial</loc><lastmod>2026-09-09</lastmod><priority>0.9</priority></url>
+  <url><loc>https://eiff.com.br/galpao-logistico</loc><lastmod>2026-09-09</lastmod><priority>0.9</priority></url>
+  <url><loc>https://eiff.com.br/construcao-de-academias</loc><lastmod>2026-09-09</lastmod><priority>0.9</priority></url>
+  <url><loc>https://eiff.com.br/coberturas-e-mezaninos</loc><lastmod>2026-09-09</lastmod><priority>0.9</priority></url>
+  <url><loc>https://eiff.com.br/estrutura-metalica-goiania</loc><lastmod>2026-09-09</lastmod><priority>0.9</priority></url>
 </urlset>

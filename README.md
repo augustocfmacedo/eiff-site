@@ -14,6 +14,11 @@ Publicação no Netlify: `netlify.toml` já aponta `npm run build` → `dist/`; 
 (`/empresa`, `/engenharia`…) e a 404. O formulário de contato usa Netlify Forms (`name="iniciar-projeto"`); o destino da
 notificação (e-mail) é configurado no painel do Netlify.
 
+## URLs limpas e páginas de demanda
+
+- O build move `dist/<pagina>.html` para `dist/<pagina>/index.html` (`scripts/urls-limpas.mjs`); em dev o plugin resolve `/empresa` para `empresa.html`. Links internos, canonicals e sitemap usam URLs sem extensão; `public/_redirects` faz 301 das antigas `.html`.
+- As cinco páginas de demanda (`galpao-metalico-industrial`, `galpao-logistico`, `construcao-de-academias`, `coberturas-e-mezaninos`, `estrutura-metalica-goiania`) são geradas por `npm run gerar:demanda` a partir do conteúdo em `scripts/gerar-demanda.mjs` (FAQ com dados estruturados). Para alterar o texto, edite o script e gere de novo.
+
 ## Estrutura
 
 - `index.html`, `empresa.html`, `engenharia.html`, `fabricacao.html`, `solucoes.html`, `produtos.html`, `projetos.html`,

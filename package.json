@@ -6,9 +6,10 @@
   "description": "Site institucional da EIFF — engenharia, fabricação e construção industrializada.",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "tsc --noEmit && vite build && node scripts/urls-limpas.mjs",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "gerar:demanda": "node scripts/gerar-demanda.mjs"
   },
   "dependencies": {
     "gsap": "^3.13.0",

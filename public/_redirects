@@ -1,9 +1,26 @@
-/empresa      /empresa.html      200
-/engenharia   /engenharia.html   200
-/fabricacao   /fabricacao.html   200
-/solucoes     /solucoes.html     200
-/produtos     /produtos.html     200
-/projetos     /projetos.html     200
-/tecnologia   /tecnologia.html   200
-/contato      /contato.html      200
-/*            /404.html          404
+# URLs antigas com .html → limpas
+/empresa.html  /empresa  301!
+/engenharia.html  /engenharia  301!
+/fabricacao.html  /fabricacao  301!
+/solucoes.html  /solucoes  301!
+/produtos.html  /produtos  301!
+/projetos.html  /projetos  301!
+/tecnologia.html  /tecnologia  301!
+/contato.html  /contato  301!
+
+# Rotas limpas servidas pelo index.html de cada pasta
+/empresa  /empresa/index.html  200
+/engenharia  /engenharia/index.html  200
+/fabricacao  /fabricacao/index.html  200
+/solucoes  /solucoes/index.html  200
+/produtos  /produtos/index.html  200
+/projetos  /projetos/index.html  200
+/tecnologia  /tecnologia/index.html  200
+/contato  /contato/index.html  200
+/galpao-metalico-industrial  /galpao-metalico-industrial/index.html  200
+/galpao-logistico  /galpao-logistico/index.html  200
+/construcao-de-academias  /construcao-de-academias/index.html  200
+/coberturas-e-mezaninos  /coberturas-e-mezaninos/index.html  200
+/estrutura-metalica-goiania  /estrutura-metalica-goiania/index.html  200
+
+/*  /404.html  404

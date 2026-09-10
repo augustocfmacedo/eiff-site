@@ -22,13 +22,21 @@ function partials(): Plugin {
   return {
     name: 'eiff-partials',
     transformIndexHtml: { order: 'pre', handler: (html) => render(html) },
+    // Em dev, /empresa serve empresa.html (em produção o pós-build cria empresa/index.html).
+    configureServer(server) {
+      server.middlewares.use((req, _res, next) => {
+        const url = (req.url || '').split('?')[0]
+        if (/^\/[a-z0-9-]+$/.test(url) && existsSync(resolve(__dirname, `${url.slice(1)}.html`))) req.url = `${url}.html`
+        next()
+      })
+    },
     handleHotUpdate({ file, server }) {
       if (file.startsWith(dir)) server.ws.send({ type: 'full-reload' })
     },
   }
 }
 
-const paginas = ['index', 'empresa', 'engenharia', 'fabricacao', 'solucoes', 'produtos', 'projetos', 'tecnologia', 'contato', '404']
+const paginas = ['index', 'empresa', 'engenharia', 'fabricacao', 'solucoes', 'produtos', 'projetos', 'tecnologia', 'contato', '404', 'galpao-metalico-industrial', 'galpao-logistico', 'construcao-de-academias', 'coberturas-e-mezaninos', 'estrutura-metalica-goiania']
 
 export default defineConfig({
   plugins: [partials()],
