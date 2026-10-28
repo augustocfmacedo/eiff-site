@@ -1,0 +1,210 @@
+/* =========================================================
+   Simulador de galpões — landing de conversão
+   Usa os tokens de tokens.css e os componentes de components.css.
+   Mobile-first: o padrão é uma coluna; o painel sobe para o lado em telas largas.
+========================================================= */
+
+.lp { padding-top: var(--nav-h); }
+
+/* Abertura ------------------------------------------------ */
+.lp-hero { position: relative; padding: clamp(40px, 7vh, 88px) 0 clamp(32px, 5vh, 56px); overflow: hidden; }
+.lp-hero__grid { display: grid; gap: clamp(28px, 5vw, 56px); align-items: center; }
+.lp-hero .h1 { font-size: clamp(2.1rem, 5.6vw, 4.4rem); max-width: 14em; margin: 20px 0 22px; }
+.lp-hero .lead { max-width: 36em; }
+.lp-hero__provas { display: flex; flex-wrap: wrap; gap: 10px 28px; margin-top: 28px; padding-top: 22px; border-top: 1px solid var(--line); }
+.lp-hero__prova { display: grid; gap: 2px; }
+.lp-hero__prova b { font-family: var(--font-display); font-weight: 500; font-size: clamp(1.1rem, 2vw, 1.5rem); letter-spacing: -.02em; line-height: 1; }
+.lp-hero__prova span { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+
+/* Estrutura do simulador ---------------------------------- */
+.sim-bloco { padding-bottom: clamp(48px, 8vw, 96px); scroll-margin-top: calc(var(--nav-h) + 12px); }
+.sim-grid { display: grid; gap: clamp(20px, 3vw, 36px); align-items: start; }
+
+.sim-painel {
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+  border-radius: var(--radius);
+  padding: clamp(20px, 3.4vw, 36px);
+}
+
+/* Indicador de etapas ------------------------------------- */
+.sim__passos { display: flex; flex-wrap: wrap; gap: 6px 4px; list-style: none; margin: 0 0 8px; padding: 0; }
+.sim__passos li { flex: 1 1 auto; min-width: 0; }
+.sim__passo {
+  width: 100%; text-align: left; padding: 10px 0 0; position: relative;
+  font-family: var(--font-mono); font-size: .62rem; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-3); background: none; border: 0; cursor: pointer;
+  transition: color .3s;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sim__passo::before { content: ""; position: absolute; left: 0; top: 0; width: 100%; height: 2px; background: var(--line-2); }
+.sim__passo.is-ok { color: var(--ink-2); }
+.sim__passo.is-ok::before { background: var(--ink-4); }
+.sim__passo.is-ativa { color: var(--ink); }
+.sim__passo.is-ativa::before { background: var(--brand); }
+.sim__passo:disabled { cursor: default; opacity: .55; }
+.sim__passo:not(:disabled):hover { color: var(--ink); }
+
+.sim__barra { height: 2px; background: var(--line); margin-bottom: 22px; overflow: hidden; }
+.sim__barra::after { content: ""; display: block; height: 100%; background: var(--brand); transform: scaleX(var(--p, 0)); transform-origin: left; transition: transform .6s var(--ease-out); }
+
+.sim__contador { font-family: var(--font-mono); font-size: .62rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+
+/* Etapas --------------------------------------------------- */
+/* Sem JS nenhuma etapa é escondida: o formulário vira uma página só. */
+html.js .sim__etapa[data-oculta] { display: none; }
+.sim__etapa { border: 0; padding: 0; margin: 0; min-width: 0; }
+.sim__etapa + .sim__etapa { margin-top: clamp(32px, 5vw, 56px); }
+.sim--progressivo .sim__etapa + .sim__etapa { margin-top: 0; }
+.sim__legenda { padding: 0; margin: 0 0 6px; }
+.sim__pergunta { font-family: var(--font-display); font-size: clamp(1.35rem, 2.6vw, 2.1rem); line-height: 1.1; letter-spacing: -.02em; margin: 0 0 6px; }
+.sim__pergunta:focus-visible { outline: 2px solid var(--brand-2); outline-offset: 6px; }
+.sim__ajuda { font-size: .92rem; color: var(--ink-2); max-width: 44em; margin-bottom: 22px; }
+
+/* Cartões de opção (radio) --------------------------------- */
+.sim__opcoes { display: grid; gap: 10px; grid-template-columns: 1fr; margin: 0; padding: 0; border: 0; }
+.sim__opcoes--2 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); }
+.sim__opcao { position: relative; display: block; }
+.sim__opcao input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.sim__opcao span {
+  display: grid; gap: 3px; padding: 14px 16px; cursor: pointer;
+  border: 1px solid var(--line-2); border-radius: var(--radius); background: var(--bg-3);
+  transition: border-color .25s, background .25s, transform .25s var(--ease-out);
+}
+.sim__opcao b { font-weight: 500; font-size: .98rem; }
+.sim__opcao small { font-size: .8rem; color: var(--ink-3); }
+.sim__opcao input:hover + span { border-color: var(--ink-4); }
+.sim__opcao input:focus-visible + span { outline: 2px solid var(--brand-2); outline-offset: 3px; }
+.sim__opcao input:checked + span { border-color: var(--brand); background: var(--brand-dim); }
+.sim__opcao input:checked + span b { color: var(--ink); }
+
+/* Campos --------------------------------------------------- */
+.sim__campos { display: grid; gap: 22px; }
+.sim__campos--2 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
+.sim__campo { display: grid; gap: 8px; min-width: 0; }
+.sim__campo > label, .sim__rotulo { font-family: var(--font-mono); font-size: .66rem; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+.sim__campo input[type="text"], .sim__campo input[type="email"], .sim__campo input[type="tel"], .sim__campo input[type="number"], .sim__campo select, .sim__campo textarea {
+  width: 100%; background: transparent; border: 0; border-bottom: 1px solid var(--line-2); color: var(--ink);
+  font: inherit; font-size: 1.05rem; padding: 10px 0; border-radius: 0; outline: none; transition: border-color .3s;
+}
+.sim__campo textarea { resize: vertical; min-height: 86px; }
+.sim__campo input:focus, .sim__campo select:focus, .sim__campo textarea:focus { border-color: var(--brand); }
+.sim__campo input[aria-invalid="true"], .sim__campo select[aria-invalid="true"] { border-color: var(--brand-2); }
+.sim__campo select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--ink-3) 50%), linear-gradient(135deg, var(--ink-3) 50%, transparent 50%); background-position: calc(100% - 14px) 50%, calc(100% - 8px) 50%; background-size: 6px 6px; background-repeat: no-repeat; }
+.sim__campo select option { background: var(--bg-3); }
+
+/* Medida: número grande + deslizador ----------------------- */
+.sim__medida { display: grid; gap: 10px; }
+.sim__medida-topo { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.sim__medida-entrada { display: flex; align-items: baseline; gap: 6px; }
+.sim__medida-entrada input {
+  width: 4.2em; font-family: var(--font-display); font-size: clamp(1.6rem, 3.4vw, 2.3rem); font-weight: 500;
+  letter-spacing: -.02em; text-align: right; padding: 2px 0; border-bottom: 1px solid var(--line-2);
+  background: transparent; color: var(--ink); border-top: 0; border-left: 0; border-right: 0; outline: none;
+  font-variant-numeric: tabular-nums;
+}
+.sim__medida-entrada input::-webkit-outer-spin-button, .sim__medida-entrada input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.sim__medida-entrada input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+.sim__medida-entrada span { font-family: var(--font-mono); font-size: .8rem; color: var(--ink-3); }
+.sim__medida-faixa { font-family: var(--font-mono); font-size: .62rem; letter-spacing: .1em; color: var(--ink-3); text-transform: uppercase; }
+
+.sim__slider { width: 100%; appearance: none; background: transparent; height: 26px; margin: 0; cursor: pointer; }
+.sim__slider::-webkit-slider-runnable-track { height: 2px; background: var(--line-2); }
+.sim__slider::-moz-range-track { height: 2px; background: var(--line-2); }
+.sim__slider::-webkit-slider-thumb { appearance: none; width: 22px; height: 22px; margin-top: -10px; border-radius: 50%; background: var(--brand); border: 2px solid var(--bg-2); }
+.sim__slider::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--brand); border: 2px solid var(--bg-2); }
+.sim__slider:focus-visible { outline: 2px solid var(--brand-2); outline-offset: 4px; }
+
+/* Erros ---------------------------------------------------- */
+.sim__erro { font-size: .82rem; color: #ff9f80; min-height: 0; }
+.sim__erro[hidden] { display: none; }
+
+/* Ações ---------------------------------------------------- */
+.sim__acoes { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: clamp(26px, 4vw, 40px); padding-top: 22px; border-top: 1px solid var(--line); }
+.sim__acoes .btn { flex: 0 0 auto; }
+.sim__nota { font-size: .82rem; color: var(--ink-3); flex: 1 1 14em; min-width: 0; }
+.sim__nota--erro { color: #ff9f80; }
+
+/* Painel de leitura --------------------------------------- */
+.sim-leitura { position: sticky; top: calc(var(--nav-h) + 16px); display: grid; gap: 18px; border: 1px solid var(--line); background: var(--bg-2); border-radius: var(--radius); padding: clamp(18px, 2.6vw, 28px); }
+.sim-leitura__topo { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.sim-leitura__resumo { font-size: .92rem; color: var(--ink-2); }
+.sim-leitura__numeros { display: flex; flex-wrap: wrap; gap: 16px 28px; }
+.sim-leitura__num { display: grid; gap: 2px; }
+.sim-leitura__num b { font-family: var(--font-display); font-weight: 500; font-size: clamp(1.4rem, 3vw, 2rem); letter-spacing: -.02em; line-height: 1; font-variant-numeric: tabular-nums; }
+.sim-leitura__num span { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+
+.sim__croqui { width: 100%; height: auto; display: block; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); }
+.sim__croqui [data-traco] { fill: none; stroke: var(--ink-2); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.sim__croqui [data-traco="fino"] { stroke: var(--ink-4); stroke-width: 1; }
+.sim__croqui [data-traco="solo"] { stroke: var(--ink-4); stroke-width: 1; stroke-dasharray: 3 5; }
+.sim__croqui [data-traco="cota"] { stroke: var(--brand-2); stroke-width: 1; }
+.sim__croqui text { fill: var(--brand-2); font-family: var(--font-mono); font-size: 11px; text-anchor: middle; }
+.sim__croqui #cqTextoPe { text-anchor: start; }
+
+.sim__obs { display: grid; gap: 10px; list-style: none; margin: 0; padding: 0; }
+.sim__obs-item { display: grid; grid-template-columns: 10px 1fr; gap: 10px; font-size: .86rem; color: var(--ink-2); line-height: 1.45; }
+.sim__obs-marca { width: 8px; height: 8px; border-radius: 50%; margin-top: .4em; background: var(--steel); }
+.sim__obs-item[data-nivel="ok"] .sim__obs-marca { background: #5f9e74; }
+.sim__obs-item[data-nivel="atencao"] .sim__obs-marca { background: #c89a19; }
+.sim__obs-item[data-nivel="especial"] .sim__obs-marca { background: var(--brand); }
+.sim__obs-fonte { display: block; font-family: var(--font-mono); font-size: .62rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); margin-top: 3px; }
+.sim__obs-vazio { font-size: .86rem; color: var(--ink-3); }
+
+.sim-leitura__aviso { font-size: .78rem; color: var(--ink-3); border-top: 1px solid var(--line); padding-top: 14px; line-height: 1.5; }
+
+/* Sucesso -------------------------------------------------- */
+.sim__sucesso { border: 1px solid var(--brand-dim); background: var(--brand-dim); border-radius: var(--radius); padding: clamp(22px, 3.4vw, 36px); display: grid; gap: 14px; }
+.sim__sucesso h2 { font-family: var(--font-display); font-size: clamp(1.4rem, 3vw, 2.2rem); letter-spacing: -.02em; line-height: 1.1; }
+.sim__sucesso h2:focus-visible { outline: 2px solid var(--brand-2); outline-offset: 6px; }
+.sim--progressivo.is-sent .sim__etapa, .sim--progressivo.is-sent .sim__acoes, .sim--progressivo.is-sent .sim__passos, .sim--progressivo.is-sent .sim__barra, .sim--progressivo.is-sent .sim__contador { display: none; }
+
+/* Blocos de apoio ------------------------------------------ */
+.lp-passos { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.lp-passo { background: var(--bg); padding: clamp(20px, 3vw, 32px); display: grid; gap: 10px; align-content: start; }
+.lp-passo .idx { font-family: var(--font-mono); font-size: .66rem; letter-spacing: .14em; color: var(--brand-2); }
+.lp-passo h3 { font-family: var(--font-display); font-size: 1.1rem; font-weight: 500; letter-spacing: -.01em; }
+.lp-passo p { font-size: .9rem; color: var(--ink-2); }
+
+.lp-faq { display: grid; gap: 0; border-top: 1px solid var(--line); }
+.lp-faq details { border-bottom: 1px solid var(--line); }
+.lp-faq summary { cursor: pointer; padding: 20px 36px 20px 0; position: relative; font-family: var(--font-display); font-size: clamp(1rem, 1.6vw, 1.2rem); font-weight: 500; letter-spacing: -.01em; list-style: none; }
+.lp-faq summary::-webkit-details-marker { display: none; }
+.lp-faq summary::after { content: ""; position: absolute; right: 6px; top: 50%; width: 11px; height: 11px; margin-top: -8px; border-right: 1.5px solid var(--ink-3); border-bottom: 1.5px solid var(--ink-3); transform: rotate(45deg); transition: transform .3s var(--ease-out); }
+.lp-faq details[open] summary::after { transform: rotate(-135deg); margin-top: -3px; }
+.lp-faq summary:focus-visible { outline: 2px solid var(--brand-2); outline-offset: 3px; }
+.lp-faq p { font-size: .94rem; color: var(--ink-2); max-width: 54em; padding-bottom: 22px; line-height: 1.6; }
+
+.lp-alternativa { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; padding: clamp(20px, 3vw, 30px); border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-2); }
+.lp-alternativa p { font-size: .94rem; color: var(--ink-2); flex: 1 1 18em; }
+.lp-alternativa a { color: var(--ink); border-bottom: 1px solid var(--brand); padding-bottom: 2px; white-space: nowrap; }
+.lp-alternativa a:hover { color: var(--brand-2); }
+
+/* Telas largas --------------------------------------------- */
+@media (min-width: 900px) {
+  .lp-hero__grid { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+  .sim-grid { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+  .sim__opcoes { grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); }
+  .lp-passos { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 899px) {
+  .sim-leitura { position: static; }
+  /* No celular o painel vem depois do formulário, mas o croqui sobe junto da etapa de dimensões. */
+  .sim-grid > .sim-leitura { order: 2; }
+}
+@media (max-width: 560px) {
+  /* A etiqueta some, mas o alvo de toque continua com 24 px (WCAG 2.2 AA). */
+  .sim__passo { font-size: 0; padding-top: 10px; min-height: 24px; }
+  .sim__passo::before { height: 3px; }
+  .lp-hero__provas { gap: 10px 20px; }
+}
+
+/* Movimento reduzido --------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .sim__barra::after, .sim__opcao span, .lp-faq summary::after { transition: none; }
+}
+
+/* Painel embutido na etapa de dimensões (só em tela estreita) ---- */
+.sim-leitura--embutida { margin-top: 24px; background: var(--bg-3); }
+.sim-leitura--embutida .sim-leitura__topo { display: none; }
+.sim-leitura--embutida .sim__croqui { max-height: 210px; }

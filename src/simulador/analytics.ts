@@ -1,0 +1,215 @@
+/**
+ * Analytics do funil do simulador.
+ *
+ * Três regras, nesta ordem:
+ *  1. Nenhum dado pessoal sai daqui. Nome, e-mail, telefone, empresa e o texto
+ *     livre de observação nunca entram num evento — há uma lista fechada de
+ *     chaves permitidas e um teste que a prende.
+ *  2. Consentimento primeiro: respeita Do Not Track e um opt-out local. Sem
+ *     consentimento, nada é enviado e nada é guardado.
+ *  3. Sem cookie. A origem da campanha fica em `sessionStorage`, morre com a aba
+ *     e serve só para o lead saber de onde veio.
+ *
+ * O provedor é o Umami já usado no site (sem cookies). Se ele não tiver
+ * carregado, os eventos simplesmente não acontecem — nunca quebram a tela.
+ */
+
+export interface OrigemCampanha {
+  source?: string
+  medium?: string
+  campaign?: string
+  content?: string
+  term?: string
+  /** Identificador de clique do anúncio (Google/Meta), sem dado pessoal. */
+  clique?: string
+  /** Host de onde o visitante veio, sem caminho nem query. */
+  referencia?: string
+}
+
+const CHAVE_ORIGEM = 'eiff:simulador:origem'
+const CHAVE_OPTOUT = 'eiff:analytics:off'
+const LIMITE_VALOR = 80
+
+/** Mantém só o que é seguro em um valor de campanha e corta o tamanho. */
+function sanear(valor: string | null): string | undefined {
+  if (!valor) return undefined
+  const limpo = valor.trim().replace(/[^\w .:/\-+]/g, '').slice(0, LIMITE_VALOR)
+  return limpo === '' ? undefined : limpo
+}
+
+function semVazios<T extends object>(o: T): T {
+  return Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined && v !== '')) as T
+}
+
+/** Lê os parâmetros de campanha da URL e o host de origem. Função pura. */
+export function capturarOrigem(search: string, referrer = ''): OrigemCampanha {
+  const p = new URLSearchParams(search)
+  let referencia: string | undefined
+  try {
+    referencia = referrer ? sanear(new URL(referrer).hostname) : undefined
+  } catch {
+    referencia = undefined
+  }
+  return semVazios({
+    source: sanear(p.get('utm_source')),
+    medium: sanear(p.get('utm_medium')),
+    campaign: sanear(p.get('utm_campaign')),
+    content: sanear(p.get('utm_content')),
+    term: sanear(p.get('utm_term')),
+    clique: sanear(p.get('gclid') ?? p.get('fbclid') ?? p.get('msclkid')),
+    referencia,
+  })
+}
+
+export const origemVazia = (o: OrigemCampanha): boolean => Object.keys(semVazios(o)).length === 0
+
+/* ---------------------------------------------------------------
+   Consentimento
+--------------------------------------------------------------- */
+
+/**
+ * Sem rastreamento quando o navegador pede Do Not Track ou quando há opt-out
+ * guardado. Qualquer falha de leitura (modo privado, storage bloqueado) também
+ * resulta em não rastrear: falha fechada.
+ */
+export function podeRastrear(janela: Pick<Window, 'navigator' | 'localStorage'> = window): boolean {
+  try {
+    const dnt = (janela.navigator as Navigator & { msDoNotTrack?: string }).doNotTrack
+    if (dnt === '1' || dnt === 'yes') return false
+    return janela.localStorage.getItem(CHAVE_OPTOUT) !== '1'
+  } catch {
+    return false
+  }
+}
+
+export function desativarRastreamento(): void {
+  try {
+    window.localStorage.setItem(CHAVE_OPTOUT, '1')
+    window.sessionStorage.removeItem(CHAVE_ORIGEM)
+  } catch { /* storage indisponível: nada a desativar */ }
+}
+
+/* ---------------------------------------------------------------
+   Origem guardada na sessão
+--------------------------------------------------------------- */
+
+/** Guarda a origem da primeira visita da sessão; visitas seguintes não sobrescrevem. */
+export function guardarOrigem(origem: OrigemCampanha): void {
+  if (!podeRastrear() || origemVazia(origem)) return
+  try {
+    if (window.sessionStorage.getItem(CHAVE_ORIGEM)) return
+    window.sessionStorage.setItem(CHAVE_ORIGEM, JSON.stringify(origem))
+  } catch { /* sem storage: a origem só vale para esta página */ }
+}
+
+export function lerOrigem(): OrigemCampanha {
+  if (!podeRastrear()) return {}
+  try {
+    const bruto = window.sessionStorage.getItem(CHAVE_ORIGEM)
+    return bruto ? (JSON.parse(bruto) as OrigemCampanha) : {}
+  } catch {
+    return {}
+  }
+}
+
+/** Uma linha legível da origem, para acompanhar o lead no e-mail. */
+export function origemEmTexto(o: OrigemCampanha): string {
+  const partes = [
+    o.source && `origem: ${o.source}`,
+    o.medium && `mídia: ${o.medium}`,
+    o.campaign && `campanha: ${o.campaign}`,
+    o.content && `anúncio: ${o.content}`,
+    o.term && `termo: ${o.term}`,
+    o.clique && `clique: ${o.clique}`,
+    o.referencia && `veio de: ${o.referencia}`,
+  ].filter(Boolean)
+  return partes.length ? partes.join(' · ') : 'direto'
+}
+
+/* ---------------------------------------------------------------
+   Eventos do funil
+--------------------------------------------------------------- */
+
+export type EventoSimulador =
+  | 'simulador_inicio'
+  | 'simulador_etapa'
+  | 'simulador_etapa_erro'
+  | 'simulador_resumo'
+  | 'simulador_envio'
+  | 'simulador_envio_erro'
+  | 'simulador_contato_alternativo'
+
+/**
+ * Lista FECHADA de propriedades que podem acompanhar um evento. Qualquer outra
+ * chave é descartada. É isto que impede dado pessoal de vazar para o analytics.
+ */
+export const CHAVES_PERMITIDAS = [
+  'etapa',
+  'indice',
+  'uso',
+  'faixa_area',
+  'vao',
+  'pe_direito',
+  'cobertura',
+  'fechamento',
+  'piso',
+  'escopo',
+  'terreno',
+  'projeto',
+  'prazo',
+  'uf',
+  'estudo_especifico',
+  'campo',
+  'canal',
+  'origem',
+  'midia',
+  'campanha',
+] as const
+
+export type ChavePermitida = (typeof CHAVES_PERMITIDAS)[number]
+export type PropsEvento = Partial<Record<ChavePermitida, string | number | boolean>>
+
+/** Remove qualquer chave fora da lista e encurta valores de texto. */
+export function filtrarProps(props: Record<string, unknown>): PropsEvento {
+  const saida: Record<string, string | number | boolean> = {}
+  for (const chave of CHAVES_PERMITIDAS) {
+    const v = props[chave]
+    if (v === undefined || v === null || v === '') continue
+    saida[chave] = typeof v === 'string' ? v.slice(0, LIMITE_VALOR) : typeof v === 'number' || typeof v === 'boolean' ? v : String(v).slice(0, LIMITE_VALOR)
+  }
+  return saida as PropsEvento
+}
+
+/** Faixa de área em vez do número exato: suficiente para análise, menos específico. */
+export function faixaDeArea(area: number | undefined): string | undefined {
+  if (area === undefined || !Number.isFinite(area)) return undefined
+  if (area < 500) return 'ate-500'
+  if (area < 1000) return '500-1000'
+  if (area < 2500) return '1000-2500'
+  if (area < 5000) return '2500-5000'
+  if (area < 10000) return '5000-10000'
+  return 'acima-10000'
+}
+
+/** UF a partir de "Cidade, UF" ou "Cidade/UF". Só a sigla entra no evento. */
+export function ufDeCidade(cidade: string | undefined): string | undefined {
+  if (!cidade) return undefined
+  const m = cidade.toUpperCase().match(/[,/\s-]\s*([A-Z]{2})\s*$/)
+  return m ? m[1] : undefined
+}
+
+interface Umami {
+  track: (evento: string, props?: Record<string, unknown>) => void
+}
+
+function provedor(): Umami | undefined {
+  return (window as Window & { umami?: Umami }).umami
+}
+
+/** Envia um evento, se houver consentimento e provedor. Nunca lança. */
+export function registrar(evento: EventoSimulador, props: Record<string, unknown> = {}): void {
+  if (!podeRastrear()) return
+  try {
+    provedor()?.track(evento, filtrarProps(props))
+  } catch { /* analytics nunca quebra a tela */ }
+}
