@@ -47,6 +47,36 @@ describe('formulário detectável pelo Netlify', () => {
   })
 })
 
+/**
+ * SIM-01C, decisão 1: número no topo só entra com obra identificada.
+ *
+ * O que havia ali eram cinco números soltos. Dois deles — pé-direito de 12 m e
+ * piso de 7 t/m² — têm lastro no complexo de Aparecida de Goiânia, e "100%
+ * parafusado" aparece ligado a cinco projetos em /projetos/; o que faltava era
+ * a atribuição NESTA página. Esta prova impede que volte a faltar.
+ */
+describe('provas do topo', () => {
+  const topo = html.slice(html.indexOf('lp-hero__provas'), html.indexOf('</section>'))
+
+  it('cada número nomeia a obra que o sustenta', () => {
+    const provas = [...topo.matchAll(/<div class="lp-hero__prova">([\s\S]*?)<\/div>/g)].map((m) => m[1])
+    expect(provas.length).toBeGreaterThan(0)
+    for (const p of provas) {
+      expect(p, p).toMatch(/<small>[^<]{8,}<\/small>/)
+    }
+  })
+
+  it('os indicadores sem obra nomeada saíram do topo', () => {
+    for (const fora of ['7 t/m²', 'Ligações parafusadas', 'Pé-direito executado']) {
+      expect(topo, fora).not.toContain(fora)
+    }
+  })
+
+  it('os campos de medida não afirmam execução sem fonte', () => {
+    expect(html).not.toMatch(/executado até \d+ m/)
+  })
+})
+
 describe('dados pessoais', () => {
   it('a etapa de contato informa a finalidade e aponta a política', () => {
     const contato = html.slice(html.indexOf('data-etapa="contato"'))
@@ -60,6 +90,20 @@ describe('dados pessoais', () => {
       expect(politica, tema).toContain(tema)
     }
     expect(politica).toMatch(/transferência internacional/i)
+  })
+
+  /**
+   * SIM-01C, decisão 2: nada de dado societário fictício ou presumido. Enquanto
+   * razão social e CNPJ não forem confirmados, a página identifica o controlador
+   * por nome, endereço e canal de contato — e nenhum número inventado entra.
+   */
+  it('a política não publica dado societário presumido', () => {
+    const politica = readFileSync(resolve(RAIZ, 'privacidade.html'), 'utf8')
+    // Qualquer coisa com cara de CNPJ, real ou de exemplo.
+    expect(politica).not.toMatch(/\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}/)
+    for (const marca of ['XX.XXX', '00.000.000', 'LTDA', 'S.A.', '[inserir', 'a definir']) {
+      expect(politica.toUpperCase(), marca).not.toContain(marca.toUpperCase())
+    }
   })
 
   it('a política é alcançável do rodapé, que a landing inclui', () => {

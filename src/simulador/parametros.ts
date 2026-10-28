@@ -243,7 +243,7 @@ export function lerConfiguracao(c: ConfiguracaoGalpao): Observacao[] {
     if (c.peDireito <= r.peDireitoExecutado.valor) {
       obs.push({ id: 'pe-direito', nivel: 'ok', texto: `Pé-direito de ${formatarMedida(c.peDireito)} m dentro dos ${r.peDireitoExecutado.valor} m já executados.`, fonte: r.peDireitoExecutado.fonte })
     } else {
-      obs.push({ id: 'pe-direito', nivel: 'especial', texto: `Pé-direito de ${formatarMedida(c.peDireito)} m acima dos ${r.peDireitoExecutado.valor} m já executados. Entra como estudo específico.` })
+      obs.push({ id: 'pe-direito', nivel: 'especial', texto: `Pé-direito de ${formatarMedida(c.peDireito)} m acima dos ${r.peDireitoExecutado.valor} m já executados. Entra como estudo específico.`, fonte: r.peDireitoExecutado.fonte })
     }
   }
 

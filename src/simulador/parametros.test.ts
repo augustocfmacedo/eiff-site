@@ -128,3 +128,36 @@ describe('formatação e resumo', () => {
     expect(nomeOpcao(USOS, 'agro')).toBe('Agro')
   })
 })
+
+/**
+ * SIM-01C, decisão 1: nenhuma afirmação sobre obra executada circula sem a obra.
+ *
+ * Vale para a leitura técnica inteira, não só para o topo da página: é esta
+ * leitura que vai no campo `leitura` do lead e chega ao comercial.
+ */
+describe('toda afirmação de obra executada nomeia a obra', () => {
+  const EXECUCAO = /executou|executad/i
+
+  it('nas observações que a configuração gera', () => {
+    const configuracoes = [
+      { uso: 'logistico', vao: 32, comprimento: 90, peDireito: 12, piso: 'pesado', cidade: 'Goiânia, GO' },
+      { uso: 'industrial', vao: 40, comprimento: 60, peDireito: 14, piso: 'medio', cidade: 'Goiânia, GO' },
+      { uso: 'logistico', vao: 20, comprimento: 300, peDireito: 10, piso: 'leve', cidade: 'Goiânia, GO' },
+    ] as const
+
+    for (const c of configuracoes) {
+      for (const o of lerConfiguracao(c)) {
+        if (EXECUCAO.test(o.texto)) {
+          expect(o.fonte, `"${o.texto}" sem obra identificada`).toBeTruthy()
+        }
+      }
+    }
+  })
+
+  it('e cada referência do catálogo declara a sua', () => {
+    for (const [chave, r] of Object.entries(REFERENCIAS)) {
+      expect(r.fonte, chave).toBeTruthy()
+      expect(r.fonte.length, chave).toBeGreaterThan(8)
+    }
+  })
+})

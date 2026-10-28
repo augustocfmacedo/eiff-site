@@ -361,7 +361,10 @@ export function iniciarSimulador(raiz: Document | HTMLElement = document, opcoes
       `Prazo: ${nomeOpcao(PRAZOS, c.prazo)}`,
       `Uso: ${nomeOpcao(USOS, c.uso)}`,
     ].join(' · '))
-    definir('leitura', obs.map((o) => `[${o.nivel}] ${o.texto}`).join(' | '))
+    // A fonte acompanha cada afirmação também no lead. No painel ela já aparecia
+    // sob a linha; aqui era descartada, e a mesma frase chegava ao comercial sem
+    // a obra que a sustenta — que é exatamente o que não pode acontecer.
+    definir('leitura', obs.map((o) => `[${o.nivel}] ${o.texto}${o.fonte ? ` (${o.fonte})` : ''}`).join(' | '))
     definir('estudo_especifico', exigeEstudoEspecifico(obs) ? 'sim' : 'nao')
     definir('origem', origemEmTexto(origem))
   }

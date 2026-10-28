@@ -28,12 +28,12 @@
           <p class="lead">Informe uso, dimensões e fechamento. A EIFF compara a sua configuração com os galpões que já fabricou e montou, e devolve um estudo preliminar com escopo e cronograma.</p>
           <p class="body" style="margin-top:18px">Leva cerca de um minuto. Sem compromisso e sem custo.</p>
         </div>
+        <!-- Cada número nomeia a obra que o sustenta. Número sem obra não entra:
+             é a regra do site, e era o que faltava aqui. -->
         <div class="lp-hero__provas">
-          <div class="lp-hero__prova"><b>32 m</b><span>Vão executado</span></div>
-          <div class="lp-hero__prova"><b>12 m</b><span>Pé-direito executado</span></div>
-          <div class="lp-hero__prova"><b>7 t/m²</b><span>Piso industrial</span></div>
-          <div class="lp-hero__prova"><b>65 dias</b><span>Fundação ao fechamento</span></div>
-          <div class="lp-hero__prova"><b>100%</b><span>Ligações parafusadas</span></div>
+          <div class="lp-hero__prova"><b>32 m</b><span>Vão livre executado</span><small>Complexo logístico · Aparecida de Goiânia</small></div>
+          <div class="lp-hero__prova"><b>3.600 m²</b><span>Complexo de três galpões</span><small>Aparecida de Goiânia</small></div>
+          <div class="lp-hero__prova"><b>65 dias</b><span>Fundação ao fechamento</span><small>Smart Fit · Cabo Frio, RJ</small></div>
         </div>
       </div>
     </section>
@@ -97,7 +97,7 @@
                     <span class="sim__medida-entrada"><input id="vao" name="vao" type="number" inputmode="decimal" min="6" max="60" step="1" value="25" aria-describedby="vaoAjuda"><span>m</span></span>
                   </div>
                   <input class="sim__slider" type="range" min="6" max="60" step="1" value="25" data-espelho="vao" aria-label="Vão livre em metros" tabindex="-1">
-                  <p class="sim__medida-faixa" id="vaoAjuda">De 6 a 60 m · executado até 32 m</p>
+                  <p class="sim__medida-faixa" id="vaoAjuda">De 6 a 60 m</p>
                   <p class="sim__erro" data-erro="vao" role="alert" hidden></p>
                 </div>
 
@@ -117,7 +117,7 @@
                     <span class="sim__medida-entrada"><input id="peDireito" name="peDireito" type="number" inputmode="decimal" min="3" max="20" step="0.5" value="8" aria-describedby="peAjuda"><span>m</span></span>
                   </div>
                   <input class="sim__slider" type="range" min="3" max="20" step="0.5" value="8" data-espelho="peDireito" aria-label="Pé-direito em metros" tabindex="-1">
-                  <p class="sim__medida-faixa" id="peAjuda">De 3 a 20 m · executado até 12 m</p>
+                  <p class="sim__medida-faixa" id="peAjuda">De 3 a 20 m</p>
                   <p class="sim__erro" data-erro="peDireito" role="alert" hidden></p>
                 </div>
               </div>
