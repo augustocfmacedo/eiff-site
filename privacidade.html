@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <!-- @include head -->
+  <title>Política de Privacidade | EIFF</title>
+  <meta name="description" content="Como a EIFF trata os dados pessoais informados no site: o que é coletado, para quê, com quem é compartilhado, por quanto tempo fica e como exercer seus direitos.">
+  <link rel="canonical" href="https://eiff.com.br/privacidade/">
+  <meta name="robots" content="index,follow">
+  <meta property="og:title" content="Política de Privacidade | EIFF">
+  <meta property="og:url" content="https://eiff.com.br/privacidade/">
+  <script type="module" src="/src/page.ts"></script>
+</head>
+<body data-page="privacidade">
+  <!-- @include nav -->
+  <main id="conteudo">
+
+    <section class="page-hero" style="padding-bottom:0">
+      <div class="bg-grid" aria-hidden="true"></div>
+      <div class="wrap">
+        <div class="page-hero__grid">
+          <div>
+            <span class="eyebrow" data-reveal>Privacidade</span>
+            <h1 class="h1" data-split>Como a EIFF trata seus dados.</h1>
+            <p class="lead" data-reveal>Esta página vale para o site eiff.com.br. Está escrita para ser lida, não para ser cumprida de olhos fechados: se algo aqui não estiver claro, escreva para contato@eiff.com.br.</p>
+          </div>
+          <div class="page-hero__aside" data-reveal>
+            <div><span>Encarregado de dados</span><strong><a href="mailto:contato@eiff.com.br">contato@eiff.com.br</a></strong></div>
+            <div><span>Última atualização</span><strong>28 de outubro de 2026</strong></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap split">
+        <div>
+          <span class="eyebrow">Quem é o controlador</span>
+        </div>
+        <div class="prosa">
+          <!-- PENDENTE ANTES DE PUBLICAR: inserir razão social e CNPJ da EIFF nesta
+               linha. A LGPD exige que o controlador seja identificável; nome
+               fantasia e canal de contato são o mínimo, razão social e CNPJ são o
+               correto. Não foram inseridos aqui porque não me foram informados. -->
+          <p class="body">O controlador dos dados é a <strong>EIFF</strong>, com fábrica na Rodovia GO-080, km 8, em Goiânia, Goiás. O canal para qualquer assunto de privacidade — pedidos, dúvidas e reclamações — é <a href="mailto:contato@eiff.com.br">contato@eiff.com.br</a>.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="background:var(--bg-2)">
+      <div class="wrap split">
+        <div>
+          <span class="eyebrow">O que é coletado</span>
+          <h2 class="h2" style="margin-top:22px">Só o que você digita, e o mínimo que o site precisa.</h2>
+        </div>
+        <div class="prosa">
+          <h3>Quando você preenche um formulário</h3>
+          <p class="body">Nos formulários <em>Iniciar um projeto</em> e <em>Simulador de galpão</em>, a EIFF recebe o que você informa: nome, e-mail, telefone e empresa, quando preenchidos, e os dados do empreendimento — uso, vão, comprimento, pé-direito, cobertura, fechamento, piso, escopo, cidade e estado da obra, situação do terreno, projeto existente, prazo e as observações que você escrever.</p>
+          <p class="body">Junto com o envio segue também a origem da sua visita: de que campanha ou site você veio, e o identificador de clique do anúncio, quando houver. Isso não identifica você — serve para a EIFF saber quais anúncios trazem projetos reais e parar de pagar pelos que não trazem.</p>
+
+          <h3>Quando você só navega</h3>
+          <p class="body">O site usa o <strong>Umami</strong> para medir audiência. Ele não instala cookie, não cria identificador permanente e não acompanha você por outros sites: registra página, origem do acesso, país, tipo de dispositivo e tamanho de tela, de forma agregada.</p>
+          <p class="body">No simulador, a origem da campanha fica guardada no <code>sessionStorage</code> do seu navegador — some quando você fecha a aba — apenas para acompanhar o lead caso você navegue por outras páginas antes de enviar.</p>
+
+          <h3>O que a EIFF não faz</h3>
+          <p class="body">Não há cookie de publicidade, pixel de rede social, remarketing nem venda ou cessão de dados a terceiros para fins comerciais.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap split">
+        <div>
+          <span class="eyebrow">Para quê, e com que base</span>
+          <h2 class="h2" style="margin-top:22px">Responder ao que você pediu.</h2>
+        </div>
+        <div class="prosa">
+          <p class="body">Os dados dos formulários são usados para <strong>analisar a sua solicitação e responder com estudo preliminar e proposta</strong>, e para o contato comercial decorrente dela. Nada mais.</p>
+          <p class="body">A base legal é o art. 7º, V da LGPD — <em>procedimentos preliminares relacionados a contrato, a pedido do titular</em>. Em outras palavras: você pediu um estudo, e a EIFF precisa dos seus dados para entregá-lo. Por isso não existe caixa de consentimento no formulário: consentimento não é a base correta aqui, e pedi-lo daria a falsa impressão de que a recusa impediria o tratamento que você mesmo solicitou.</p>
+          <p class="body">A medição de audiência se apoia no legítimo interesse (art. 7º, IX), limitada a dados agregados e sem perfil individual. Se preferir ficar de fora, o site respeita o <em>Do Not Track</em> do navegador: com ele ligado, nada é medido nem guardado.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="background:var(--bg-2)">
+      <div class="wrap split">
+        <div>
+          <span class="eyebrow">Com quem é compartilhado</span>
+          <h2 class="h2" style="margin-top:22px">Três fornecedores, cada um com um papel.</h2>
+        </div>
+        <div class="prosa">
+          <p class="body"><strong>Netlify</strong> hospeda o site e recebe os envios de formulário. Os dados ficam armazenados nos servidores dele e são encaminhados por e-mail à EIFF.</p>
+          <p class="body"><strong>Umami Cloud</strong> processa a medição de audiência, sem cookie e sem dado pessoal.</p>
+          <p class="body"><strong>Google Fonts</strong> entrega as fontes tipográficas. Ao carregar uma página, seu navegador faz uma requisição aos servidores do Google, que recebem o endereço IP — como acontece com qualquer recurso externo de qualquer site.</p>
+          <p class="body">Os três operam fora do Brasil, o que caracteriza transferência internacional. A EIFF não compartilha seus dados com nenhum outro terceiro, e não os usa para formar perfil de comportamento.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap split">
+        <div>
+          <span class="eyebrow">Por quanto tempo</span>
+        </div>
+        <div class="prosa">
+          <!-- PENDENTE ANTES DE PUBLICAR: confirmar o prazo de 24 meses com a
+               diretoria. É um prazo razoável para obra industrial, em que o ciclo
+               de decisão é longo, mas é decisão da empresa, não minha. -->
+          <p class="body">Solicitações que não viram projeto são eliminadas em até <strong>24 meses</strong> do último contato — prazo escolhido porque o ciclo de decisão de uma obra industrial costuma passar de um ano. Havendo contrato, os dados ficam pelo prazo exigido pela legislação civil, fiscal e trabalhista aplicável. Você pode pedir a eliminação antes disso a qualquer momento.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" style="background:var(--bg-2)">
+      <div class="wrap split">
+        <div>
+          <span class="eyebrow">Seus direitos</span>
+          <h2 class="h2" style="margin-top:22px">O que você pode pedir, e como.</h2>
+        </div>
+        <div class="prosa">
+          <p class="body">A LGPD garante a você: confirmação de que existe tratamento; acesso aos dados; correção do que estiver incompleto ou errado; anonimização, bloqueio ou eliminação do que for desnecessário ou excessivo; portabilidade; informação sobre com quem a EIFF compartilhou; e oposição a tratamento feito com base em legítimo interesse.</p>
+          <p class="body">Para exercer qualquer um deles, escreva para <a href="mailto:contato@eiff.com.br">contato@eiff.com.br</a>. A EIFF responde em até 15 dias. Se a resposta não resolver, você pode reclamar à <strong>ANPD</strong>.</p>
+          <p class="body">Para sair da medição de audiência, ligue o <em>Do Not Track</em> no seu navegador — o site o respeita em todas as páginas.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap split">
+        <div>
+          <span class="eyebrow">Segurança e mudanças</span>
+        </div>
+        <div class="prosa">
+          <p class="body">O site é servido inteiramente por HTTPS e os envios trafegam criptografados. O acesso aos leads é restrito à equipe comercial e de engenharia da EIFF.</p>
+          <p class="body">Quando esta política mudar, a data de atualização no topo muda junto. Alterações relevantes são sinalizadas na própria página.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+  <!-- @include footer -->
+</body>
+</html>

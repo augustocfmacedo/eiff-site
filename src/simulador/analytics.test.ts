@@ -36,7 +36,37 @@ describe('consentimento', () => {
 describe('captura de origem', () => {
   it('lê os parâmetros de campanha', () => {
     const o = capturarOrigem('?utm_source=google&utm_medium=cpc&utm_campaign=galpao-go&gclid=abc123', 'https://www.google.com/search?q=galpao')
-    expect(o).toEqual({ source: 'google', medium: 'cpc', campaign: 'galpao-go', clique: 'abc123', referencia: 'www.google.com' })
+    expect(o).toEqual({
+      source: 'google', medium: 'cpc', campaign: 'galpao-go',
+      clique: 'abc123', cliquePlataforma: 'google', referencia: 'www.google.com',
+    })
+  })
+
+  /**
+   * O corte em 80 caracteres valia também para o identificador de clique, e um
+   * `gclid` real passa disso. Truncado, ele não serve para a importação de
+   * conversão offline — que é o único jeito de medir o retorno do anúncio sem
+   * instalar tag nem cookie no site.
+   */
+  it('não trunca o identificador de clique', () => {
+    const gclid = 'EAIaIQobChMI' + 'a1B2c3D4e5'.repeat(8) // 92 caracteres
+    expect(gclid.length).toBeGreaterThan(80)
+    expect(capturarOrigem(`?gclid=${gclid}`).clique).toBe(gclid)
+  })
+
+  it('diz de qual plataforma veio o clique, em ordem de precedência', () => {
+    expect(capturarOrigem('?gclid=g1')).toMatchObject({ clique: 'g1', cliquePlataforma: 'google' })
+    expect(capturarOrigem('?wbraid=w1')).toMatchObject({ clique: 'w1', cliquePlataforma: 'google' })
+    expect(capturarOrigem('?gbraid=b1')).toMatchObject({ clique: 'b1', cliquePlataforma: 'google' })
+    expect(capturarOrigem('?fbclid=f1')).toMatchObject({ clique: 'f1', cliquePlataforma: 'meta' })
+    expect(capturarOrigem('?msclkid=m1')).toMatchObject({ clique: 'm1', cliquePlataforma: 'microsoft' })
+    // Com mais de um, o do Google vence: é o que sustenta a importação offline.
+    expect(capturarOrigem('?fbclid=f1&gclid=g1').cliquePlataforma).toBe('google')
+  })
+
+  it('a linha de origem identifica a plataforma do clique', () => {
+    expect(origemEmTexto(capturarOrigem('?gclid=abc'))).toContain('clique google: abc')
+    expect(origemEmTexto(capturarOrigem('?fbclid=abc'))).toContain('clique meta: abc')
   })
 
   it('ignora o que não veio', () => {

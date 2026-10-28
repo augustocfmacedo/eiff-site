@@ -14,14 +14,19 @@
  * carregado, os eventos simplesmente não acontecem — nunca quebram a tela.
  */
 
+/** Plataforma que gerou o identificador de clique. */
+export type PlataformaClique = 'google' | 'meta' | 'microsoft'
+
 export interface OrigemCampanha {
   source?: string
   medium?: string
   campaign?: string
   content?: string
   term?: string
-  /** Identificador de clique do anúncio (Google/Meta), sem dado pessoal. */
+  /** Identificador de clique do anúncio, íntegro. Sem dado pessoal. */
   clique?: string
+  /** De qual plataforma veio o identificador acima. */
+  cliquePlataforma?: PlataformaClique
   /** Host de onde o visitante veio, sem caminho nem query. */
   referencia?: string
 }
@@ -30,11 +35,49 @@ const CHAVE_ORIGEM = 'eiff:simulador:origem'
 const CHAVE_OPTOUT = 'eiff:analytics:off'
 const LIMITE_VALOR = 80
 
+/**
+ * O identificador de clique tem limite próprio, e maior.
+ *
+ * Um `gclid` passa de 80 caracteres com folga, e `gclid` truncado é `gclid`
+ * inútil: o Google recusa a importação de conversão offline, que é justamente
+ * o que permite medir o retorno do anúncio sem instalar tag nem cookie no site.
+ * Cortar aqui custava a medição inteira da campanha.
+ */
+const LIMITE_CLIQUE = 300
+
+/**
+ * Parâmetros de clique, em ordem de precedência, com a plataforma de origem.
+ *
+ * Guardar a plataforma junto importa: `gclid` e `fbclid` vão para sistemas
+ * diferentes, e o comercial não deveria ter de adivinhar pelo formato da
+ * cadeia qual importação usar.
+ *
+ * `wbraid` e `gbraid` são os identificadores que o Google usa quando o
+ * visitante está no iOS sem permissão de rastreamento; sem eles, boa parte do
+ * tráfego de celular chegaria sem atribuição nenhuma.
+ */
+const PARAMS_CLIQUE: readonly (readonly [string, PlataformaClique])[] = [
+  ['gclid', 'google'],
+  ['wbraid', 'google'],
+  ['gbraid', 'google'],
+  ['fbclid', 'meta'],
+  ['msclkid', 'microsoft'],
+] as const
+
 /** Mantém só o que é seguro em um valor de campanha e corta o tamanho. */
-function sanear(valor: string | null): string | undefined {
+function sanear(valor: string | null, limite = LIMITE_VALOR): string | undefined {
   if (!valor) return undefined
-  const limpo = valor.trim().replace(/[^\w .:/\-+]/g, '').slice(0, LIMITE_VALOR)
+  const limpo = valor.trim().replace(/[^\w .:/\-+]/g, '').slice(0, limite)
   return limpo === '' ? undefined : limpo
+}
+
+/** Primeiro identificador de clique presente na URL, com a plataforma. */
+export function lerClique(p: URLSearchParams): Pick<OrigemCampanha, 'clique' | 'cliquePlataforma'> {
+  for (const [chave, plataforma] of PARAMS_CLIQUE) {
+    const valor = sanear(p.get(chave), LIMITE_CLIQUE)
+    if (valor) return { clique: valor, cliquePlataforma: plataforma }
+  }
+  return {}
 }
 
 function semVazios<T extends object>(o: T): T {
@@ -56,7 +99,7 @@ export function capturarOrigem(search: string, referrer = ''): OrigemCampanha {
     campaign: sanear(p.get('utm_campaign')),
     content: sanear(p.get('utm_content')),
     term: sanear(p.get('utm_term')),
-    clique: sanear(p.get('gclid') ?? p.get('fbclid') ?? p.get('msclkid')),
+    ...lerClique(p),
     referencia,
   })
 }
@@ -120,7 +163,7 @@ export function origemEmTexto(o: OrigemCampanha): string {
     o.campaign && `campanha: ${o.campaign}`,
     o.content && `anúncio: ${o.content}`,
     o.term && `termo: ${o.term}`,
-    o.clique && `clique: ${o.clique}`,
+    o.clique && `clique ${o.cliquePlataforma ?? 'desconhecido'}: ${o.clique}`,
     o.referencia && `veio de: ${o.referencia}`,
   ].filter(Boolean)
   return partes.length ? partes.join(' · ') : 'direto'

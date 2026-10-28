@@ -37,7 +37,7 @@ function partials(): Plugin {
   }
 }
 
-const paginas = ['index', 'empresa', 'engenharia', 'fabricacao', 'solucoes', 'produtos', 'projetos', 'tecnologia', 'contato', '404', 'galpao-metalico-industrial', 'galpao-logistico', 'construcao-de-academias', 'coberturas-e-mezaninos', 'estrutura-metalica-goiania', 'simular-galpao']
+const paginas = ['index', 'empresa', 'engenharia', 'fabricacao', 'solucoes', 'produtos', 'projetos', 'tecnologia', 'contato', '404', 'galpao-metalico-industrial', 'galpao-logistico', 'construcao-de-academias', 'coberturas-e-mezaninos', 'estrutura-metalica-goiania', 'simular-galpao', 'privacidade', 'obrigado']
 
 export default defineConfig({
   plugins: [partials()],

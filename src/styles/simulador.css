@@ -115,9 +115,17 @@ html.js .sim__etapa[data-oculta] { display: none; }
 .sim__slider::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--brand); border: 2px solid var(--bg-2); }
 .sim__slider:focus-visible { outline: 2px solid var(--brand-2); outline-offset: 4px; }
 
+/* `hidden` vale mais que `display` ------------------------- */
+/* `[hidden]` é regra do navegador com especificidade zero: qualquer `display`
+   declarado depois a vence, em silêncio. Já tinha sido contornado caso a caso
+   em `.sim__erro`, e voltava a acontecer nos botões de ação e no bloco de
+   sucesso — os três botões e a mensagem "sua configuração chegou à engenharia"
+   apareciam desde a etapa 1, antes de qualquer envio. Uma regra só encerra a
+   classe inteira do defeito. */
+.lp [hidden] { display: none !important; }
+
 /* Erros ---------------------------------------------------- */
 .sim__erro { font-size: .82rem; color: #ff9f80; min-height: 0; }
-.sim__erro[hidden] { display: none; }
 
 /* Ações ---------------------------------------------------- */
 .sim__acoes { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: clamp(26px, 4vw, 40px); padding-top: 22px; border-top: 1px solid var(--line); }

@@ -10,7 +10,8 @@ import { MOLDURA_PADRAO, desenharPortico } from './croqui'
 import { ETAPAS, estadoInicial, validarEtapa } from './fluxo'
 import { COBERTURAS, ESCOPOS, FECHAMENTOS, PISOS, PRAZOS, PROJETOS, TERRENOS, USOS } from './parametros'
 
-const html = readFileSync(resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', 'simular-galpao.html'), 'utf8')
+const RAIZ = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
+const html = readFileSync(resolve(RAIZ, 'simular-galpao.html'), 'utf8')
 const atributo = (re: RegExp) => [...html.matchAll(re)].map((m) => m[1])
 
 describe('formulário detectável pelo Netlify', () => {
@@ -29,6 +30,42 @@ describe('formulário detectável pelo Netlify', () => {
     for (const campo of ['area', 'resumo', 'especificacao', 'leitura', 'estudo_especifico', 'origem']) {
       expect(html, campo).toMatch(new RegExp(`<input type="hidden" name="${campo}"`))
     }
+  })
+
+  /**
+   * Sem JavaScript o navegador faz o POST nativo e o Netlify redireciona para o
+   * `action`. Apontado para a própria página, o visitante voltava ao formulário
+   * em branco, sem nenhum sinal de que o envio funcionou.
+   */
+  it('sem JavaScript, o envio termina numa página de confirmação', () => {
+    expect(html).toContain('action="/obrigado/"')
+    expect(html).not.toContain('action="/simular-galpao/"')
+    const confirmacao = readFileSync(resolve(RAIZ, 'obrigado.html'), 'utf8')
+    expect(confirmacao).toContain('Sua configuração chegou à engenharia')
+    // Página de confirmação não entra na busca.
+    expect(confirmacao).toMatch(/name="robots" content="noindex/)
+  })
+})
+
+describe('dados pessoais', () => {
+  it('a etapa de contato informa a finalidade e aponta a política', () => {
+    const contato = html.slice(html.indexOf('data-etapa="contato"'))
+    expect(contato).toContain('href="/privacidade/"')
+    expect(contato).toMatch(/LGPD art\. 7º, V/)
+  })
+
+  it('a política de privacidade existe e cobre o que o site realmente faz', () => {
+    const politica = readFileSync(resolve(RAIZ, 'privacidade.html'), 'utf8')
+    for (const tema of ['Netlify', 'Umami', 'Google Fonts', 'ANPD', 'LGPD', 'contato@eiff.com.br']) {
+      expect(politica, tema).toContain(tema)
+    }
+    expect(politica).toMatch(/transferência internacional/i)
+  })
+
+  it('a política é alcançável do rodapé, que a landing inclui', () => {
+    const rodape = readFileSync(resolve(RAIZ, 'src', 'partials', 'footer.html'), 'utf8')
+    expect(rodape).toContain('href="/privacidade/"')
+    expect(html).toContain('@include footer')
   })
 })
 
