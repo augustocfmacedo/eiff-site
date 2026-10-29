@@ -2,7 +2,7 @@
  * Guardas da página: o HTML precisa continuar funcionando sem JavaScript e
  * precisa expor ao Netlify Forms todos os campos que a tela preenche.
  */
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
@@ -79,6 +79,15 @@ describe('provas do topo', () => {
 
 describe('dados pessoais', () => {
   const politica = readFileSync(resolve(RAIZ, 'privacidade.html'), 'utf8')
+
+  /**
+   * SIM-01G, condição 3: o procedimento operacional de privacidade é interno e
+   * não mora neste repositório, que é público. O que fica aqui é só o contrato
+   * de que a página depende — a promessa feita ao titular e o corte que a
+   * sustenta —, porque é isso que uma prova automática consegue defender.
+   */
+  const PRAZO_PROMETIDO_MESES = 24 // o que /privacidade/ promete ao titular
+  const CORTE_DA_ROTINA_MESES = 22 // procedimento interno, revisão mensal
 
   it('a etapa de contato informa a finalidade e aponta a política', () => {
     const contato = html.slice(html.indexOf('data-etapa="contato"'))
@@ -174,17 +183,50 @@ describe('dados pessoais', () => {
    * SIM-01E, condição 3: eliminar só do painel do Netlify deixa o lead vivo na
    * caixa de e-mail do comercial e nas planilhas exportadas — justamente as
    * cópias que sobrevivem a qualquer faxina. O prazo só é verdadeiro se alcançar
-   * as três. Rotina e responsável em docs/privacidade-operacao.md.
+   * as três. Rotina e responsável vivem no procedimento interno, fora daqui.
    */
   it('a eliminação alcança o painel, as cópias em e-mail e as exportações', () => {
     expect(politica).toMatch(/24 meses/)
     for (const onde of ['painel de formulários do Netlify', 'e-mail', 'exportado']) {
       expect(politica, onde).toContain(onde)
     }
-    const runbook = readFileSync(resolve(RAIZ, 'docs', 'privacidade-operacao.md'), 'utf8')
-    for (const tema of ['Responsável', 'semestral', 'Netlify', 'Exportações']) {
-      expect(runbook, tema).toContain(tema)
-    }
+  })
+
+  /**
+   * SIM-01F, condição 2: revisão semestral não cumpre prazo de 24 meses. Um lead
+   * que vence logo depois de uma revisão espera até seis meses pela seguinte e
+   * sai com 30 — a promessa quebraria sozinha, sem ninguém errar. A rotina é
+   * mensal e corta antes do prazo; esta prova confere a aritmética, não a
+   * palavra: corte + o mês de espera do pior caso tem de caber no prometido.
+   */
+  it('o corte da rotina cabe dentro do prazo que a política promete', () => {
+    const prazo = Number(politica.match(/em até <strong>(\d+) meses<\/strong>/)![1])
+    expect(prazo, 'a política mudou o prazo prometido').toBe(PRAZO_PROMETIDO_MESES)
+    // Pior caso de uma rotina mensal: vencer no dia seguinte à revisão.
+    expect(
+      CORTE_DA_ROTINA_MESES + 1,
+      `corte de ${CORTE_DA_ROTINA_MESES} meses + 1 de espera não cabe em ${prazo}`,
+    ).toBeLessThanOrEqual(prazo)
+  })
+
+  /**
+   * SIM-01G, condição 3: este repositório é público. O procedimento operacional
+   * nomeia o responsável, descreve a rotina e lista o que ainda não está
+   * pronto — nada disso se publica, e um commit distraído republica fácil.
+   */
+  it('o procedimento operacional não volta para o repositório público', () => {
+    expect(existsSync(resolve(RAIZ, 'docs', 'privacidade-operacao.md'))).toBe(false)
+  })
+
+  /**
+   * SIM-01F, condição 5: a política declara prazos e direitos, que o titular
+   * pode cobrar; o runbook declara rotinas. Descrever um processo é afirmar que
+   * ele roda — e nada disto roda antes da publicação. Cadência na página
+   * pública seria exatamente essa afirmação.
+   */
+  it('a política não declara rotina interna que ainda não roda', () => {
+    expect(politica).not.toMatch(/semestral|mensalmente|revisão mensal|todo dia 5/)
+    expect(politica).not.toMatch(/planilha de controle|Controle de leads/)
   })
 
   /**

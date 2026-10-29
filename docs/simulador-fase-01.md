@@ -23,7 +23,10 @@ submission from any form` — *any form*, e não uma regra por formulário, como
 Conferido no painel em 29/10/2026. Para separar destinatário por formulário, aí sim: Forms → Submission
 notifications → Add notification.
 
-Dados pessoais, retenção, oposição à medição e pendências de privacidade: `docs/privacidade-operacao.md`.
+Dados pessoais: o que o site promete está em `/privacidade/`. O **procedimento operacional** — responsável,
+rotina de retenção, registro dos leads e das execuções — é interno e **não mora neste repositório**, que é
+público; fica na pasta restrita `EIFF — Privacidade (interno)` no Drive da empresa. Uma prova impede que ele
+volte para cá.
 
 ## Regra que não muda
 
