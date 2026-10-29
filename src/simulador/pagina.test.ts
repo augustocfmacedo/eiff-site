@@ -87,7 +87,11 @@ describe('dados pessoais', () => {
    * sustenta —, porque é isso que uma prova automática consegue defender.
    */
   const PRAZO_PROMETIDO_MESES = 24 // o que /privacidade/ promete ao titular
-  const CORTE_DA_ROTINA_MESES = 22 // procedimento interno, revisão mensal
+  const CORTE_DA_ROTINA_MESES = 21 // procedimento interno: revisão mensal, dia 5
+  // Atrasos que a rotina sofre sem que ninguém esteja errando muito:
+  const ESPERA_ATE_A_PROXIMA_REVISAO = 1 // vencer no dia seguinte a uma revisão
+  const UMA_REVISAO_PERDIDA = 1 // férias, doença — com um só responsável, acontece
+  const ADIAMENTO_POR_DIA_NAO_UTIL = 1 // dia 5 em fim de semana ou feriado; mês cheio, por folga
 
   it('a etapa de contato informa a finalidade e aponta a política', () => {
     const contato = html.slice(html.indexOf('data-etapa="contato"'))
@@ -193,20 +197,20 @@ describe('dados pessoais', () => {
   })
 
   /**
-   * SIM-01F, condição 2: revisão semestral não cumpre prazo de 24 meses. Um lead
-   * que vence logo depois de uma revisão espera até seis meses pela seguinte e
-   * sai com 30 — a promessa quebraria sozinha, sem ninguém errar. A rotina é
-   * mensal e corta antes do prazo; esta prova confere a aritmética, não a
-   * palavra: corte + o mês de espera do pior caso tem de caber no prometido.
+   * SIM-01F/H: revisão semestral não cumpria os 24 meses — um lead que vencesse
+   * logo depois de uma revisão esperaria seis meses pela seguinte e sairia com
+   * 30. A rotina virou mensal, e o corte tem de absorver TODOS os atrasos que
+   * ela pode sofrer, não só a espera: um mês perdido por férias, e o adiamento
+   * de quando o dia 5 cai em fim de semana ou feriado. Corte de 22 somava 24
+   * cravados — margem zero, que o primeiro feriado estouraria. Esta prova
+   * confere a aritmética, não a palavra.
    */
   it('o corte da rotina cabe dentro do prazo que a política promete', () => {
     const prazo = Number(politica.match(/em até <strong>(\d+) meses<\/strong>/)![1])
     expect(prazo, 'a política mudou o prazo prometido').toBe(PRAZO_PROMETIDO_MESES)
-    // Pior caso de uma rotina mensal: vencer no dia seguinte à revisão.
-    expect(
-      CORTE_DA_ROTINA_MESES + 1,
-      `corte de ${CORTE_DA_ROTINA_MESES} meses + 1 de espera não cabe em ${prazo}`,
-    ).toBeLessThanOrEqual(prazo)
+    const piorCaso =
+      CORTE_DA_ROTINA_MESES + ESPERA_ATE_A_PROXIMA_REVISAO + UMA_REVISAO_PERDIDA + ADIAMENTO_POR_DIA_NAO_UTIL
+    expect(piorCaso, `pior caso de ${piorCaso} meses não cabe nos ${prazo} prometidos`).toBeLessThanOrEqual(prazo)
   })
 
   /**
