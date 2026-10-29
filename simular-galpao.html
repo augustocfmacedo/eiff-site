@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <!-- @include head -->
+  <title>Simulador de galpão metálico: configure e fale com a engenharia | EIFF</title>
+  <meta name="description" content="Configure seu galpão metálico em um minuto: uso, vão, pé-direito, fechamento e piso. A EIFF compara com o que já executou e responde com estudo preliminar.">
+  <link rel="canonical" href="https://eiff.com.br/simular-galpao/">
+  <meta property="og:title" content="Simulador de galpão metálico | EIFF">
+  <meta property="og:description" content="Configure vão, pé-direito e fechamento. A engenharia da EIFF responde com estudo preliminar.">
+  <meta property="og:url" content="https://eiff.com.br/simular-galpao/">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"O simulador informa o preço do galpão?","acceptedAnswer":{"@type":"Answer","text":"Não. Nesta fase o simulador organiza a configuração e compara com o que a EIFF já executou. O valor sai de um estudo preliminar feito pela engenharia, a partir do terreno, das fundações, do fechamento e do escopo contratado. A EIFF não publica preço por m² porque ele muda com cada um desses fatores."}},{"@type":"Question","name":"Qual o maior vão livre que a EIFF executa?","acceptedAnswer":{"@type":"Answer","text":"A EIFF executou vãos de até 32 m no complexo logístico de Aparecida de Goiânia e tem solução em projeto para 40 m de vão livre com 12 m de pé-direito. Vãos maiores são possíveis, com estudo estrutural específico."}},{"@type":"Question","name":"Preciso ter o terreno para simular?","acceptedAnswer":{"@type":"Answer","text":"Não. É possível simular sem terreno definido. Nesse caso o estudo preliminar trabalha com implantação hipotética e é revisto quando o terreno for escolhido."}},{"@type":"Question","name":"A EIFF atende fora de Goiás?","acceptedAnswer":{"@type":"Answer","text":"Sim. A fábrica fica na Rodovia GO-080, km 8, em Goiânia, e a EIFF executa em todo o Brasil. A unidade Smart Fit de Cabo Frio, no Rio de Janeiro, foi entregue em 65 dias da fundação ao fechamento completo."}},{"@type":"Question","name":"O que está incluído na obra?","acceptedAnswer":{"@type":"Answer","text":"Depende do escopo contratado. A EIFF pode entregar só a estrutura metálica fabricada e montada, a estrutura com fechamento, ou a obra completa com fundações, piso, cobertura, fechamentos e interfaces com concessionárias."}}]}</script>
+  <script type="module" src="/src/simulador.ts"></script>
+</head>
+<body data-page="simulador">
+  <!-- @include nav-simulador -->
+
+  <main id="conteudo" class="lp">
+
+    <!-- ============================================================
+         ABERTURA
+    ============================================================ -->
+    <section class="lp-hero">
+      <div class="bg-grid" aria-hidden="true"></div>
+      <div class="wrap lp-hero__grid">
+        <div>
+          <span class="eyebrow">Simulador de galpão</span>
+          <h1 class="h1">Configure seu galpão. A engenharia responde.</h1>
+          <p class="lead">Informe uso, dimensões e fechamento. A EIFF compara a sua configuração com os galpões que já fabricou e montou, e devolve um estudo preliminar com escopo e cronograma.</p>
+          <p class="body" style="margin-top:18px">Leva cerca de um minuto. Sem compromisso e sem custo.</p>
+        </div>
+        <!-- Cada número nomeia a obra que o sustenta. Número sem obra não entra:
+             é a regra do site, e era o que faltava aqui. -->
+        <div class="lp-hero__provas">
+          <div class="lp-hero__prova"><b>32 m</b><span>Vão livre executado</span><small>Complexo logístico · Aparecida de Goiânia</small></div>
+          <div class="lp-hero__prova"><b>3.600 m²</b><span>Complexo de três galpões</span><small>Aparecida de Goiânia</small></div>
+          <div class="lp-hero__prova"><b>65 dias</b><span>Fundação ao fechamento</span><small>Smart Fit · Cabo Frio, RJ</small></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SIMULADOR
+    ============================================================ -->
+    <section class="sim-bloco" id="simulador">
+      <div class="wrap sim-grid">
+
+        <div class="sim-painel">
+          <noscript>
+            <p class="sim__ajuda" style="border-left:2px solid var(--brand);padding-left:14px">Com o JavaScript desativado, o formulário aparece inteiro em uma página só. Preencha e envie normalmente.</p>
+          </noscript>
+
+          <ol class="sim__passos" id="simPassos">
+            <li><button type="button" class="sim__passo is-ativa" data-ir="uso">01 Uso</button></li>
+            <li><button type="button" class="sim__passo" data-ir="dimensoes">02 Dimensões</button></li>
+            <li><button type="button" class="sim__passo" data-ir="especificacao">03 Especificação</button></li>
+            <li><button type="button" class="sim__passo" data-ir="contexto">04 Contexto</button></li>
+            <li><button type="button" class="sim__passo" data-ir="contato">05 Contato</button></li>
+          </ol>
+          <div class="sim__barra" id="simProgresso" role="progressbar" aria-label="Progresso da configuração" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+          <p class="sim__contador" id="simContador">Etapa 1 de 5</p>
+
+          <form class="sim" id="sim" name="simular-galpao" method="POST" data-netlify="true" netlify-honeypot="empresa-site" action="/obrigado/">
+            <input type="hidden" name="form-name" value="simular-galpao">
+            <input type="hidden" name="area" value="">
+            <input type="hidden" name="resumo" value="">
+            <input type="hidden" name="especificacao" value="">
+            <input type="hidden" name="leitura" value="">
+            <input type="hidden" name="estudo_especifico" value="">
+            <input type="hidden" name="origem" value="">
+            <p class="sr-only" aria-hidden="true"><label>Não preencha: <input name="empresa-site" tabindex="-1" autocomplete="off"></label></p>
+
+            <!-- 01 · USO -->
+            <fieldset class="sim__etapa" data-etapa="uso">
+              <legend class="sim__legenda sr-only">Uso previsto</legend>
+              <h2 class="sim__pergunta" tabindex="-1" data-foco>O que você precisa colocar de pé?</h2>
+              <p class="sim__ajuda">A operação que vai dentro define o sistema estrutural, a modulação e o fechamento.</p>
+              <div class="sim__opcoes">
+                <label class="sim__opcao"><input type="radio" name="uso" value="industrial" required><span><b>Industrial</b><small>Planta, ampliação, área produtiva</small></span></label>
+                <label class="sim__opcao"><input type="radio" name="uso" value="logistico"><span><b>Logística</b><small>Centro de distribuição, armazém, hub</small></span></label>
+                <label class="sim__opcao"><input type="radio" name="uso" value="comercial"><span><b>Comercial</b><small>Academia, loja, supermercado</small></span></label>
+                <label class="sim__opcao"><input type="radio" name="uso" value="agro"><span><b>Agro</b><small>Armazenagem, apoio, unidade produtiva</small></span></label>
+                <label class="sim__opcao"><input type="radio" name="uso" value="especial"><span><b>Estrutura especial</b><small>Cobertura, mezanino, passarela</small></span></label>
+              </div>
+              <p class="sim__erro" data-erro="uso" role="alert" hidden></p>
+            </fieldset>
+
+            <!-- 02 · DIMENSÕES -->
+            <fieldset class="sim__etapa" data-etapa="dimensoes" data-oculta>
+              <legend class="sim__legenda sr-only">Dimensões</legend>
+              <h2 class="sim__pergunta" tabindex="-1" data-foco>Qual o tamanho da edificação?</h2>
+              <p class="sim__ajuda">Use valores aproximados. O croqui ao lado acompanha o que você informa e a engenharia ajusta a modulação depois.</p>
+
+              <div class="sim__campos">
+                <div class="sim__campo sim__medida">
+                  <div class="sim__medida-topo">
+                    <label class="sim__rotulo" for="vao">Vão livre (largura)</label>
+                    <span class="sim__medida-entrada"><input id="vao" name="vao" type="number" inputmode="decimal" min="6" max="60" step="1" value="25" aria-describedby="vaoAjuda"><span>m</span></span>
+                  </div>
+                  <input class="sim__slider" type="range" min="6" max="60" step="1" value="25" data-espelho="vao" aria-label="Vão livre em metros" tabindex="-1">
+                  <p class="sim__medida-faixa" id="vaoAjuda">De 6 a 60 m</p>
+                  <p class="sim__erro" data-erro="vao" role="alert" hidden></p>
+                </div>
+
+                <div class="sim__campo sim__medida">
+                  <div class="sim__medida-topo">
+                    <label class="sim__rotulo" for="comprimento">Comprimento</label>
+                    <span class="sim__medida-entrada"><input id="comprimento" name="comprimento" type="number" inputmode="decimal" min="10" max="400" step="5" value="60" aria-describedby="compAjuda"><span>m</span></span>
+                  </div>
+                  <input class="sim__slider" type="range" min="10" max="400" step="5" value="60" data-espelho="comprimento" aria-label="Comprimento em metros" tabindex="-1">
+                  <p class="sim__medida-faixa" id="compAjuda">De 10 a 400 m</p>
+                  <p class="sim__erro" data-erro="comprimento" role="alert" hidden></p>
+                </div>
+
+                <div class="sim__campo sim__medida">
+                  <div class="sim__medida-topo">
+                    <label class="sim__rotulo" for="peDireito">Pé-direito livre</label>
+                    <span class="sim__medida-entrada"><input id="peDireito" name="peDireito" type="number" inputmode="decimal" min="3" max="20" step="0.5" value="8" aria-describedby="peAjuda"><span>m</span></span>
+                  </div>
+                  <input class="sim__slider" type="range" min="3" max="20" step="0.5" value="8" data-espelho="peDireito" aria-label="Pé-direito em metros" tabindex="-1">
+                  <p class="sim__medida-faixa" id="peAjuda">De 3 a 20 m</p>
+                  <p class="sim__erro" data-erro="peDireito" role="alert" hidden></p>
+                </div>
+              </div>
+            </fieldset>
+
+            <!-- 03 · ESPECIFICAÇÃO -->
+            <fieldset class="sim__etapa" data-etapa="especificacao" data-oculta>
+              <legend class="sim__legenda sr-only">Especificação</legend>
+              <h2 class="sim__pergunta" tabindex="-1" data-foco>Como ela precisa ser fechada?</h2>
+              <p class="sim__ajuda">Se ainda não souber, escolha "ainda não sei": a engenharia indica a solução pela operação prevista.</p>
+              <div class="sim__campos sim__campos--2">
+                <div class="sim__campo">
+                  <label for="cobertura">Cobertura</label>
+                  <select id="cobertura" name="cobertura">
+                    <option value="indefinido" selected>Ainda não sei</option>
+                    <option value="telha-simples">Telha metálica simples</option>
+                    <option value="termoacustica">Telha termoacústica</option>
+                    <option value="pir">Painel PIR</option>
+                  </select>
+                  <p class="sim__erro" data-erro="cobertura" role="alert" hidden></p>
+                </div>
+                <div class="sim__campo">
+                  <label for="fechamento">Fechamento lateral</label>
+                  <select id="fechamento" name="fechamento">
+                    <option value="indefinido" selected>Ainda não sei</option>
+                    <option value="metalico">Metálico</option>
+                    <option value="pir">Painel PIR</option>
+                    <option value="alvenaria">Alvenaria</option>
+                    <option value="aberto">Sem fechamento</option>
+                  </select>
+                  <p class="sim__erro" data-erro="fechamento" role="alert" hidden></p>
+                </div>
+                <div class="sim__campo">
+                  <label for="piso">Piso</label>
+                  <select id="piso" name="piso">
+                    <option value="indefinido" selected>Ainda não sei</option>
+                    <option value="leve">Leve — circulação e estoque leve</option>
+                    <option value="medio">Médio — empilhadeira</option>
+                    <option value="pesado">Pesado — porta-paletes</option>
+                    <option value="existente">Já existe</option>
+                  </select>
+                  <p class="sim__erro" data-erro="piso" role="alert" hidden></p>
+                </div>
+                <div class="sim__campo">
+                  <label for="escopo">Escopo desejado</label>
+                  <select id="escopo" name="escopo">
+                    <option value="indefinido" selected>Avaliar com a engenharia</option>
+                    <option value="completo">Obra completa</option>
+                    <option value="estrutura-fechamento">Estrutura e fechamento</option>
+                    <option value="estrutura">Só a estrutura metálica</option>
+                  </select>
+                  <p class="sim__erro" data-erro="escopo" role="alert" hidden></p>
+                </div>
+              </div>
+            </fieldset>
+
+            <!-- 04 · CONTEXTO -->
+            <fieldset class="sim__etapa" data-etapa="contexto" data-oculta>
+              <legend class="sim__legenda sr-only">Contexto do projeto</legend>
+              <h2 class="sim__pergunta" tabindex="-1" data-foco>Onde e em que estágio está o projeto?</h2>
+              <p class="sim__ajuda">A localização define logística e fundações. O estágio define por onde a engenharia começa.</p>
+              <div class="sim__campos sim__campos--2">
+                <div class="sim__campo">
+                  <label for="cidade">Cidade e estado da obra</label>
+                  <input id="cidade" name="cidade" type="text" required placeholder="ex.: Aparecida de Goiânia, GO" autocomplete="address-level2">
+                  <p class="sim__erro" data-erro="cidade" role="alert" hidden></p>
+                </div>
+                <div class="sim__campo">
+                  <label for="terreno">Terreno</label>
+                  <select id="terreno" name="terreno">
+                    <option value="proprio" selected>Já tenho o terreno</option>
+                    <option value="negociacao">Em negociação</option>
+                    <option value="nao">Ainda não tenho</option>
+                  </select>
+                  <p class="sim__erro" data-erro="terreno" role="alert" hidden></p>
+                </div>
+                <div class="sim__campo">
+                  <label for="projeto">Projeto existente</label>
+                  <select id="projeto" name="projeto">
+                    <option value="nenhum" selected>Nada ainda</option>
+                    <option value="estudo">Um estudo ou croqui</option>
+                    <option value="arquitetonico">Só o arquitetônico</option>
+                    <option value="executivo">Projeto executivo pronto</option>
+                  </select>
+                  <p class="sim__erro" data-erro="projeto" role="alert" hidden></p>
+                </div>
+                <div class="sim__campo">
+                  <label for="prazo">Quando precisa operar</label>
+                  <select id="prazo" name="prazo">
+                    <option value="estudando" selected>Ainda estudando</option>
+                    <option value="urgente">O quanto antes</option>
+                    <option value="6-meses">Em até 6 meses</option>
+                    <option value="12-meses">Em até 12 meses</option>
+                  </select>
+                  <p class="sim__erro" data-erro="prazo" role="alert" hidden></p>
+                </div>
+                <div class="sim__campo" style="grid-column:1/-1">
+                  <label for="observacao">Algo que a engenharia precisa saber</label>
+                  <textarea id="observacao" name="observacao" placeholder="Ponte rolante, mezanino, docas, expansão futura, restrição do terreno…"></textarea>
+                </div>
+              </div>
+            </fieldset>
+
+            <!-- 05 · CONTATO -->
+            <fieldset class="sim__etapa" data-etapa="contato" data-oculta>
+              <legend class="sim__legenda sr-only">Contato</legend>
+              <h2 class="sim__pergunta" tabindex="-1" data-foco>Para quem a engenharia responde?</h2>
+              <p class="sim__ajuda">Seus dados são usados para analisar esta solicitação e responder com o estudo preliminar. Se você chegou por um anúncio, a origem da visita também serve para medir a campanha — e a esse uso você pode se opor. Sem lista de e-mail, sem anúncio direcionado e sem venda de dados. Quem recebe, por quanto tempo ficam e como pedir a exclusão: <a href="/privacidade/" data-canal="privacidade">Política de Privacidade</a>.</p>
+              <div class="sim__campos sim__campos--2">
+                <div class="sim__campo">
+                  <label for="nome">Nome</label>
+                  <input id="nome" name="nome" type="text" required autocomplete="name">
+                  <p class="sim__erro" data-erro="nome" role="alert" hidden></p>
+                </div>
+                <div class="sim__campo">
+                  <label for="empresa">Empresa</label>
+                  <input id="empresa" name="empresa" type="text" autocomplete="organization">
+                  <p class="sim__erro" data-erro="empresa" role="alert" hidden></p>
+                </div>
+                <div class="sim__campo">
+                  <label for="email">E-mail</label>
+                  <input id="email" name="email" type="email" required autocomplete="email" inputmode="email">
+                  <p class="sim__erro" data-erro="email" role="alert" hidden></p>
+                </div>
+                <div class="sim__campo">
+                  <label for="telefone">Telefone ou WhatsApp</label>
+                  <input id="telefone" name="telefone" type="tel" autocomplete="tel" inputmode="tel" placeholder="(62) 90000-0000">
+                  <p class="sim__erro" data-erro="telefone" role="alert" hidden></p>
+                </div>
+              </div>
+            </fieldset>
+
+            <div class="sim__acoes">
+              <button class="btn" type="button" id="simVoltar" hidden><span>Voltar</span></button>
+              <button class="btn btn--primary btn--lg" type="button" id="simAvancar"><span>Continuar</span><svg class="btn__arrow" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 7h12M8 2l5 5-5 5"/></svg></button>
+              <button class="btn btn--primary btn--lg" type="submit" id="simEnviar"><span>Enviar para a engenharia</span><svg class="btn__arrow" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 12 12 2M4 2h8v8"/></svg></button>
+              <p class="sim__nota" id="simNota">Ao enviar, a EIFF trata seus dados para responder a este pedido — base legal: procedimentos preliminares a pedido do titular, LGPD art. 7º, V.</p>
+            </div>
+
+            <div class="sim__sucesso" id="simSucesso" hidden>
+              <span class="eyebrow">Recebido</span>
+              <h2 tabindex="-1" data-foco>Sua configuração chegou à engenharia.</h2>
+              <p class="body">A EIFF vai analisar a configuração e retornar com um estudo preliminar: concepção estrutural, escopo e cronograma. Se precisar adiantar algo, escreva para <a href="mailto:contato@eiff.com.br" data-canal="email-sucesso" style="color:var(--ink);border-bottom:1px solid var(--brand)">contato@eiff.com.br</a>.</p>
+              <p><a class="link-arrow" href="/projetos/">Ver projetos executados <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 7h12M8 2l5 5-5 5"/></svg></a></p>
+            </div>
+          </form>
+        </div>
+
+        <!-- Painel de leitura técnica -->
+        <aside class="sim-leitura" aria-label="Leitura da configuração">
+          <div class="sim-leitura__topo">
+            <span class="eyebrow">Sua configuração</span>
+          </div>
+          <p class="sim-leitura__resumo" id="simResumo">Configure os primeiros campos</p>
+
+          <svg class="sim__croqui" id="simCroqui" viewBox="0 0 420 260" role="img" aria-label="Croqui esquemático do pórtico com vão e pé-direito informados">
+            <path id="cqSolo" data-traco="solo" d="M 13.6 184 H 346.4"/>
+            <path id="cqTrelica" data-traco="fino" d="M 143.5 79.6 V 85.5 M 216.5 79.6 V 85.5 M 107 83.3 V 87 M 253 83.3 V 87 M 70.5 86.9 V 88.5 M 289.5 86.9 V 88.5"/>
+            <path id="cqBanzo" data-traco="fino" d="M 34 89.9 L 180 84 L 326 89.9"/>
+            <path id="cqPilares" data-traco d="M 34 184 V 90.6 M 326 184 V 90.6"/>
+            <path id="cqCobertura" data-traco d="M 34 90.6 L 180 76 L 326 90.6"/>
+            <path id="cqCotaVao" data-traco="cota" d="M 34 194.3 V 204.3 M 34 199.3 H 326 M 326 194.3 V 204.3"/>
+            <text id="cqTextoVao" x="180" y="191.3">25 m</text>
+            <path id="cqCotaPe" data-traco="cota" d="M 336.3 184 H 346.3 M 341.3 184 V 90.6 M 336.3 90.6 H 346.3"/>
+            <text id="cqTextoPe" x="351.3" y="137.3">8 m</text>
+          </svg>
+
+          <div class="sim-leitura__numeros">
+            <div class="sim-leitura__num"><b id="simArea">1.500 m²</b><span>Área coberta</span></div>
+            <div class="sim-leitura__num"><b id="simCumeeira">9,3 m</b><span>Altura total</span></div>
+          </div>
+
+          <ul class="sim__obs" id="simObs" aria-live="polite">
+            <li class="sim__obs-vazio">A leitura técnica aparece conforme você configura.</li>
+          </ul>
+
+          <p class="sim-leitura__aviso" id="simAvisoOrcamento">A pré-engenharia automática ainda não está disponível nesta fase. A configuração segue para a engenharia da EIFF, que responde com estudo preliminar.</p>
+        </aside>
+
+      </div>
+    </section>
+
+    <!-- ============================================================
+         O QUE ACONTECE DEPOIS
+    ============================================================ -->
+    <section class="section section--s">
+      <div class="wrap">
+        <div class="section-head">
+          <div><span class="eyebrow">O que acontece depois</span><h2 class="h2" style="margin-top:22px">Da configuração ao estudo preliminar.</h2></div>
+          <div class="section-head__side"><p class="body">O simulador organiza a conversa. A decisão continua sendo de engenharia, feita por quem fabrica e monta.</p></div>
+        </div>
+        <div class="lp-passos">
+          <div class="lp-passo"><span class="idx">01</span><h3>Você configura</h3><p>Uso, dimensões, fechamento e contexto. Um minuto, sem compromisso.</p></div>
+          <div class="lp-passo"><span class="idx">02</span><h3>A EIFF lê</h3><p>A configuração é comparada com o que já saiu da fábrica e com as cargas da operação prevista.</p></div>
+          <div class="lp-passo"><span class="idx">03</span><h3>Estudo preliminar</h3><p>Concepção estrutural, implantação e estimativa de escopo, área e prazo.</p></div>
+          <div class="lp-passo"><span class="idx">04</span><h3>Proposta</h3><p>Escopo, cronograma físico-financeiro e o que fica a cargo de cada parte.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         PERGUNTAS
+    ============================================================ -->
+    <section class="section section--s" style="background:var(--bg-2)">
+      <div class="wrap split">
+        <div>
+          <span class="eyebrow">Perguntas frequentes</span>
+          <h2 class="h2" style="margin-top:22px">O que perguntam antes de simular.</h2>
+        </div>
+        <div class="lp-faq">
+          <details>
+            <summary>O simulador informa o preço do galpão?</summary>
+            <p>Não. Nesta fase o simulador organiza a configuração e compara com o que a EIFF já executou. O valor sai de um estudo preliminar feito pela engenharia, a partir do terreno, das fundações, do fechamento e do escopo contratado. A EIFF não publica preço por m² porque ele muda com cada um desses fatores.</p>
+          </details>
+          <details>
+            <summary>Qual o maior vão livre que a EIFF executa?</summary>
+            <p>A EIFF executou vãos de até 32 m no complexo logístico de Aparecida de Goiânia e tem solução em projeto para 40 m de vão livre com 12 m de pé-direito. Vãos maiores são possíveis, com estudo estrutural específico.</p>
+          </details>
+          <details>
+            <summary>Preciso ter o terreno para simular?</summary>
+            <p>Não. É possível simular sem terreno definido. Nesse caso o estudo preliminar trabalha com implantação hipotética e é revisto quando o terreno for escolhido.</p>
+          </details>
+          <details>
+            <summary>A EIFF atende fora de Goiás?</summary>
+            <p>Sim. A fábrica fica na Rodovia GO-080, km 8, em Goiânia, e a EIFF executa em todo o Brasil. A unidade Smart Fit de Cabo Frio, no Rio de Janeiro, foi entregue em 65 dias da fundação ao fechamento completo.</p>
+          </details>
+          <details>
+            <summary>O que está incluído na obra?</summary>
+            <p>Depende do escopo contratado. A EIFF pode entregar só a estrutura metálica fabricada e montada, a estrutura com fechamento, ou a obra completa com fundações, piso, cobertura, fechamentos e interfaces com concessionárias.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         CANAL ALTERNATIVO
+    ============================================================ -->
+    <section class="section section--s">
+      <div class="wrap">
+        <div class="lp-alternativa">
+          <p>Prefere falar direto com a engenharia, sem preencher o simulador?</p>
+          <a href="mailto:contato@eiff.com.br" data-canal="email-rodape">contato@eiff.com.br</a>
+          <a href="/contato/" data-canal="formulario-contato">Formulário completo</a>
+          <a href="/projetos/" data-canal="projetos">Ver projetos executados</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- @include footer -->
+</body>
+</html>

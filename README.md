@@ -19,6 +19,13 @@ notificação (e-mail) é configurado no painel do Netlify.
 - O build move `dist/<pagina>.html` para `dist/<pagina>/index.html` (`scripts/urls-limpas.mjs`); em dev o plugin resolve `/empresa` para `empresa.html`. Links internos, canonicals e sitemap usam URLs sem extensão; `public/_redirects` faz 301 das antigas `.html`.
 - As cinco páginas de demanda (`galpao-metalico-industrial`, `galpao-logistico`, `construcao-de-academias`, `coberturas-e-mezaninos`, `estrutura-metalica-goiania`) são geradas por `npm run gerar:demanda` a partir do conteúdo em `scripts/gerar-demanda.mjs` (FAQ com dados estruturados). Para alterar o texto, edite o script e gere de novo.
 
+## Simulador de galpões (/simular-galpao/)
+
+Landing de conversão com formulário progressivo, croqui do pórtico em SVG e leitura técnica contra as obras já
+executadas. Não calcula nem exibe valor: o contrato do serviço de pré-engenharia (Fase 02) está em
+`src/simulador/orcamento.ts` e documentado em `docs/simulador-fase-01.md`. A entrada `src/simulador.ts` é leve de
+propósito (sem GSAP, Lenis ou Three.js). Testes: `npm test`.
+
 ## Estrutura
 
 - `index.html`, `empresa.html`, `engenharia.html`, `fabricacao.html`, `solucoes.html`, `produtos.html`, `projetos.html`,

@@ -17,6 +17,11 @@
 .split--rev { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
 .split .h2 { margin: 22px 0 24px; }
 .split .body + .body { margin-top: 18px; }
+
+/* Texto corrido com subtítulos (política de privacidade) ------- */
+.prosa > :first-child { margin-top: 0; }
+.prosa h3 { font-size: 1rem; letter-spacing: -.01em; margin: 34px 0 12px; color: var(--ink); }
+.prosa code { font-family: var(--font-mono); font-size: .86em; color: var(--ink-2); }
 .figure { position: relative; overflow: hidden; border-radius: var(--radius); background: var(--bg-3); border: 1px solid var(--line); }
 .figure img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; filter: grayscale(.15) contrast(1.04); }
 .figure--tall { aspect-ratio: 4 / 5; }
