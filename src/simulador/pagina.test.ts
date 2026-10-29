@@ -86,6 +86,23 @@ describe('dados pessoais', () => {
    * de que a página depende — a promessa feita ao titular e o corte que a
    * sustenta —, porque é isso que uma prova automática consegue defender.
    */
+  const RAZAO_SOCIAL = 'AM STEEL LTDA'
+  const CNPJ = '63.989.526/0001-66'
+
+  /** Dígitos verificadores do CNPJ, pela regra da Receita. */
+  const dvConfere = (formatado: string) => {
+    const d = formatado.replace(/\D/g, '').split('').map(Number)
+    if (d.length !== 14) return false
+    const dv = (digitos: number[]) => {
+      const pesos = digitos.length === 12
+        ? [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+        : [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+      const resto = digitos.reduce((s, n, i) => s + n * pesos[i], 0) % 11
+      return resto < 2 ? 0 : 11 - resto
+    }
+    return dv(d.slice(0, 12)) === d[12] && dv(d.slice(0, 13)) === d[13]
+  }
+
   const PRAZO_PROMETIDO_MESES = 24 // o que /privacidade/ promete ao titular
   const CORTE_DA_ROTINA_MESES = 21 // procedimento interno: revisão mensal, dia 5
   // Atrasos que a rotina sofre sem que ninguém esteja errando muito:
@@ -123,16 +140,40 @@ describe('dados pessoais', () => {
   })
 
   /**
-   * SIM-01C, decisão 2: nada de dado societário fictício ou presumido. Enquanto
-   * razão social e CNPJ não forem confirmados, a página identifica o controlador
-   * por nome, endereço e canal de contato — e nenhum número inventado entra.
+   * SIM-01I: a identificação societária foi confirmada pela diretoria, e a prova
+   * inverteu de sinal. Antes recusava qualquer CNPJ, para impedir que um número
+   * presumido entrasse; agora defende ESTE — razão social exata, CNPJ exato, e
+   * nenhum outro número com cara de CNPJ na página, que seria o sintoma de um
+   * dado societário solto no texto.
    */
-  it('a política não publica dado societário presumido', () => {
-    // Qualquer coisa com cara de CNPJ, real ou de exemplo.
-    expect(politica).not.toMatch(/\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}/)
-    for (const marca of ['XX.XXX', '00.000.000', 'LTDA', 'S.A.', '[inserir', 'a definir']) {
+  it('a política identifica o controlador confirmado', () => {
+    expect(politica).toContain(RAZAO_SOCIAL)
+    expect(politica).toContain(CNPJ)
+    const achados = [...politica.matchAll(/\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}/g)].map((m) => m[0])
+    expect([...new Set(achados)]).toEqual([CNPJ])
+    for (const marca of ['XX.XXX', '00.000.000', '[inserir', 'a definir']) {
       expect(politica.toUpperCase(), marca).not.toContain(marca.toUpperCase())
     }
+  })
+
+  /**
+   * Um dígito trocado num CNPJ publicado como controlador não é erro de texto:
+   * é a página apontando outra pessoa jurídica, ou nenhuma. Os verificadores
+   * pegam isso sem depender de alguém reler o número.
+   */
+  it('o CNPJ publicado passa nos dígitos verificadores', () => {
+    expect(dvConfere(CNPJ), CNPJ).toBe(true)
+    expect(dvConfere('63.989.526/0001-67'), 'o validador precisa reprovar um DV errado').toBe(false)
+  })
+
+  /**
+   * SIM-01I, item 2: o endereço da fábrica não é, por si, o endereço cadastral
+   * da pessoa jurídica. A página distingue os dois, em vez de deixar o leitor
+   * supor que a fábrica é a sede.
+   */
+  it('separa o endereço operacional do cadastral', () => {
+    expect(politica).toContain('endereço cadastral')
+    expect(politica).toMatch(/Rodovia GO-080/)
   })
 
   /**
