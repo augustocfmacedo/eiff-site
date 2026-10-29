@@ -17,8 +17,13 @@ a configuração; **não calcula e não exibe valor**. A pré-engenharia automá
 | Tela | `src/simulador/tela.ts` | Única camada que toca no DOM |
 | Estilo | `src/styles/simulador.css` | Sobre os tokens de `tokens.css` |
 
-Destino do lead: **Netlify Forms**, formulário `simular-galpao`. Precisa de notificação por e-mail configurada
-no painel (Forms → simular-galpao → Form notifications), como foi feito para `iniciar-projeto`.
+Destino do lead: **Netlify Forms**, formulário `simular-galpao`. A notificação por e-mail **já alcança este
+formulário sem configuração nenhuma**: a regra que existe no painel é `Email contato@eiff.com.br on new
+submission from any form` — *any form*, e não uma regra por formulário, como esta linha supunha antes.
+Conferido no painel em 29/10/2026. Para separar destinatário por formulário, aí sim: Forms → Submission
+notifications → Add notification.
+
+Dados pessoais, retenção, oposição à medição e pendências de privacidade: `docs/privacidade-operacao.md`.
 
 ## Regra que não muda
 

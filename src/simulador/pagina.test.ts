@@ -78,14 +78,31 @@ describe('provas do topo', () => {
 })
 
 describe('dados pessoais', () => {
+  const politica = readFileSync(resolve(RAIZ, 'privacidade.html'), 'utf8')
+
   it('a etapa de contato informa a finalidade e aponta a política', () => {
     const contato = html.slice(html.indexOf('data-etapa="contato"'))
     expect(contato).toContain('href="/privacidade/"')
     expect(contato).toMatch(/LGPD art\. 7º, V/)
   })
 
+  /**
+   * O texto no ponto da coleta não pode prometer mais do que a política cumpre.
+   * Dizia "usados apenas para analisar esta solicitação" e "sem terceiros":
+   * havia uma segunda finalidade (medir a campanha) e há três operadores
+   * declarados — o Netlify guarda o lead inteiro. Promessa a menos na política
+   * é defeito; promessa a mais no formulário é o mesmo defeito, mais perto de
+   * quem decide preencher.
+   */
+  it('o aviso do formulário não contradiz a política', () => {
+    const aviso = html.match(/<p class="sim__ajuda">Seus dados[^<]*(<a[^>]*>[^<]*<\/a>)?[^<]*<\/p>/)![0]
+    expect(aviso).not.toMatch(/sem terceiros/)
+    expect(aviso).not.toMatch(/usados apenas/)
+    expect(aviso).toMatch(/medir a campanha/)
+    expect(aviso).toMatch(/pode se opor/)
+  })
+
   it('a política de privacidade existe e cobre o que o site realmente faz', () => {
-    const politica = readFileSync(resolve(RAIZ, 'privacidade.html'), 'utf8')
     for (const tema of ['Netlify', 'Umami', 'Google Fonts', 'ANPD', 'LGPD', 'contato@eiff.com.br']) {
       expect(politica, tema).toContain(tema)
     }
@@ -98,11 +115,90 @@ describe('dados pessoais', () => {
    * por nome, endereço e canal de contato — e nenhum número inventado entra.
    */
   it('a política não publica dado societário presumido', () => {
-    const politica = readFileSync(resolve(RAIZ, 'privacidade.html'), 'utf8')
     // Qualquer coisa com cara de CNPJ, real ou de exemplo.
     expect(politica).not.toMatch(/\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}/)
     for (const marca of ['XX.XXX', '00.000.000', 'LTDA', 'S.A.', '[inserir', 'a definir']) {
       expect(politica.toUpperCase(), marca).not.toContain(marca.toUpperCase())
+    }
+  })
+
+  /**
+   * SIM-01E, condição 2: o identificador de clique do anúncio chega grudado ao
+   * nome e ao e-mail de quem pediu o estudo. Sozinho não identifica ninguém;
+   * ao lado do lead, integra dados pessoais. A política dizia "Isso não
+   * identifica você" — afirmação falsa sobre a natureza do dado, e a falsa
+   * tranquilidade levava embora as garantias que ele precisa ter.
+   */
+  it('não trata o identificador de clique como dado anônimo', () => {
+    expect(politica).not.toMatch(/não identifica você/)
+    expect(politica).toMatch(/integra os seus dados pessoais/)
+  })
+
+  /**
+   * SIM-01E, condição 2: atender ao pedido (art. 7º, V) e medir a campanha
+   * (art. 7º, IX) são finalidades distintas, com bases distintas e direitos
+   * distintos — a segunda admite oposição, a primeira não faria sentido.
+   * Misturá-las num parágrafo só esconde o direito de oposição.
+   */
+  it('separa as duas finalidades e dá a base legal de cada uma', () => {
+    expect(politica).toMatch(/art\. 7º, V/)
+    expect(politica).toMatch(/art\. 7º, IX/)
+    expect(politica).toMatch(/<h3>Atender ao seu pedido<\/h3>/)
+    expect(politica).toMatch(/<h3>Medir a campanha que trouxe você<\/h3>/)
+    // O direito de oposição à medição tem de estar escrito, e sem pedágio.
+    expect(politica).toMatch(/opor a ele/)
+  })
+
+  /**
+   * SIM-01E, condição 2: coletar identificador de clique e devolvê-lo à
+   * plataforma são coisas diferentes. A devolução cria compartilhamento com
+   * terceiro para fim publicitário e exige mudar a política ANTES de ligar.
+   * Esta prova guarda o estado declarado: desligado.
+   */
+  it('declara que nada é devolvido às plataformas de publicidade', () => {
+    expect(politica).toMatch(/não devolve nada às plataformas de publicidade/)
+    expect(politica).toMatch(/remarketing/)
+  })
+
+  /**
+   * SIM-01E, condição 4: o art. 41 da LGPD manda indicar um encarregado e
+   * divulgar a identidade dele. Um e-mail não é identidade de pessoa, e não há
+   * designação formal — então o rótulo honesto é "Contato para privacidade".
+   */
+  it('não usa o título de encarregado sem designação formal', () => {
+    expect(politica.toLowerCase()).not.toContain('encarregado')
+    expect(politica).toContain('Contato para privacidade')
+  })
+
+  /**
+   * SIM-01E, condição 3: eliminar só do painel do Netlify deixa o lead vivo na
+   * caixa de e-mail do comercial e nas planilhas exportadas — justamente as
+   * cópias que sobrevivem a qualquer faxina. O prazo só é verdadeiro se alcançar
+   * as três. Rotina e responsável em docs/privacidade-operacao.md.
+   */
+  it('a eliminação alcança o painel, as cópias em e-mail e as exportações', () => {
+    expect(politica).toMatch(/24 meses/)
+    for (const onde of ['painel de formulários do Netlify', 'e-mail', 'exportado']) {
+      expect(politica, onde).toContain(onde)
+    }
+    const runbook = readFileSync(resolve(RAIZ, 'docs', 'privacidade-operacao.md'), 'utf8')
+    for (const tema of ['Responsável', 'semestral', 'Netlify', 'Exportações']) {
+      expect(runbook, tema).toContain(tema)
+    }
+  })
+
+  /**
+   * Comentário de HTML é servido ao visitante. As decisões anteriores deixaram
+   * no arquivo o raciocínio interno — "24 meses adotados PROVISORIAMENTE",
+   * "dívida operacional" —, isto é, a própria página publicava a ressalva que
+   * enfraquecia o compromisso que ela faz. Raciocínio vai para o runbook.
+   */
+  it('não serve raciocínio interno dentro do HTML', () => {
+    for (const c of [...politica.matchAll(/<!--([\s\S]*?)-->/g)].map((m) => m[1])) {
+      expect(c.length, c).toBeLessThan(160)
+      for (const vazamento of ['provisor', 'dívida', 'presumido', 'pendência', 'a definir']) {
+        expect(c.toLowerCase(), c).not.toContain(vazamento)
+      }
     }
   })
 
