@@ -119,6 +119,12 @@ export function iniciarEngenharia(reduzMovimento: boolean) {
 export function iniciarDestaque() {
   const bg = document.getElementById('destaqueBg')
   if (!bg) return
+  // Em modo palco (ver src/home/palcos.ts) o Destaque é um quadro parado, e o
+  // parallax faria a foto escorregar exatamente no trecho em que nada deveria
+  // se mover — era o último movimento vertical que sobrava numa seção travada.
+  // De quebra, o gatilho mede a seção, que ali está `sticky`: a conta não é
+  // confiável enquanto ela está travada no topo.
+  if (document.documentElement.classList.contains('palcos')) return
   gsap.fromTo(bg, { yPercent: -8 }, { yPercent: 8, ease: 'none', scrollTrigger: { trigger: bg.parentElement, start: 'top bottom', end: 'bottom top', scrub: true } })
 }
 
