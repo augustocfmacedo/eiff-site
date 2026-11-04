@@ -11,14 +11,19 @@
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "Organization",
+    "@type": ["Organization", "GeneralContractor"],
     "name": "EIFF",
+    "legalName": "AM STEEL LTDA",
+    "taxID": "63.989.526/0001-66",
     "url": "https://eiff.com.br",
     "logo": "https://eiff.com.br/img/eiff-logo.png",
+    "image": "https://eiff.com.br/img/og.jpg",
     "description": "Engenharia, fabricação e construção industrializada de estruturas metálicas e edificações.",
     "address": { "@type": "PostalAddress", "streetAddress": "Rodovia GO-080, km 8", "addressLocality": "Goiânia", "addressRegion": "GO", "addressCountry": "BR" },
-    "areaServed": "BR",
+    "hasMap": "https://www.google.com/maps/search/?api=1&query=Rodovia%20GO-080%2C%20km%208%2C%20Goi%C3%A2nia%20-%20GO",
+    "areaServed": { "@type": "Country", "name": "Brasil" },
     "email": "contato@eiff.com.br",
+    "knowsAbout": ["Galpão metálico industrial", "Galpão logístico", "Estrutura metálica", "Mezanino", "Cobertura metálica", "Construção industrializada"],
     "slogan": "Do terreno à estrutura pronta."
   }
   </script>
@@ -36,21 +41,25 @@
       <div class="hero__ground" aria-hidden="true"></div>
       <div class="hero__veil" aria-hidden="true"></div>
       <canvas class="hero__canvas" id="heroCanvas" aria-hidden="true"></canvas>
+      <!-- As medidas do desenho. Preenchidas pela cena 3D a partir da própria
+           geometria; sem WebGL o bloco fica vazio e nada aparece. -->
+      <div class="hero__cotas" id="heroCotas" aria-hidden="true"></div>
       <div class="corners" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
 
       <div class="hero__content">
         <div>
           <span class="eyebrow" data-reveal>Engenharia · Fabricação · Construção</span>
-          <h1 class="h1 hero__title" data-split="hero">Do terreno à estrutura pronta.</h1>
-          <p class="lead hero__lead" data-reveal data-reveal-delay=".9">Transformamos uma necessidade de construção em uma solução de engenharia executável, fabricável e montável. Concepção, detalhamento, fabricação, logística e montagem em um único processo.</p>
+          <h1 class="h1 hero__title" data-split="hero">Do terreno à estrutura <span class="hero__fecho">pronta.</span></h1>
+          <p class="lead hero__lead" data-reveal data-reveal-delay=".9">Galpões industriais, logísticos e edificações metálicas com engenharia própria, fábrica em Goiânia e montagem pela mesma equipe. Do estudo do terreno à obra entregue, um único responsável.</p>
           <div class="hero__actions" data-reveal data-reveal-delay="1.05">
             <a class="btn btn--primary" href="/contato/" data-magnetic><span>Iniciar um projeto</span><svg class="btn__arrow" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 12 12 2M4 2h8v8"/></svg></a>
             <a class="btn" href="#processo" data-magnetic data-scroll><span>Conheça o processo</span></a>
           </div>
         </div>
         <div class="hero__hud" id="heroHud" aria-label="Capacidades de referência" data-reveal data-reveal-delay="1.2">
-          <div class="is-on"><span>Vão livre</span><strong class="num">40,00 m</strong></div>
-          <div><span>Pé-direito</span><strong class="num">12,00 m</strong></div>
+          <div class="is-on"><span>Vão executado</span><strong class="num">32,00 m</strong></div>
+          <div><span>Pé-direito executado</span><strong class="num">12,00 m</strong></div>
+          <div><span>Vão livre em projeto</span><strong class="num">40,00 m</strong></div>
           <div><span>Ligações em campo</span><strong>Parafusadas</strong></div>
         </div>
       </div>
@@ -68,16 +77,85 @@
           A EIFF não vende estrutura metálica. Transforma uma necessidade de construção em uma solução de engenharia executável, fabricável e montável. Quem projeta, fabrica. Quem fabrica, monta. Quem monta participou da engenharia. <span class="w--brand">O produto é previsibilidade.</span>
         </p>
         <div class="manifesto__pillars">
-          <div class="pillar" data-reveal><span class="pillar__idx">01</span><span class="pillar__name">Engineering</span><p class="pillar__text">Resolver antes de executar. Quanto mais decisões corretas no modelo, menos problemas na obra.</p></div>
-          <div class="pillar" data-reveal data-reveal-delay=".1"><span class="pillar__idx">02</span><span class="pillar__name">Fabrication</span><p class="pillar__text">Transformar projeto em precisão física, em ambiente controlado e rastreável.</p></div>
-          <div class="pillar" data-reveal data-reveal-delay=".2"><span class="pillar__idx">03</span><span class="pillar__name">Execution</span><p class="pillar__text">Fazer o projeto existir no mundo real, com logística e montagem na sequência planejada.</p></div>
-          <div class="pillar" data-reveal data-reveal-delay=".3"><span class="pillar__idx">04</span><span class="pillar__name">Control</span><p class="pillar__text">Integrar as etapas e reduzir incertezas de custo, prazo e resultado.</p></div>
+          <div class="pillar" data-reveal><span class="pillar__idx">01</span><span class="pillar__name">Engenharia</span><p class="pillar__text">Resolver antes de executar. Quanto mais decisões corretas no modelo, menos problemas na obra.</p></div>
+          <div class="pillar" data-reveal data-reveal-delay=".1"><span class="pillar__idx">02</span><span class="pillar__name">Fabricação</span><p class="pillar__text">Transformar projeto em precisão física, em ambiente controlado e rastreável.</p></div>
+          <div class="pillar" data-reveal data-reveal-delay=".2"><span class="pillar__idx">03</span><span class="pillar__name">Execução</span><p class="pillar__text">Fazer o projeto existir no mundo real, com logística e montagem na sequência planejada.</p></div>
+          <div class="pillar" data-reveal data-reveal-delay=".3"><span class="pillar__idx">04</span><span class="pillar__name">Controle</span><p class="pillar__text">Integrar as etapas e reduzir incertezas de custo, prazo e resultado.</p></div>
         </div>
       </div>
     </section>
 
     <!-- ============================================================
-         03 · PROCESSO (filme conduzido pelo scroll)
+         03 · CAPACIDADES
+    ============================================================ -->
+    <section class="cap section" id="capacidades">
+      <div class="wrap">
+        <div class="section-head">
+          <div><span class="eyebrow" data-reveal>Capacidades</span><h2 class="h2" data-split style="margin-top:22px">Obras executadas, número por número.</h2></div>
+          <div class="section-head__side" data-reveal><p class="body"><strong>Mostrar, não afirmar.</strong> Números de obras executadas pela equipe EIFF, incluindo a trajetória operacional anterior à marca. Cada valor tem um projeto correspondente.</p></div>
+        </div>
+        <div class="cap__grid">
+          <div class="stat" data-reveal><span class="stat__value"><span data-count="40" data-decimals="0">0</span><sub>m</sub></span><span class="stat__label">Vão livre em projeto</span><span class="stat__note">Solução para operação logística</span></div>
+          <div class="stat" data-reveal><span class="stat__value"><span data-count="12">0</span><sub>m</sub></span><span class="stat__label">Pé-direito livre executado</span><span class="stat__note">Complexo logístico · Aparecida de Goiânia</span></div>
+          <div class="stat" data-reveal><span class="stat__value"><span data-count="7">0</span><sub>t/m²</sub></span><span class="stat__label">Piso industrial executado</span><span class="stat__note">Complexo logístico · Aparecida de Goiânia</span></div>
+          <div class="stat" data-reveal><span class="stat__value"><span data-count="65">0</span><sub>dias</sub></span><span class="stat__label">Da fundação ao fechamento completo</span><span class="stat__note">Smart Fit · Cabo Frio</span></div>
+          <div class="stat" data-reveal><span class="stat__value"><span data-count="100">0</span><sub>%</sub></span><span class="stat__label">Ligações parafusadas em campo</span><span class="stat__note">Sistema pré-industrializado EIFF</span></div>
+          <div class="stat" data-reveal><span class="stat__value"><span data-count="3600" data-format="pt">0</span><sub>m²</sub></span><span class="stat__label">Em um único complexo</span><span class="stat__note">3 galpões · Aparecida de Goiânia</span></div>
+        </div>
+        <div class="cap__foot" data-reveal>
+          <p class="body">Capacidade fabril mensal, toneladas acumuladas e área total executada estão em consolidação e serão publicadas com a documentação correspondente.</p>
+          <p class="body">Rastreabilidade por corrida do aço, apontamento por estação e romaneio por carga fazem parte do controle de produção da EIFF.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         04 · SOLUÇÕES
+    ============================================================ -->
+    <section class="sol section" id="solucoes">
+      <div class="wrap">
+        <div class="section-head">
+          <div><span class="eyebrow" data-reveal>Soluções</span><h2 class="h2" data-split style="margin-top:22px">Para que tipo de operação você constrói?</h2></div>
+          <div class="section-head__side" data-reveal><p class="body">Indústria, logística, varejo, agro, incorporadores e escritórios de arquitetura e engenharia. A estrutura é o meio. O produto é a edificação operando.</p></div>
+        </div>
+        <div class="sol__rows" id="solRows">
+          <a class="sol__row" href="/galpao-metalico-industrial/" data-img="/img/foto-galpao-branco.jpg"><span class="idx">01</span><h3 class="h3">Industrial</h3><p>Galpões, plantas, ampliações, coberturas e áreas produtivas com pontes rolantes, cargas e interfaces de processo.</p><span class="link-arrow">Ver <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 7h12M8 2l5 5-5 5"/></svg></span></a>
+          <a class="sol__row" href="/galpao-logistico/" data-img="/img/foto-galpao-aereo.jpg"><span class="idx">02</span><h3 class="h3">Logística</h3><p>Centros de distribuição, armazéns e hubs com grandes vãos, pé-direito alto e piso para operação pesada.</p><span class="link-arrow">Ver <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 7h12M8 2l5 5-5 5"/></svg></span></a>
+          <a class="sol__row" href="/construcao-de-academias/" data-img="/img/foto-comercial-vidro.jpg"><span class="idx">03</span><h3 class="h3">Comercial</h3><p>Lojas, academias, supermercados e operações de varejo com prazo curto e fechamento completo.</p><span class="link-arrow">Ver <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 7h12M8 2l5 5-5 5"/></svg></span></a>
+          <a class="sol__row" href="/coberturas-e-mezaninos/" data-img="/img/foto-estrutura-noite.jpg"><span class="idx">04</span><h3 class="h3">Estruturas especiais</h3><p>Coberturas, marquises, mezaninos, passarelas e soluções específicas de engenharia para arquitetura e indústria.</p><span class="link-arrow">Ver <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 7h12M8 2l5 5-5 5"/></svg></span></a>
+        </div>
+      </div>
+      <div class="sol__float" id="solFloat" aria-hidden="true"></div>
+    </section>
+
+    <!-- ============================================================
+         05 · PROJETOS
+    ============================================================ -->
+    <section class="proj section" id="projetos">
+      <div class="wrap">
+        <div class="section-head">
+          <div><span class="eyebrow" data-reveal>Projetos</span><h2 class="h2" data-split style="margin-top:22px">Galpões e edificações metálicas sob medida.</h2></div>
+          <div class="section-head__side" data-reveal><p class="body">Modelo, fabricação, montagem, resultado. A mesma equipe responde pelas quatro etapas.</p><a class="link-arrow" href="/projetos/">Todos os projetos <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 7h12M8 2l5 5-5 5"/></svg></a></div>
+        </div>
+        <div class="proj__grid">
+          <a class="case" href="/projetos/#logistico" data-cursor="Ver" data-reveal>
+            <div class="case__media"><span class="case__tag">Logística</span><img src="/img/foto-galpao-aereo.jpg" srcset="/img/foto-galpao-aereo-800.jpg 800w, /img/foto-galpao-aereo.jpg 1600w" sizes="(max-width: 640px) 100vw, (max-width: 1080px) 50vw, 33vw" alt="Vista aérea do complexo logístico de três galpões em Aparecida de Goiânia, executado pela EIFF" loading="lazy" decoding="async"></div>
+            <div class="case__body"><span class="case__title">Complexo logístico</span><span class="case__meta">Aparecida de Goiânia, GO · 3.600 m² · 3 galpões</span><span class="case__num">01</span></div>
+          </a>
+          <a class="case" href="/projetos/#smartfit" data-cursor="Ver" data-reveal data-reveal-delay=".1">
+            <div class="case__media"><span class="case__tag">Comercial</span><img src="/img/foto-smartfit.jpg" srcset="/img/foto-smartfit-800.jpg 800w, /img/foto-smartfit.jpg 1600w" sizes="(max-width: 640px) 100vw, (max-width: 1080px) 50vw, 33vw" alt="Academia Smart Fit em Cabo Frio, edificação metálica entregue em 65 dias" loading="lazy" decoding="async"></div>
+            <div class="case__body"><span class="case__title">Smart Fit Cabo Frio</span><span class="case__meta">Cabo Frio, RJ · 1.200 m² · 65 dias</span><span class="case__num">02</span></div>
+          </a>
+          <a class="case" href="/projetos/#painelizada" data-cursor="Ver" data-reveal data-reveal-delay=".2">
+            <div class="case__media"><span class="case__tag">Tecnologia EIFF</span><img src="/img/foto-estrutura-aerea.jpg" srcset="/img/foto-estrutura-aerea-800.jpg 800w, /img/foto-estrutura-aerea.jpg 1600w" sizes="(max-width: 640px) 100vw, (max-width: 1080px) 50vw, 33vw" alt="Edificação metálica painelizada em área urbana central de Goiânia" loading="lazy" decoding="async"></div>
+            <div class="case__body"><span class="case__title">Edificação painelizada</span><span class="case__meta">Goiânia, GO · 600 m² · área urbana central</span><span class="case__num">03</span></div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         06 · PROCESSO (filme conduzido pelo scroll)
     ============================================================ -->
     <section class="filme" id="processo" aria-label="Processo EIFF">
       <div class="filme__pin" id="filmePin">
@@ -89,7 +167,7 @@
         <div class="filme__ui">
           <div class="filme__top">
             <span class="eyebrow eyebrow--ink">Processo EIFF</span>
-            <div class="filme__index"><span>Etapa <b id="filmeCur">01</b> / 07</span><span id="filmeName">Entender</span></div>
+            <div class="filme__index"><span>Etapa <b id="filmeCur">01</b> / 07</span><span id="filmeName">Entender</span><button class="pular" type="button" id="filmePular">Pular as 7 etapas</button></div>
           </div>
 
           <div class="filme__body">
@@ -123,15 +201,15 @@
     </section>
 
     <!-- ============================================================
-         04 · ENGENHARIA
+         07 · ENGENHARIA
     ============================================================ -->
     <section class="eng section" id="engenharia">
       <div class="wrap">
         <div class="eng__grid">
           <div class="eng__copy">
             <span class="eyebrow" data-reveal>Engenharia</span>
-            <h2 class="h2" data-split>Antes de fabricar, nós resolvemos.</h2>
-            <p class="lead" data-reveal>Antes da primeira peça sair da fábrica, uma quantidade enorme de decisões precisa estar correta. Quanto mais problemas forem resolvidos no ambiente de engenharia, menos problemas chegam à obra.</p>
+            <h2 class="h2" data-split>Projeto estrutural e detalhamento antes da fábrica.</h2>
+            <p class="lead" data-reveal>Concepção, cálculo, detalhamento, compatibilização e o planejamento de fabricação e de montagem, fechados no mesmo modelo tridimensional. Seis decisões antes de a primeira peça ser cortada.</p>
             <ol class="eng__list" id="engList">
               <li class="eng__item is-active"><span class="idx">01</span><h3 class="h4">Concepção</h3><p>Sistema estrutural, modulação e implantação definidos a partir da operação do cliente, do terreno e das cargas.</p></li>
               <li class="eng__item"><span class="idx">02</span><h3 class="h4">Cálculo e modelagem</h3><p>Modelo tridimensional único: geometria, cargas, combinações e verificação de cada elemento.</p></li>
@@ -242,7 +320,7 @@
     </section>
 
     <!-- ============================================================
-         05 · PROJETO DESTACADO
+         08 · PROJETO DESTACADO
     ============================================================ -->
     <section class="destaque" id="destaque" aria-label="Projeto destacado">
       <div class="destaque__bg" id="destaqueBg" aria-hidden="true"><img src="/img/foto-galpao-interior.jpg" srcset="/img/foto-galpao-interior-800.jpg 800w, /img/foto-galpao-interior.jpg 1600w" sizes="100vw" alt="" loading="lazy" decoding="async"></div>
@@ -259,16 +337,17 @@
             <div><b class="num">7 t/m²</b><small>Piso</small></div>
           </div>
         </div>
-        <button class="play" type="button" data-video="wj-hzRkOYqs" data-reveal data-cursor="Assistir"><i></i><span>Assistir à obra</span></button>
+        <button class="play" type="button" data-video="wj-hzRkOYqs" data-evento="complexo-logistico" data-reveal data-cursor="Assistir"><i></i><span>Assistir à obra</span></button>
       </div>
     </section>
 
     <!-- ============================================================
-         06 · FABRICAÇÃO (horizontal)
+         09 · FABRICAÇÃO (horizontal)
     ============================================================ -->
     <section class="fab" id="fabricacao" aria-label="Fabricação">
       <div class="fab__pin" id="fabPin">
         <div class="fab__bg" aria-hidden="true">
+          <img class="fab__foto" src="/img/foto-fabrica-portico.jpg" srcset="/img/foto-fabrica-portico-800.jpg 800w, /img/foto-fabrica-portico.jpg 1600w" sizes="100vw" alt="" loading="lazy" decoding="async">
           <svg class="fab__pecas" id="fabPecas" viewBox="0 0 2400 800" fill="none" stroke="rgba(242,240,236,.22)" stroke-width="1.2" preserveAspectRatio="xMinYMid slice">
             <g><path d="M120 200h160M120 600h160M200 200v400"/><path d="M110 190h180v20H110zM110 590h180v20H110z"/><path d="M190 220v360h20V220z"/></g>
             <g transform="translate(420 140)"><rect x="0" y="0" width="420" height="520"/><path d="M0 260h420M210 0v520"/><circle cx="60" cy="60" r="7"/><circle cx="360" cy="60" r="7"/><circle cx="60" cy="460" r="7"/><circle cx="360" cy="460" r="7"/><circle cx="60" cy="260" r="7"/><circle cx="360" cy="260" r="7"/></g>
@@ -282,11 +361,14 @@
           <div class="fab__panel fab__panel--intro">
             <span class="eyebrow">Fabricação</span>
             <div class="st-body">
-              <h2 class="h2">A fábrica como extensão da engenharia.</h2>
-              <p class="lead">O projeto deixa de existir só como desenho e passa a existir fisicamente dentro de um ambiente controlado de produção. Seis estações, cada uma com entrada, saída e inspeção.</p>
+              <h2 class="h2">Fabricação de estruturas metálicas em Goiânia.</h2>
+              <p class="lead">A fábrica como extensão da engenharia: o projeto deixa de existir só como desenho e passa a existir fisicamente, em ambiente controlado de produção. Seis estações, cada uma com entrada, saída e inspeção.</p>
             </div>
-            <span class="mono muted">Corte → Furação → Montagem → Solda → Pintura → Expedição</span>
           </div>
+          <figure class="fab__panel fab__panel--foto">
+            <img src="/img/foto-fabrica-vigas.jpg" srcset="/img/foto-fabrica-vigas-800.jpg 800w, /img/foto-fabrica-vigas.jpg 1600w" sizes="(max-width: 640px) 100vw, 44vw" alt="Vigas metálicas alinhadas no galpão de fabricação da EIFF, em Goiânia" loading="lazy" decoding="async">
+            <figcaption class="mono">Galpão de fabricação · Goiânia, GO</figcaption>
+          </figure>
           <div class="fab__panel"><span class="st-idx">01</span><div class="st-body"><h3 class="h3">Corte</h3><p>Chapas e perfis cortados conforme a lista de materiais gerada no modelo. Nada é medido na fábrica: tudo já chega decidido.</p><dl class="spec st-spec"><dt>Entrada</dt><dd>Lista de materiais</dd><dt>Saída</dt><dd>Peças identificadas</dd></dl></div></div>
           <div class="fab__panel"><span class="st-idx">02</span><div class="st-body"><h3 class="h3">Furação</h3><p>Furos posicionados a partir do detalhamento. É aqui que a ligação parafusada começa a existir.</p><dl class="spec st-spec"><dt>Controle</dt><dd>Dimensional por peça</dd><dt>Saída</dt><dd>Peças prontas p/ conjunto</dd></dl></div></div>
           <div class="fab__panel"><span class="st-idx">03</span><div class="st-body"><h3 class="h3">Montagem e ponteamento</h3><p>Componentes posicionados e ponteados em gabarito. Repetibilidade de conjunto a conjunto.</p><dl class="spec st-spec"><dt>Unidade</dt><dd>Conjunto / marca</dd><dt>Rastreio</dt><dd>Por corrida do aço</dd></dl></div></div>
@@ -295,133 +377,23 @@
           <div class="fab__panel"><span class="st-idx">06</span><div class="st-body"><h3 class="h3">Expedição</h3><p>Romaneio por carga na ordem de montagem. O caminhão chega com o que a obra vai içar naquele dia.</p><dl class="spec st-spec"><dt>Documento</dt><dd>Romaneio por carga</dd><dt>Sequência</dt><dd>A da montagem</dd></dl><a class="link-arrow" href="/fabricacao/" style="margin-top:20px">Ver a fábrica <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 7h12M8 2l5 5-5 5"/></svg></a></div></div>
         </div>
         <div class="fab__progress" aria-hidden="true"><i id="fabProgress"></i></div>
-        <span class="fab__hint" aria-hidden="true">Scroll para percorrer</span>
-      </div>
-    </section>
-
-    <!-- ============================================================
-         07 · CAPACIDADES
-    ============================================================ -->
-    <section class="cap section" id="capacidades">
-      <div class="wrap">
-        <div class="section-head">
-          <div><span class="eyebrow" data-reveal>Capacidades</span><h2 class="h2" data-split style="margin-top:22px">Mostrar, não afirmar.</h2></div>
-          <div class="section-head__side" data-reveal><p class="body">Números de obras executadas pela equipe EIFF, incluindo a trajetória operacional anterior à marca. Cada valor tem um projeto correspondente.</p></div>
-        </div>
-        <div class="cap__grid">
-          <div class="stat" data-reveal><span class="stat__value"><span data-count="40" data-decimals="0">0</span><sub>m</sub></span><span class="stat__label">Vão livre em projeto</span><span class="stat__note">Solução para operação logística</span></div>
-          <div class="stat" data-reveal><span class="stat__value"><span data-count="12">0</span><sub>m</sub></span><span class="stat__label">Pé-direito livre executado</span><span class="stat__note">Complexo logístico · Aparecida de Goiânia</span></div>
-          <div class="stat" data-reveal><span class="stat__value"><span data-count="7">0</span><sub>t/m²</sub></span><span class="stat__label">Piso industrial executado</span><span class="stat__note">Complexo logístico · Aparecida de Goiânia</span></div>
-          <div class="stat" data-reveal><span class="stat__value"><span data-count="65">0</span><sub>dias</sub></span><span class="stat__label">Da fundação ao fechamento completo</span><span class="stat__note">Smart Fit · Cabo Frio</span></div>
-          <div class="stat" data-reveal><span class="stat__value"><span data-count="100">0</span><sub>%</sub></span><span class="stat__label">Ligações parafusadas em campo</span><span class="stat__note">Sistema pré-industrializado EIFF</span></div>
-          <div class="stat" data-reveal><span class="stat__value"><span data-count="3600" data-format="pt">0</span><sub>m²</sub></span><span class="stat__label">Em um único complexo</span><span class="stat__note">3 galpões · Aparecida de Goiânia</span></div>
-        </div>
-        <div class="cap__foot" data-reveal>
-          <p class="body">Capacidade fabril mensal, toneladas acumuladas e área total executada estão em consolidação e serão publicadas com a documentação correspondente.</p>
-          <p class="body">Rastreabilidade por corrida do aço, apontamento por estação e romaneio por carga fazem parte do controle de produção da EIFF.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============================================================
-         08 · SOLUÇÕES
-    ============================================================ -->
-    <section class="sol section" id="solucoes">
-      <div class="wrap">
-        <div class="section-head">
-          <div><span class="eyebrow" data-reveal>Soluções</span><h2 class="h2" data-split style="margin-top:22px">O que você precisa colocar de pé?</h2></div>
-          <div class="section-head__side" data-reveal><p class="body">Indústria, logística, varejo, agro, incorporadores e escritórios de arquitetura e engenharia. A estrutura é o meio. O produto é a edificação operando.</p></div>
-        </div>
-        <div class="sol__rows" id="solRows">
-          <a class="sol__row" href="/galpao-metalico-industrial/" data-img="/img/foto-galpao-branco.jpg"><span class="idx">01</span><h3 class="h3">Industrial</h3><p>Galpões, plantas, ampliações, coberturas e áreas produtivas com pontes rolantes, cargas e interfaces de processo.</p><span class="link-arrow">Ver <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 7h12M8 2l5 5-5 5"/></svg></span></a>
-          <a class="sol__row" href="/galpao-logistico/" data-img="/img/foto-galpao-aereo.jpg"><span class="idx">02</span><h3 class="h3">Logística</h3><p>Centros de distribuição, armazéns e hubs com grandes vãos, pé-direito alto e piso para operação pesada.</p><span class="link-arrow">Ver <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 7h12M8 2l5 5-5 5"/></svg></span></a>
-          <a class="sol__row" href="/construcao-de-academias/" data-img="/img/foto-comercial-vidro.jpg"><span class="idx">03</span><h3 class="h3">Comercial</h3><p>Lojas, academias, supermercados e operações de varejo com prazo curto e fechamento completo.</p><span class="link-arrow">Ver <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 7h12M8 2l5 5-5 5"/></svg></span></a>
-          <a class="sol__row" href="/coberturas-e-mezaninos/" data-img="/img/foto-estrutura-noite.jpg"><span class="idx">04</span><h3 class="h3">Estruturas especiais</h3><p>Coberturas, marquises, mezaninos, passarelas e soluções específicas de engenharia para arquitetura e indústria.</p><span class="link-arrow">Ver <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 7h12M8 2l5 5-5 5"/></svg></span></a>
-        </div>
-      </div>
-      <div class="sol__float" id="solFloat" aria-hidden="true"></div>
-    </section>
-
-    <!-- ============================================================
-         09 · PROJETOS
-    ============================================================ -->
-    <section class="proj section" id="projetos">
-      <div class="wrap">
-        <div class="section-head">
-          <div><span class="eyebrow" data-reveal>Projetos</span><h2 class="h2" data-split style="margin-top:22px">Modelo, fabricação, montagem, resultado.</h2></div>
-          <div class="section-head__side" data-reveal><a class="link-arrow" href="/projetos/">Todos os projetos <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 7h12M8 2l5 5-5 5"/></svg></a></div>
-        </div>
-        <div class="proj__grid">
-          <a class="case" href="/projetos/#logistico" data-cursor="Ver" data-reveal>
-            <div class="case__media"><span class="case__tag">Logística</span><img src="/img/foto-galpao-aereo.jpg" srcset="/img/foto-galpao-aereo-800.jpg 800w, /img/foto-galpao-aereo.jpg 1600w" sizes="(max-width: 640px) 100vw, (max-width: 1080px) 50vw, 33vw" alt="Complexo logístico em Aparecida de Goiânia" loading="lazy" decoding="async"></div>
-            <div class="case__body"><span class="case__title">Complexo logístico</span><span class="case__meta">Aparecida de Goiânia, GO · 3.600 m² · 3 galpões</span><span class="case__num">01</span></div>
-          </a>
-          <a class="case" href="/projetos/#smartfit" data-cursor="Ver" data-reveal data-reveal-delay=".1">
-            <div class="case__media"><span class="case__tag">Comercial</span><img src="/img/foto-smartfit.jpg" srcset="/img/foto-smartfit-800.jpg 800w, /img/foto-smartfit.jpg 1600w" sizes="(max-width: 640px) 100vw, (max-width: 1080px) 50vw, 33vw" alt="Academia Smart Fit em Cabo Frio" loading="lazy" decoding="async"></div>
-            <div class="case__body"><span class="case__title">Smart Fit Cabo Frio</span><span class="case__meta">Cabo Frio, RJ · 1.200 m² · 65 dias</span><span class="case__num">02</span></div>
-          </a>
-          <a class="case" href="/projetos/#painelizada" data-cursor="Ver" data-reveal data-reveal-delay=".2">
-            <div class="case__media"><span class="case__tag">Tecnologia EIFF</span><img src="/img/foto-estrutura-aerea.jpg" srcset="/img/foto-estrutura-aerea-800.jpg 800w, /img/foto-estrutura-aerea.jpg 1600w" sizes="(max-width: 640px) 100vw, (max-width: 1080px) 50vw, 33vw" alt="Edificação painelizada em Goiânia" loading="lazy" decoding="async"></div>
-            <div class="case__body"><span class="case__title">Edificação painelizada</span><span class="case__meta">Goiânia, GO · 600 m² · área urbana central</span><span class="case__num">03</span></div>
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============================================================
-         10 · DUAS FRENTES
-    ============================================================ -->
-    <section class="duas section" id="produtos">
-      <div class="bg-grid" aria-hidden="true"></div>
-      <div class="wrap">
-        <div class="section-head">
-          <div><span class="eyebrow" data-reveal>Duas frentes</span><h2 class="h2" data-split style="margin-top:22px">Duas frentes. Um único processo.</h2></div>
-          <div class="section-head__side" data-reveal><p class="body">Projetos desenvolvidos para uma necessidade específica e soluções previamente desenvolvidas e industrializadas. A mesma engenharia, a mesma fábrica.</p></div>
-        </div>
-        <div class="duas__grid">
-          <div class="duas__col" data-reveal>
-            <span class="eyebrow">Projetos especiais</span>
-            <div>
-              <h3 class="h3">Soluções desenvolvidas para a sua operação.</h3>
-              <ul style="margin-top:24px">
-                <li>Galpões industriais e logísticos</li>
-                <li>Plantas, ampliações e áreas produtivas</li>
-                <li>Lojas, academias e operações de varejo</li>
-                <li>Coberturas, marquises e estruturas especiais</li>
-                <li>Edificações metálicas completas, com fundações, fechamentos e interfaces</li>
-              </ul>
-            </div>
-            <a class="link-arrow" href="/solucoes/">Ver soluções <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 7h12M8 2l5 5-5 5"/></svg></a>
+        <div class="fab__nav" id="fabNav">
+          <div class="fab__estacoes" role="tablist" aria-label="Estações da fábrica">
+            <button type="button" role="tab" data-fab="0" class="is-active" aria-selected="true"><span>00</span>Visão geral</button>
+            <button type="button" role="tab" data-fab="1" aria-selected="false"><span>01</span>Corte</button>
+            <button type="button" role="tab" data-fab="2" aria-selected="false"><span>02</span>Furação</button>
+            <button type="button" role="tab" data-fab="3" aria-selected="false"><span>03</span>Montagem</button>
+            <button type="button" role="tab" data-fab="4" aria-selected="false"><span>04</span>Solda</button>
+            <button type="button" role="tab" data-fab="5" aria-selected="false"><span>05</span>Pintura</button>
+            <button type="button" role="tab" data-fab="6" aria-selected="false"><span>06</span>Expedição</button>
           </div>
-          <div class="duas__col" data-reveal data-reveal-delay=".12">
-            <span class="eyebrow">Produtos EIFF</span>
-            <div class="duas__fig" aria-hidden="true">
-              <svg viewBox="0 0 220 200" fill="none" stroke="rgba(242,240,236,.7)" stroke-width="1.2" stroke-linejoin="round" id="produtoIso">
-                <path class="iso" d="M30 120 L110 160 L190 120 L110 80 Z"/>
-                <path class="iso" d="M30 120 V60 L110 20 L190 60 V120"/>
-                <path class="iso" d="M110 160 V100"/><path class="iso" d="M110 100 L30 60"/><path class="iso" d="M110 100 L190 60"/>
-                <path class="iso" d="M110 20 V100" stroke="#c84119"/>
-                <path class="iso" d="M50 70 V130M70 80 V140M90 90 V150M130 90 V150M150 80 V140M170 70 V130" stroke="rgba(242,240,236,.3)"/>
-                <path class="iso" d="M30 60 L110 100 L190 60" stroke="rgba(242,240,236,.3)" stroke-dasharray="2 4"/>
-              </svg>
-            </div>
-            <div>
-              <h3 class="h3">Sistemas industrializados padronizados.</h3>
-              <ul style="margin-top:24px">
-                <li>Depósito metálico modular EIFF</li>
-                <li>Módulos e construções compactas</li>
-                <li>Sistemas metálicos de fabricação seriada</li>
-              </ul>
-              <span class="duas__status" style="margin-top:24px">Em desenvolvimento</span>
-            </div>
-            <a class="link-arrow" href="/produtos/">Linha de produtos <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 7h12M8 2l5 5-5 5"/></svg></a>
-          </div>
+          <button class="pular" type="button" id="fabPular">Pular as 6 estações</button>
         </div>
       </div>
     </section>
 
     <!-- ============================================================
-         11 · CTA
+         10 · CTA
     ============================================================ -->
     <section class="cta" id="iniciar">
       <div class="wrap cta__grid">

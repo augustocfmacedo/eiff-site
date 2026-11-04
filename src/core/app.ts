@@ -8,6 +8,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { SplitText } from 'gsap/SplitText'
 import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin'
 import Lenis from 'lenis'
+import { registrarSite } from './eventos'
 
 gsap.registerPlugin(ScrollTrigger, SplitText, DrawSVGPlugin)
 
@@ -56,8 +57,14 @@ function iniciarPreloader(lenis: Lenis | null): Promise<void> {
 
   if (!pre || !curtain) return Promise.resolve().then(liberar)
 
-  // Chegando por transição interna: a cortina já cobre a tela, basta abrir.
-  if (veioDeTransicao || reduzMovimento) {
+  // O preloader é uma apresentação, e apresentação se faz uma vez: ele só roda
+  // na primeira chegada da sessão. Transição interna, visita repetida (recarga,
+  // volta pelo histórico, link direto) e preferência por menos movimento entram
+  // pela cortina simples.
+  const jaVisitou = sessionStorage.getItem(CHAVE_VISITA) === '1'
+  sessionStorage.setItem(CHAVE_VISITA, '1')
+
+  if (veioDeTransicao || reduzMovimento || jaVisitou) {
     pre.remove()
     gsap.set(curtain, { scaleY: 1, transformOrigin: 'top' })
     return new Promise((res) => {
@@ -65,12 +72,10 @@ function iniciarPreloader(lenis: Lenis | null): Promise<void> {
     })
   }
 
-  const rapido = sessionStorage.getItem(CHAVE_VISITA) === '1'
-  sessionStorage.setItem(CHAVE_VISITA, '1')
   const pecas = $$('.pz', pre)
   const pct = $('#preloaderPct', pre)
   const bar = $('#preloaderBar', pre)
-  const dur = rapido ? 0.5 : 0.95
+  const dur = 0.95
 
   // Peças do símbolo entram de fora para a posição final (montagem).
   // Deslocamentos em unidades do viewBox do símbolo (549 de altura).
@@ -270,7 +275,11 @@ function iniciarLightbox(lenis: Lenis | null) {
   }
   document.addEventListener('click', (e) => {
     const t = (e.target as HTMLElement).closest<HTMLElement>('[data-video]')
-    if (t) { ultimoFoco = t; abrir(t.dataset.video!) }
+    if (t) {
+      ultimoFoco = t
+      abrir(t.dataset.video!)
+      registrarSite('video_play', t.dataset.evento || t.textContent?.trim())
+    }
   })
   fechar?.addEventListener('click', close)
   box.addEventListener('click', (e) => { if (e.target === box) close() })

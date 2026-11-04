@@ -7,11 +7,13 @@
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import type { App } from '../core/app'
+import type { HudHero } from './hero3d'
+import { registrarSite } from '../core/eventos'
 
 const ETAPAS_ENG = ['Grade e eixos', 'Pórtico e cotas', 'Nós e ligações', 'Fundações, piso e interfaces', 'Marcas e lotes', 'Sequência de içamento']
 const NOMES_ENG = ['01 · Concepção', '02 · Modelagem', '03 · Detalhamento', '04 · Compatibilização', '05 · Fabricação', '06 · Montagem']
 
-export function iniciarManifesto() {
+export function iniciarManifesto(reduzMovimento: boolean) {
   const el = document.getElementById('manifestoText')
   if (!el) return
   const partes: string[] = []
@@ -24,20 +26,40 @@ export function iniciarManifesto() {
   })
   el.innerHTML = partes.join(' ')
   const palavras = el.querySelectorAll('.w')
+  // Sem movimento: o manifesto é o melhor texto do site, não pode depender do scroll.
+  if (reduzMovimento) {
+    gsap.set(palavras, { opacity: 1 })
+    return
+  }
   gsap.to(palavras, {
     opacity: 1, stagger: 0.06, ease: 'none',
     scrollTrigger: { trigger: el, start: 'top 78%', end: 'bottom 45%', scrub: 0.4 },
   })
 }
 
-export function iniciarHudHero() {
+/**
+ * HUD do hero. Sozinho ele reveza as medidas no relógio; quando a cena 3D
+ * carrega, ela assume e cada medida acende no momento em que a estrutura
+ * correspondente é desenhada. Sem WebGL, o revezamento continua valendo.
+ */
+export function iniciarHudHero(): HudHero | null {
   const itens = Array.from(document.querySelectorAll<HTMLElement>('#heroHud > div'))
-  if (!itens.length) return
+  if (!itens.length) return null
+  const destacar = (i: number) => itens.forEach((el, k) => el.classList.toggle('is-on', k === i))
   let i = 0
-  setInterval(() => {
+  let relogio: number | undefined = window.setInterval(() => {
     i = (i + 1) % itens.length
-    itens.forEach((el, k) => el.classList.toggle('is-on', k === i))
+    destacar(i)
   }, 3200)
+  return {
+    destacar,
+    assumir() {
+      if (relogio === undefined) return
+      window.clearInterval(relogio)
+      relogio = undefined
+      destacar(0)
+    },
+  }
 }
 
 export function iniciarEngenharia(reduzMovimento: boolean) {
@@ -93,22 +115,54 @@ export function iniciarDestaque() {
   gsap.fromTo(bg, { yPercent: -8 }, { yPercent: 8, ease: 'none', scrollTrigger: { trigger: bg.parentElement, start: 'top bottom', end: 'bottom top', scrub: true } })
 }
 
-export function iniciarFabricacao() {
+export function iniciarFabricacao(app: App) {
   const pin = document.getElementById('fabPin')
   const track = document.getElementById('fabTrack')
   const barra = document.getElementById('fabProgress')
   const pecas = document.getElementById('fabPecas')
   if (!pin || !track) return
+  // Um painel por botão, na mesma ordem: abertura e as seis estações. O painel
+  // de foto fica de fora — é respiro visual, não etapa, e se entrasse aqui
+  // deslocaria em um todos os botões seguintes.
+  const paineis = Array.from(track.querySelectorAll<HTMLElement>('.fab__panel:not(.fab__panel--foto)'))
+  const estacoes = Array.from(pin.querySelectorAll<HTMLButtonElement>('[data-fab]'))
   const distancia = () => Math.max(0, track.scrollWidth - window.innerWidth)
-  gsap.to(track, {
+
+  const marcar = (i: number) => estacoes.forEach((b, k) => {
+    b.classList.toggle('is-active', k === i)
+    b.setAttribute('aria-selected', String(k === i))
+  })
+
+  const tween = gsap.to(track, {
     x: () => -distancia(), ease: 'none',
     scrollTrigger: {
       trigger: pin, pin: true, start: 'top top', end: () => `+=${distancia() + window.innerHeight * 0.4}`, scrub: 0.6, invalidateOnRefresh: true, anticipatePin: 1,
       onUpdate: (self) => {
         if (barra) barra.style.transform = `scaleX(${self.progress})`
         if (pecas) pecas.style.transform = `translate(${-self.progress * distancia() * 0.35}px, -50%)`
+        // Estação ativa: o último painel que já encostou na borda esquerda. No
+        // fim do percurso o track para com os dois últimos painéis na tela, e
+        // nenhum deles chega à borda — por isso o fim marca sempre o último.
+        const d = distancia()
+        const x = self.progress * d
+        let i = 0
+        paineis.forEach((p, k) => { if (p.offsetLeft <= x + 8) i = k })
+        marcar(x >= d - 1 ? paineis.length - 1 : i)
       },
     },
+  })
+  const st = tween.scrollTrigger!
+
+  // Âncoras: cada estação leva ao ponto de scroll em que o painel entra na tela.
+  estacoes.forEach((b, k) => b.addEventListener('click', () => {
+    const d = distancia()
+    const alvo = d === 0 ? 0 : Math.min(1, (paineis[k]?.offsetLeft ?? 0) / d)
+    app.scrollPara(st.start + alvo * (st.end - st.start) + 1, { offset: 0 })
+  }))
+
+  // Saída para quem não quer percorrer as seis estações pelo scroll.
+  document.getElementById('fabPular')?.addEventListener('click', () => {
+    app.scrollPara(st.end + 1, { offset: 0 })
   })
 }
 
@@ -139,13 +193,24 @@ export function iniciarProdutoIso() {
   ScrollTrigger.create({ trigger: svg, start: 'top 85%', once: true, onEnter: () => gsap.to(paths, { drawSVG: '100%', duration: 1.4, ease: 'power2.inOut', stagger: 0.08 }) })
 }
 
+/**
+ * Chegada à seção Projetos: é o sinal de que o visitante quis ver obra feita,
+ * e o único ponto de medição de rolagem da home. Dispara uma vez por carga.
+ */
+function medirChegadaProjetos() {
+  const alvo = document.getElementById('projetos')
+  if (!alvo) return
+  ScrollTrigger.create({ trigger: alvo, start: 'top 70%', once: true, onEnter: () => registrarSite('secao_projetos') })
+}
+
 export function iniciarHome(app: App, reduzMovimento: boolean, temMouse: boolean) {
-  iniciarManifesto()
-  iniciarHudHero()
+  iniciarManifesto(reduzMovimento)
+  const hud = iniciarHudHero()
   iniciarEngenharia(reduzMovimento)
   iniciarDestaque()
-  iniciarFabricacao()
+  iniciarFabricacao(app)
   iniciarSolucoes(temMouse)
   iniciarProdutoIso()
-  void app
+  medirChegadaProjetos()
+  return hud
 }

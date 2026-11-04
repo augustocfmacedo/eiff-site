@@ -65,5 +65,11 @@ export function iniciarFilme(app: App, reduzMovimento: boolean) {
     const y = st.start + ((k + 0.08) / N) * (st.end - st.start)
     app.scrollPara(y, { offset: 0 })
   }))
+
+  // Saída para quem não quer percorrer as sete etapas pelo scroll.
+  document.getElementById('filmePular')?.addEventListener('click', () => {
+    app.scrollPara(st.end + 1, { offset: 0 })
+  })
+
   mostrar(0)
 }

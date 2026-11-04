@@ -6,7 +6,7 @@
  */
 import * as THREE from 'three'
 import gsap from 'gsap'
-import { COMP, CUME, FRAME_CENTRAL, PASSO, PE, VAO, Z0, criarLinhas, criarPaineis, criarTerreno, gerarPartes, janela, lerp, setCam, setO, setP, suave, type Linhas, type Segmento } from './desenho'
+import { COMP, CUME, FRAME_CENTRAL, PASSO, PE, VAO, Z0, criarLinhas, criarPaineis, criarTerreno, gerarPartes, janela, lerp, setCam, setO, setP, suave, type Linhas, type ParteFrame, type Segmento } from './desenho'
 
 interface Chave { pos: [number, number, number]; alvo: [number, number, number] }
 const CAMERA: Chave[] = [
@@ -20,21 +20,30 @@ const CAMERA: Chave[] = [
   { pos: [96, 36, 100], alvo: [-6, 6, 0] },
 ]
 
-/** Um pórtico físico: quatro partes (pilar E, pilar D, viga E, viga D) para poder explodir. */
+/**
+ * Um pórtico físico: quatro peças (pilar E, pilar D, viga E, viga D) para poder
+ * explodir. A separação vem da etiqueta que a geometria já carrega — inferir
+ * pela posição deixou de funcionar quando a peça passou a ser desenhada pela
+ * seção, porque uma aba e uma tampa de extremidade não têm a forma do eixo.
+ */
 function criarPortico(F: Segmento[], z: number) {
   const g = new THREE.Group()
-  const local = F.map((s) => ({ ...s, a: s.a.clone().setZ(0), b: s.b.clone().setZ(0), t: 0, acento: 0 }))
-  const partes: { filtro: (s: Segmento) => boolean; explode: THREE.Vector3 }[] = [
-    { filtro: (s) => s.a.x < -1 && s.b.x < -1 && Math.max(s.a.y, s.b.y) <= PE + 0.01 && Math.abs(s.a.x - s.b.x) < 0.01, explode: new THREE.Vector3(-9, -2, 0) },
-    { filtro: (s) => s.a.x > 1 && s.b.x > 1 && Math.max(s.a.y, s.b.y) <= PE + 0.01 && Math.abs(s.a.x - s.b.x) < 0.01, explode: new THREE.Vector3(9, -2, 0) },
-    { filtro: (s) => (s.a.x + s.b.x) / 2 < 0 && Math.max(s.a.y, s.b.y) > PE - 2, explode: new THREE.Vector3(-4, 7, 0) },
-    { filtro: (s) => (s.a.x + s.b.x) / 2 >= 0 && Math.max(s.a.y, s.b.y) > PE - 2, explode: new THREE.Vector3(4, 7, 0) },
+  // Local ao pórtico: desconta o z da baia, sem achatar — as duas abas vivem
+  // em z distintos, e zerar colapsaria a seção numa linha só.
+  const local = F.map((s) => ({
+    ...s,
+    a: new THREE.Vector3(s.a.x, s.a.y, s.a.z - z),
+    b: new THREE.Vector3(s.b.x, s.b.y, s.b.z - z),
+    t: 0, acento: 0,
+  }))
+  const partes: { parte: ParteFrame; explode: THREE.Vector3 }[] = [
+    { parte: 'pilar-e', explode: new THREE.Vector3(-9, -2, 0) },
+    { parte: 'pilar-d', explode: new THREE.Vector3(9, -2, 0) },
+    { parte: 'viga-e', explode: new THREE.Vector3(-4, 7, 0) },
+    { parte: 'viga-d', explode: new THREE.Vector3(4, 7, 0) },
   ]
-  const usados = new Set<Segmento>()
-  const filhos = partes.map(({ filtro, explode }) => {
-    const segs = local.filter((s) => !usados.has(s) && filtro(s))
-    segs.forEach((s) => usados.add(s))
-    const l = criarLinhas(segs, 0.9)
+  const filhos = partes.map(({ parte, explode }) => {
+    const l = criarLinhas(local.filter((s) => s.parte === parte), 0.9)
     setP(l, 1); l.userData.explode = explode
     g.add(l)
     return l

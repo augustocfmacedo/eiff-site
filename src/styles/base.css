@@ -59,7 +59,7 @@ h1, h2, h3, h4 { margin: 0; font-weight: 500; }
 
 .mono {
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   line-height: 1.4;
@@ -69,7 +69,7 @@ h1, h2, h3, h4 { margin: 0; font-weight: 500; }
   align-items: center;
   gap: 12px;
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ink-3);
@@ -103,7 +103,7 @@ h1, h2, h3, h4 { margin: 0; font-weight: 500; }
 .section-head__side { display: flex; flex-direction: column; gap: 18px; }
 .section-head__index {
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   letter-spacing: 0.14em;
   color: var(--ink-3);
   display: flex;

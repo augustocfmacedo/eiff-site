@@ -374,8 +374,7 @@ describe('croqui inicial coerente com os valores padrão', () => {
     const noHtml = (id: string) => html.match(new RegExp(`id="${id}"[^>]*\\sd="([^"]+)"`))![1]
     expect(noHtml('cqPilares')).toBe(c.pilares)
     expect(noHtml('cqCobertura')).toBe(c.cobertura)
-    expect(noHtml('cqBanzo')).toBe(c.banzo)
-    expect(noHtml('cqTrelica')).toBe(c.trelica)
+    expect(noHtml('cqAlma')).toBe(c.alma)
     expect(noHtml('cqSolo')).toBe(c.solo)
     expect(noHtml('cqCotaVao')).toBe(c.cotaVao.caminho)
     expect(noHtml('cqCotaPe')).toBe(c.cotaPeDireito.caminho)

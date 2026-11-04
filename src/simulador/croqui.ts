@@ -2,9 +2,26 @@
  * Croqui do pórtico: geometria pura para o SVG da tela.
  *
  * É desenho técnico proporcional ao que o visitante digitou — corte esquemático
- * com pilares, tesoura e cotas. Não é projeto estrutural e não deriva nenhuma
+ * com pilares, viga e cotas. Não é projeto estrutural e não deriva nenhuma
  * quantidade: só traduz vão e pé-direito em coordenadas de tela.
+ *
+ * O pórtico é de alma cheia, com mísula no joelho, porque é isso que a EIFF
+ * constrói. As alturas de seção estão repetidas aqui de propósito: a cena 3D
+ * da home importa three.js, e o simulador não pode carregar isso só para ler
+ * três números.
  */
+
+/** Altura de seção, em metros, do pilar, da viga e do joelho. */
+const H_PILAR = 0.85
+const H_VIGA = 0.7
+const H_MISULA = 1.75
+/**
+ * Teto da espessura desenhada, como fração do vão em tela. Sem ele, um vão
+ * pequeno com a proporção real daria um pilar absurdamente gordo no croqui.
+ */
+const ESPESSURA_MAX = 0.035
+/** Comprimento da mísula em tela, como fração da meia-água. */
+const MISULA_FRACAO = 0.22
 
 export interface MedidasPortico {
   vao: number
@@ -20,14 +37,12 @@ export interface Moldura {
 }
 
 export interface Croqui {
-  /** Caminho dos dois pilares. */
+  /** Contorno dos dois pilares: face externa, topo e face interna. */
   pilares: string
-  /** Caminho das duas águas da cobertura. */
+  /** Face superior da viga, nas duas águas. */
   cobertura: string
-  /** Banzo inferior da tesoura. */
-  banzo: string
-  /** Montantes e diagonais da tesoura. */
-  trelica: string
+  /** Face inferior da viga, com a mísula, e as chapas de topo das ligações. */
+  alma: string
   /** Linha do terreno. */
   solo: string
   /** Cota horizontal do vão: caminho e ponto do rótulo. */
@@ -69,28 +84,30 @@ export function desenharPortico(m: MedidasPortico, moldura: Moldura): Croqui {
   const cumeeira = base - alturaTela
   const meio = (esquerda + direita) / 2
 
-  const pilares = `M ${r(esquerda)} ${r(base)} V ${r(topoPilar)} M ${r(direita)} ${r(base)} V ${r(topoPilar)}`
+  // Espessura das seções: proporcional ao vão real, com teto em fração da
+  // largura desenhada, para o croqui não engordar em vão pequeno.
+  const espPilar = Math.min(Math.max(H_PILAR * escala, 2), Math.max(larguraTela * ESPESSURA_MAX, 2))
+  const espViga = espPilar * (H_VIGA / H_PILAR)
+  const espMisula = espPilar * (H_MISULA / H_PILAR)
+  const lMisula = (larguraTela / 2) * MISULA_FRACAO
+
+  const pilares =
+    `M ${r(esquerda)} ${r(base)} V ${r(topoPilar)} H ${r(esquerda + espPilar)} V ${r(base)} `
+    + `M ${r(direita)} ${r(base)} V ${r(topoPilar)} H ${r(direita - espPilar)} V ${r(base)}`
+
   const cobertura = `M ${r(esquerda)} ${r(topoPilar)} L ${r(meio)} ${r(cumeeira)} L ${r(direita)} ${r(topoPilar)}`
 
-  // Banzo inferior a uma fração da altura da tesoura, só para leitura do desenho.
-  const alturaTesoura = Math.max(6, (alturaTela - peDireito * escala) * 0.55)
-  const banzoY = topoPilar - alturaTesoura * 0.08
-  const banzoMeio = cumeeira + alturaTesoura
-  const banzo = `M ${r(esquerda)} ${r(banzoY)} L ${r(meio)} ${r(banzoMeio)} L ${r(direita)} ${r(banzoY)}`
-
-  // Montantes verticais ligando banzo e cobertura, em 4 divisões por água.
-  const montantes: string[] = []
-  const divisoes = 4
-  for (let i = 1; i < divisoes; i++) {
-    const t = i / divisoes
-    for (const sentido of [-1, 1] as const) {
-      const x = meio + sentido * (larguraTela / 2) * t
-      const yCobertura = cumeeira + (topoPilar - cumeeira) * t
-      const yBanzo = banzoMeio + (banzoY - banzoMeio) * t
-      montantes.push(`M ${r(x)} ${r(yCobertura)} V ${r(yBanzo)}`)
-    }
-  }
-  const trelica = montantes.join(' ')
+  // Face inferior: desce a mísula no joelho e corre paralela à água até o cume.
+  const yAgua = (x: number) => topoPilar + (cumeeira - topoPilar) * ((x - esquerda) / (meio - esquerda))
+  const xMisula = esquerda + lMisula
+  const yMisula = yAgua(xMisula) + espViga
+  const alma =
+    `M ${r(esquerda)} ${r(topoPilar + espMisula)} L ${r(xMisula)} ${r(yMisula)} L ${r(meio)} ${r(cumeeira + espViga)} `
+    + `L ${r(direita - lMisula)} ${r(yMisula)} L ${r(direita)} ${r(topoPilar + espMisula)} `
+    // Chapas de topo: é por elas que o pórtico é parafusado em campo.
+    + `M ${r(esquerda)} ${r(topoPilar)} V ${r(topoPilar + espMisula)} `
+    + `M ${r(direita)} ${r(topoPilar)} V ${r(topoPilar + espMisula)} `
+    + `M ${r(meio)} ${r(cumeeira)} V ${r(cumeeira + espViga)}`
 
   const solo = `M ${r(moldura.margem * 0.4)} ${r(base)} H ${r(moldura.largura - moldura.margem * 0.4)}`
 
@@ -108,5 +125,5 @@ export function desenharPortico(m: MedidasPortico, moldura: Moldura): Croqui {
     y: r((base + topoPilar) / 2),
   }
 
-  return { pilares, cobertura, banzo, trelica, solo, cotaVao, cotaPeDireito, alturaCumeeira: r(alturaCumeeira) }
+  return { pilares, cobertura, alma, solo, cotaVao, cotaPeDireito, alturaCumeeira: r(alturaCumeeira) }
 }
