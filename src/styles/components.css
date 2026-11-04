@@ -237,3 +237,12 @@ html.js .hr--grow { transform: scaleX(0); }
   .case__body { grid-template-columns: 1fr; }
   .case__num { display: none; }
 }
+
+/* "Pular seção": saída das seções que prendem o scroll ---- */
+.pular {
+  flex: none; font-family: var(--font-mono); font-size: .75rem; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-2); border: 1px solid var(--line-2); padding: 8px 14px; background: rgba(10, 10, 11, .55);
+  backdrop-filter: blur(8px); transition: color .3s, border-color .3s, background .3s; white-space: nowrap;
+}
+.pular:hover { color: var(--ink); border-color: var(--brand); }
+.pular:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }

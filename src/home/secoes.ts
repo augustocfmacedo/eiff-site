@@ -93,22 +93,48 @@ export function iniciarDestaque() {
   gsap.fromTo(bg, { yPercent: -8 }, { yPercent: 8, ease: 'none', scrollTrigger: { trigger: bg.parentElement, start: 'top bottom', end: 'bottom top', scrub: true } })
 }
 
-export function iniciarFabricacao() {
+export function iniciarFabricacao(app: App) {
   const pin = document.getElementById('fabPin')
   const track = document.getElementById('fabTrack')
   const barra = document.getElementById('fabProgress')
   const pecas = document.getElementById('fabPecas')
   if (!pin || !track) return
+  const paineis = Array.from(track.querySelectorAll<HTMLElement>('.fab__panel'))
+  const estacoes = Array.from(pin.querySelectorAll<HTMLButtonElement>('[data-fab]'))
   const distancia = () => Math.max(0, track.scrollWidth - window.innerWidth)
-  gsap.to(track, {
+
+  const marcar = (i: number) => estacoes.forEach((b, k) => {
+    b.classList.toggle('is-active', k === i)
+    b.setAttribute('aria-selected', String(k === i))
+  })
+
+  const tween = gsap.to(track, {
     x: () => -distancia(), ease: 'none',
     scrollTrigger: {
       trigger: pin, pin: true, start: 'top top', end: () => `+=${distancia() + window.innerHeight * 0.4}`, scrub: 0.6, invalidateOnRefresh: true, anticipatePin: 1,
       onUpdate: (self) => {
         if (barra) barra.style.transform = `scaleX(${self.progress})`
         if (pecas) pecas.style.transform = `translate(${-self.progress * distancia() * 0.35}px, -50%)`
+        // Estação ativa: o último painel cuja borda esquerda já passou do lado esquerdo da tela.
+        const x = self.progress * distancia()
+        let i = 0
+        paineis.forEach((p, k) => { if (p.offsetLeft <= x + 8) i = k })
+        marcar(i)
       },
     },
+  })
+  const st = tween.scrollTrigger!
+
+  // Âncoras: cada estação leva ao ponto de scroll em que o painel entra na tela.
+  estacoes.forEach((b, k) => b.addEventListener('click', () => {
+    const d = distancia()
+    const alvo = d === 0 ? 0 : Math.min(1, (paineis[k]?.offsetLeft ?? 0) / d)
+    app.scrollPara(st.start + alvo * (st.end - st.start) + 1, { offset: 0 })
+  }))
+
+  // Saída para quem não quer percorrer as seis estações pelo scroll.
+  document.getElementById('fabPular')?.addEventListener('click', () => {
+    app.scrollPara(st.end + 1, { offset: 0 })
   })
 }
 
@@ -144,8 +170,7 @@ export function iniciarHome(app: App, reduzMovimento: boolean, temMouse: boolean
   iniciarHudHero()
   iniciarEngenharia(reduzMovimento)
   iniciarDestaque()
-  iniciarFabricacao()
+  iniciarFabricacao(app)
   iniciarSolucoes(temMouse)
   iniciarProdutoIso()
-  void app
 }

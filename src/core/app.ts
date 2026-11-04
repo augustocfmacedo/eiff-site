@@ -56,8 +56,14 @@ function iniciarPreloader(lenis: Lenis | null): Promise<void> {
 
   if (!pre || !curtain) return Promise.resolve().then(liberar)
 
-  // Chegando por transição interna: a cortina já cobre a tela, basta abrir.
-  if (veioDeTransicao || reduzMovimento) {
+  // O preloader é uma apresentação, e apresentação se faz uma vez: ele só roda
+  // na primeira chegada da sessão. Transição interna, visita repetida (recarga,
+  // volta pelo histórico, link direto) e preferência por menos movimento entram
+  // pela cortina simples.
+  const jaVisitou = sessionStorage.getItem(CHAVE_VISITA) === '1'
+  sessionStorage.setItem(CHAVE_VISITA, '1')
+
+  if (veioDeTransicao || reduzMovimento || jaVisitou) {
     pre.remove()
     gsap.set(curtain, { scaleY: 1, transformOrigin: 'top' })
     return new Promise((res) => {
@@ -65,12 +71,10 @@ function iniciarPreloader(lenis: Lenis | null): Promise<void> {
     })
   }
 
-  const rapido = sessionStorage.getItem(CHAVE_VISITA) === '1'
-  sessionStorage.setItem(CHAVE_VISITA, '1')
   const pecas = $$('.pz', pre)
   const pct = $('#preloaderPct', pre)
   const bar = $('#preloaderBar', pre)
-  const dur = rapido ? 0.5 : 0.95
+  const dur = 0.95
 
   // Peças do símbolo entram de fora para a posição final (montagem).
   // Deslocamentos em unidades do viewBox do símbolo (549 de altura).
