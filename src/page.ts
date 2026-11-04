@@ -1,5 +1,6 @@
 import './styles/main.css'
 import { iniciarApp, gsap, ScrollTrigger } from './core/app'
+import { registrarSite } from './core/eventos'
 
 const app = iniciarApp()
 
@@ -29,9 +30,11 @@ form?.addEventListener('submit', async (e) => {
     const r = await fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(dados as unknown as Record<string, string>).toString() })
     if (!r.ok) throw new Error(String(r.status))
     form.classList.add('is-sent')
+    registrarSite('contato_envio', document.body.dataset.page)
   } catch {
     if (botao) { botao.disabled = false; botao.querySelector('span')!.textContent = 'Tentar novamente' }
     form.querySelector('.form__note')!.textContent = 'Não foi possível enviar agora. Tente novamente em instantes.'
+    registrarSite('contato_erro', document.body.dataset.page)
   }
 })
 

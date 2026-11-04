@@ -7,11 +7,12 @@
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import type { App } from '../core/app'
+import { registrarSite } from '../core/eventos'
 
 const ETAPAS_ENG = ['Grade e eixos', 'Pórtico e cotas', 'Nós e ligações', 'Fundações, piso e interfaces', 'Marcas e lotes', 'Sequência de içamento']
 const NOMES_ENG = ['01 · Concepção', '02 · Modelagem', '03 · Detalhamento', '04 · Compatibilização', '05 · Fabricação', '06 · Montagem']
 
-export function iniciarManifesto() {
+export function iniciarManifesto(reduzMovimento: boolean) {
   const el = document.getElementById('manifestoText')
   if (!el) return
   const partes: string[] = []
@@ -24,6 +25,11 @@ export function iniciarManifesto() {
   })
   el.innerHTML = partes.join(' ')
   const palavras = el.querySelectorAll('.w')
+  // Sem movimento: o manifesto é o melhor texto do site, não pode depender do scroll.
+  if (reduzMovimento) {
+    gsap.set(palavras, { opacity: 1 })
+    return
+  }
   gsap.to(palavras, {
     opacity: 1, stagger: 0.06, ease: 'none',
     scrollTrigger: { trigger: el, start: 'top 78%', end: 'bottom 45%', scrub: 0.4 },
@@ -165,12 +171,23 @@ export function iniciarProdutoIso() {
   ScrollTrigger.create({ trigger: svg, start: 'top 85%', once: true, onEnter: () => gsap.to(paths, { drawSVG: '100%', duration: 1.4, ease: 'power2.inOut', stagger: 0.08 }) })
 }
 
+/**
+ * Chegada à seção Projetos: é o sinal de que o visitante quis ver obra feita,
+ * e o único ponto de medição de rolagem da home. Dispara uma vez por carga.
+ */
+function medirChegadaProjetos() {
+  const alvo = document.getElementById('projetos')
+  if (!alvo) return
+  ScrollTrigger.create({ trigger: alvo, start: 'top 70%', once: true, onEnter: () => registrarSite('secao_projetos') })
+}
+
 export function iniciarHome(app: App, reduzMovimento: boolean, temMouse: boolean) {
-  iniciarManifesto()
+  iniciarManifesto(reduzMovimento)
   iniciarHudHero()
   iniciarEngenharia(reduzMovimento)
   iniciarDestaque()
   iniciarFabricacao(app)
   iniciarSolucoes(temMouse)
   iniciarProdutoIso()
+  medirChegadaProjetos()
 }

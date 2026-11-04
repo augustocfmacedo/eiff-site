@@ -8,6 +8,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { SplitText } from 'gsap/SplitText'
 import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin'
 import Lenis from 'lenis'
+import { registrarSite } from './eventos'
 
 gsap.registerPlugin(ScrollTrigger, SplitText, DrawSVGPlugin)
 
@@ -274,7 +275,11 @@ function iniciarLightbox(lenis: Lenis | null) {
   }
   document.addEventListener('click', (e) => {
     const t = (e.target as HTMLElement).closest<HTMLElement>('[data-video]')
-    if (t) { ultimoFoco = t; abrir(t.dataset.video!) }
+    if (t) {
+      ultimoFoco = t
+      abrir(t.dataset.video!)
+      registrarSite('video_play', t.dataset.evento || t.textContent?.trim())
+    }
   })
   fechar?.addEventListener('click', close)
   box.addEventListener('click', (e) => { if (e.target === box) close() })
