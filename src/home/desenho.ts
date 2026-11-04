@@ -39,17 +39,17 @@ const v = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z)
    A EIFF constrói em alma cheia, não em treliça: pórticos de chapa
    soldada, com mísula no joelho e ligação parafusada por chapa de topo.
    Por isso a peça primária não é desenhada pelo eixo, e sim pela seção —
-   duas abas e a alma. É o que distingue, no próprio traço, um pilar de
+   duas mesas e a alma. É o que distingue, no próprio traço, um pilar de
    alma cheia de uma barra qualquer.
 --------------------------------------------------------------- */
 
-/** Largura da aba das peças primárias (afastamento das abas no eixo z). */
-export const ABA = 0.3
+/** Largura da mesa das peças primárias (afastamento das mesas no eixo z). */
+export const MESA = 0.3
 /** Altura da seção: pilar, viga e joelho (mísula). */
 export const H_PILAR = 0.85
 export const H_VIGA = 0.7
 export const H_MISULA = 1.75
-/** Comprimento da mísula, medido no banzo superior a partir do joelho. */
+/** Comprimento da mísula, medida na mesa superior a partir do joelho. */
 export const L_MISULA = 4.2
 
 /** Ponto do eixo da peça, com a altura da seção naquele ponto. */
@@ -60,7 +60,7 @@ interface NoPerfil { x: number; y: number; h: number }
  *
  * `nos` corre pela face de referência (externa no pilar, superior na viga),
  * no plano XY do pórtico; `nx`,`ny` apontam para onde a seção tem altura. As
- * abas ficam em z0 ∓ ABA/2 e a alma aparece nas extremidades. A ordem de
+ * mesas ficam em z0 ∓ MESA/2 e a alma aparece nas extremidades. A ordem de
  * desenho é distribuída de t0 a t1 ao longo da peça, para a frente de desenho
  * percorrer o perfil inteiro e não acender tudo de uma vez.
  */
@@ -68,14 +68,14 @@ function perfil(
   lista: Segmento[], nos: NoPerfil[], nx: number, ny: number,
   z0: number, t0: number, t1: number, acento: number, parte: ParteFrame,
 ) {
-  const za = z0 - ABA / 2, zb = z0 + ABA / 2
+  const za = z0 - MESA / 2, zb = z0 + MESA / 2
   const faceA = nos.map((n) => ({ x: n.x, y: n.y }))
   const faceB = nos.map((n) => ({ x: n.x + nx * n.h, y: n.y + ny * n.h }))
   const n = nos.length
   const emT = (i: number) => t0 + (t1 - t0) * (n > 1 ? i / (n - 1) : 0)
   const por = (a: THREE.Vector3, b: THREE.Vector3, t: number) => lista.push({ a, b, t, acento, parte })
 
-  // Abas, ao longo da peça: quatro arestas longitudinais.
+  // Mesas, ao longo da peça: quatro arestas longitudinais.
   for (let i = 0; i < n - 1; i++) {
     const t = emT(i + 1)
     for (const face of [faceA, faceB]) {
@@ -84,7 +84,7 @@ function perfil(
       }
     }
   }
-  // Extremidades: largura das abas e a alma vista de topo. É aqui que a peça
+  // Extremidades: largura das mesas e a alma vista de topo. É aqui que a peça
   // deixa de parecer uma barra e passa a ter seção.
   for (const i of [0, n - 1]) {
     const t = emT(i)
@@ -212,7 +212,7 @@ export function gerarPartes(): Partes {
 
   // Pórticos de alma cheia: dois pilares e duas vigas com mísula no joelho,
   // desenhados pela seção. O pilar tem a face externa na linha de eixo e a
-  // seção cresce para dentro; a viga tem o banzo superior na água do telhado e
+  // seção cresce para dentro; a viga tem a mesa superior na água do telhado e
   // a seção cresce para baixo, mais alta no joelho e constante daí ao cume.
   const W = VAO / 2
   const compViga = Math.hypot(W, CUME - PE)
