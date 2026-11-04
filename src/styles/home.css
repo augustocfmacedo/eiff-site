@@ -53,7 +53,9 @@
 .filme__index { font-family: var(--font-mono); font-size: .75rem; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); display: flex; gap: 20px; }
 .filme__index b { color: var(--ink); font-weight: 500; }
 .filme__body { display: grid; grid-template-columns: minmax(0, 620px) 1fr; align-content: center; gap: 40px; }
-.filme__num { font-family: var(--font-display); font-variation-settings: "wdth" 110; font-size: clamp(5rem, 12vw, 11rem); line-height: .85; letter-spacing: -.05em; color: transparent; -webkit-text-stroke: 1px var(--ink-3); margin-bottom: 20px; position: relative; height: .9em; }
+/* overflow hidden: o contador é um odômetro — sem a máscara, as sete etapas
+   ficam empilhadas na tela ao mesmo tempo, por cima do cabeçalho da seção. */
+.filme__num { font-family: var(--font-display); font-variation-settings: "wdth" 110; font-size: clamp(5rem, 12vw, 11rem); line-height: .85; letter-spacing: -.05em; color: transparent; -webkit-text-stroke: 1px var(--ink-3); margin-bottom: 20px; position: relative; height: .9em; overflow: hidden; }
 .filme__num span { position: absolute; left: 0; top: 0; }
 .filme__step { position: relative; min-height: 8em; }
 .filme__step > div { position: absolute; inset: 0; opacity: 0; pointer-events: none; }
@@ -107,12 +109,17 @@
 .fab__bg video { width: 100%; height: 100%; object-fit: cover; opacity: .18; filter: contrast(1.1); }
 .fab__bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to right, var(--bg-2), rgba(16,17,19,.6) 40%, rgba(16,17,19,.7)); }
 .fab__track { position: absolute; inset: 0; display: flex; align-items: stretch; padding-top: var(--nav-h); will-change: transform; }
-.fab__panel { flex: none; width: clamp(360px, 44vw, 640px); padding: clamp(32px, 6vh, 72px) var(--gutter) clamp(40px, 8vh, 96px); display: grid; grid-template-rows: auto 1fr auto; border-right: 1px solid var(--line); }
+/* O padding de baixo deixa a faixa de estações passar livre por cima do track. */
+.fab__panel { flex: none; width: clamp(360px, 44vw, 640px); padding: clamp(32px, 6vh, 72px) var(--gutter) clamp(112px, 14vh, 148px); display: grid; grid-template-rows: auto 1fr auto; border-right: 1px solid var(--line); }
 .fab__panel--intro { width: clamp(420px, 56vw, 820px); }
+/* Folga no último painel: sem ela o percurso termina com duas estações na tela
+   e nenhuma delas chega à borda esquerda, então as últimas nunca podiam ser
+   apontadas pela faixa de estações. */
+.fab__track > .fab__panel:last-child { padding-right: max(var(--gutter), calc(100vw - clamp(360px, 44vw, 640px))); border-right: 0; }
 .fab__foto { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .24; filter: grayscale(.35) contrast(1.05); }
 .fab__panel--foto { padding: 0; display: block; position: relative; overflow: hidden; }
 .fab__panel--foto img { width: 100%; height: 100%; object-fit: cover; }
-.fab__panel--foto figcaption { position: absolute; left: 20px; bottom: clamp(56px, 10vh, 112px); font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink); background: rgba(10, 10, 11, .62); border: 1px solid var(--line-2); padding: 7px 10px; backdrop-filter: blur(8px); }
+.fab__panel--foto figcaption { position: absolute; left: 20px; bottom: clamp(104px, 14vh, 148px); font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink); background: rgba(10, 10, 11, .62); border: 1px solid var(--line-2); padding: 7px 10px; backdrop-filter: blur(8px); }
 .fab__panel--intro .h2 { margin: 22px 0 24px; }
 .fab__panel .st-idx { font-family: var(--font-display); font-variation-settings: "wdth" 110; font-size: clamp(3rem, 7vw, 6.4rem); line-height: .9; letter-spacing: -.04em; color: var(--ink-4); }
 .fab__panel .st-body { align-self: end; display: grid; gap: 14px; }
@@ -213,8 +220,16 @@
   .proj__grid { grid-template-columns: 1fr; }
   .destaque__stats { grid-template-columns: repeat(2, auto); }
   .sol__float { display: none; }
-  .fab__panel { width: 86vw; }
+  .fab__panel { width: 86vw; padding-bottom: 136px; }
   .fab__panel--intro { width: 92vw; }
+  /* No celular o cabeçalho do Processo não cabe em uma linha: o índice e a
+     saída descem para a própria linha, em vez de o botão sair da tela. */
+  .filme__top { flex-wrap: wrap; gap: 12px; }
+  .filme__index { width: 100%; justify-content: space-between; align-items: center; gap: 12px; }
+  /* E a faixa da Fabricação vira duas linhas: estações em cima, saída embaixo. */
+  .fab__nav { flex-direction: column; align-items: stretch; gap: 10px; bottom: 28px; }
+  .fab__estacoes { width: 100%; }
+  .fab__nav .pular { align-self: flex-end; }
 }
 
 /* Hero sem vídeo: piso escuro sob a cena 3D --------------------- */

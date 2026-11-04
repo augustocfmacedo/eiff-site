@@ -105,7 +105,10 @@ export function iniciarFabricacao(app: App) {
   const barra = document.getElementById('fabProgress')
   const pecas = document.getElementById('fabPecas')
   if (!pin || !track) return
-  const paineis = Array.from(track.querySelectorAll<HTMLElement>('.fab__panel'))
+  // Um painel por botão, na mesma ordem: abertura e as seis estações. O painel
+  // de foto fica de fora — é respiro visual, não etapa, e se entrasse aqui
+  // deslocaria em um todos os botões seguintes.
+  const paineis = Array.from(track.querySelectorAll<HTMLElement>('.fab__panel:not(.fab__panel--foto)'))
   const estacoes = Array.from(pin.querySelectorAll<HTMLButtonElement>('[data-fab]'))
   const distancia = () => Math.max(0, track.scrollWidth - window.innerWidth)
 
@@ -121,11 +124,14 @@ export function iniciarFabricacao(app: App) {
       onUpdate: (self) => {
         if (barra) barra.style.transform = `scaleX(${self.progress})`
         if (pecas) pecas.style.transform = `translate(${-self.progress * distancia() * 0.35}px, -50%)`
-        // Estação ativa: o último painel cuja borda esquerda já passou do lado esquerdo da tela.
-        const x = self.progress * distancia()
+        // Estação ativa: o último painel que já encostou na borda esquerda. No
+        // fim do percurso o track para com os dois últimos painéis na tela, e
+        // nenhum deles chega à borda — por isso o fim marca sempre o último.
+        const d = distancia()
+        const x = self.progress * d
         let i = 0
         paineis.forEach((p, k) => { if (p.offsetLeft <= x + 8) i = k })
-        marcar(i)
+        marcar(x >= d - 1 ? paineis.length - 1 : i)
       },
     },
   })
