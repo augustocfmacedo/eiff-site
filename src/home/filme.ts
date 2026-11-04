@@ -23,12 +23,32 @@ export function iniciarFilme(app: App, reduzMovimento: boolean) {
   let cena: Processo3d | null = null
   let progresso = 0
 
+  // A cena do Processo não é mais baixada no carregamento. Ela ficava a umas
+  // cinco mil linhas de rolagem do topo e, ao ser importada de imediato,
+  // arrastava o three.js inteiro junto — 469 KB chegando aos 269 ms, antes
+  // mesmo de o hero precisar dele, para uma seção que muita gente não alcança.
+  //
+  // Agora carrega quando a seção se aproxima, com uma tela de antecedência:
+  // tempo de sobra para montar antes de entrar em quadro, e nada baixado para
+  // quem não desce até lá. Quem abre a página já perto dela (link direto,
+  // recarga no meio do caminho) carrega na hora.
   if (canvas && window.WebGLRenderingContext) {
-    import('./processo3d').then(({ iniciarProcesso3d }) => {
-      cena = iniciarProcesso3d(canvas, reduzMovimento)
-      cena.progresso = progresso
-      cena.ativo = ScrollTrigger.isInViewport(pin)
-    }).catch(() => canvas.remove())
+    let pedida = false
+    const carregar = () => {
+      if (pedida) return
+      pedida = true
+      import('./processo3d').then(({ iniciarProcesso3d }) => {
+        cena = iniciarProcesso3d(canvas, reduzMovimento)
+        cena.progresso = progresso
+        cena.ativo = ScrollTrigger.isInViewport(pin)
+      }).catch(() => canvas.remove())
+    }
+    const pertoDaqui = () => pin.getBoundingClientRect().top < window.innerHeight * 2
+    ScrollTrigger.create({ trigger: pin, start: 'top bottom+=100%', once: true, onEnter: carregar })
+    if (pertoDaqui()) carregar()
+    // Entrada por âncora (#processo) salta para cá depois do preloader, quando a
+    // conta acima já rodou e ainda dava "longe". Confere de novo no fim da entrada.
+    app.pronto.then(() => { if (pertoDaqui()) carregar() })
   }
 
   gsap.set(passos, { opacity: 0, y: 24 })

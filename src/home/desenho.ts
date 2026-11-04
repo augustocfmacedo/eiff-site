@@ -164,7 +164,23 @@ export function criarTerreno(tamanho = 280, passo = 2.5) {
 --------------------------------------------------------------- */
 export interface Partes { grade: Segmento[]; limite: Segmento[]; eixos: Segmento[]; fundacoes: Segmento[]; interfaces: Segmento[]; frames: Segmento[][]; tercas: Segmento[]; contraventos: Segmento[]; cotas: Segmento[] }
 
+let partesEmCache: Partes | null = null
+
+/**
+ * As peças do galpão, construídas uma vez só.
+ *
+ * Hero e Processo desenham o mesmo galpão, e cada um montava a lista inteira
+ * por conta própria — duas vezes os mesmos 2 mil segmentos e os ~4 mil
+ * Vector3 que os formam. Ninguém altera o resultado: as duas cenas só leem e
+ * derivam cópias com `map`, então a lista pode ser compartilhada. Se algum dia
+ * alguém precisar alterar, que copie antes.
+ */
 export function gerarPartes(): Partes {
+  if (!partesEmCache) partesEmCache = construirPartes()
+  return partesEmCache
+}
+
+function construirPartes(): Partes {
   const P: Partes = { grade: [], limite: [], eixos: [], fundacoes: [], interfaces: [], frames: [], tercas: [], contraventos: [], cotas: [] }
   const seg = (lista: Segmento[], a: THREE.Vector3, b: THREE.Vector3, t: number, acento = 0) => lista.push({ a, b, t, acento })
 
