@@ -27,8 +27,72 @@ export const COTA_COMP_Y = PE
 export const COR_LINHA = new THREE.Color('#f2f0ec')
 export const COR_ACENTO = new THREE.Color('#e2582d')
 
-export interface Segmento { a: THREE.Vector3; b: THREE.Vector3; t: number; acento: number }
+/** A qual peça do pórtico um segmento pertence. O Processo explode por isto. */
+export type ParteFrame = 'pilar-e' | 'pilar-d' | 'viga-e' | 'viga-d'
+
+export interface Segmento { a: THREE.Vector3; b: THREE.Vector3; t: number; acento: number; parte?: ParteFrame }
 const v = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z)
+
+/* ---------------------------------------------------------------
+   Perfis de alma cheia
+
+   A EIFF constrói em alma cheia, não em treliça: pórticos de chapa
+   soldada, com mísula no joelho e ligação parafusada por chapa de topo.
+   Por isso a peça primária não é desenhada pelo eixo, e sim pela seção —
+   duas abas e a alma. É o que distingue, no próprio traço, um pilar de
+   alma cheia de uma barra qualquer.
+--------------------------------------------------------------- */
+
+/** Largura da aba das peças primárias (afastamento das abas no eixo z). */
+export const ABA = 0.3
+/** Altura da seção: pilar, viga e joelho (mísula). */
+export const H_PILAR = 0.85
+export const H_VIGA = 0.7
+export const H_MISULA = 1.75
+/** Comprimento da mísula, medido no banzo superior a partir do joelho. */
+export const L_MISULA = 4.2
+
+/** Ponto do eixo da peça, com a altura da seção naquele ponto. */
+interface NoPerfil { x: number; y: number; h: number }
+
+/**
+ * Emite as arestas de uma peça de alma cheia reta.
+ *
+ * `nos` corre pela face de referência (externa no pilar, superior na viga),
+ * no plano XY do pórtico; `nx`,`ny` apontam para onde a seção tem altura. As
+ * abas ficam em z0 ∓ ABA/2 e a alma aparece nas extremidades. A ordem de
+ * desenho é distribuída de t0 a t1 ao longo da peça, para a frente de desenho
+ * percorrer o perfil inteiro e não acender tudo de uma vez.
+ */
+function perfil(
+  lista: Segmento[], nos: NoPerfil[], nx: number, ny: number,
+  z0: number, t0: number, t1: number, acento: number, parte: ParteFrame,
+) {
+  const za = z0 - ABA / 2, zb = z0 + ABA / 2
+  const faceA = nos.map((n) => ({ x: n.x, y: n.y }))
+  const faceB = nos.map((n) => ({ x: n.x + nx * n.h, y: n.y + ny * n.h }))
+  const n = nos.length
+  const emT = (i: number) => t0 + (t1 - t0) * (n > 1 ? i / (n - 1) : 0)
+  const por = (a: THREE.Vector3, b: THREE.Vector3, t: number) => lista.push({ a, b, t, acento, parte })
+
+  // Abas, ao longo da peça: quatro arestas longitudinais.
+  for (let i = 0; i < n - 1; i++) {
+    const t = emT(i + 1)
+    for (const face of [faceA, faceB]) {
+      for (const z of [za, zb]) {
+        por(v(face[i].x, face[i].y, z), v(face[i + 1].x, face[i + 1].y, z), t)
+      }
+    }
+  }
+  // Extremidades: largura das abas e a alma vista de topo. É aqui que a peça
+  // deixa de parecer uma barra e passa a ter seção.
+  for (const i of [0, n - 1]) {
+    const t = emT(i)
+    por(v(faceA[i].x, faceA[i].y, za), v(faceA[i].x, faceA[i].y, zb), t)
+    por(v(faceB[i].x, faceB[i].y, za), v(faceB[i].x, faceB[i].y, zb), t)
+    por(v(faceA[i].x, faceA[i].y, z0), v(faceB[i].x, faceB[i].y, z0), t)
+  }
+}
 
 /* ---------------------------------------------------------------
    Terreno procedural (ruído de valor determinístico, platô sob a edificação)
@@ -146,20 +210,27 @@ export function gerarPartes(): Partes {
   seg(P.interfaces, v(-VAO / 2 + 1, PE - 1, Z0), v(-VAO / 2 + 1, PE - 1, -Z0), 0.9, 1)
   seg(P.interfaces, v(VAO / 2 - 1, PE - 1, Z0), v(VAO / 2 - 1, PE - 1, -Z0), 0.95, 1)
 
-  // Pórticos: pilares, vigas (tesoura com banzo inferior e montantes)
+  // Pórticos de alma cheia: dois pilares e duas vigas com mísula no joelho,
+  // desenhados pela seção. O pilar tem a face externa na linha de eixo e a
+  // seção cresce para dentro; a viga tem o banzo superior na água do telhado e
+  // a seção cresce para baixo, mais alta no joelho e constante daí ao cume.
+  const W = VAO / 2
+  const compViga = Math.hypot(W, CUME - PE)
+  const dirX = W / compViga, dirY = (CUME - PE) / compViga
+  // Normal da viga, no plano, apontando para baixo e para dentro.
+  const nvx = dirY, nvy = -dirX
   for (let i = 0; i <= BAIAS; i++) {
     const z = Z0 + i * PASSO, F: Segmento[] = []
     const ac = i === FRAME_CENTRAL ? 1 : 0
-    seg(F, v(-VAO / 2, 0, z), v(-VAO / 2, PE, z), 0.05, ac); seg(F, v(VAO / 2, 0, z), v(VAO / 2, PE, z), 0.05, ac)
-    seg(F, v(-VAO / 2, PE, z), v(0, CUME, z), 0.4, ac); seg(F, v(0, CUME, z), v(VAO / 2, PE, z), 0.4, ac)
-    seg(F, v(-VAO / 2, PE - 1.6, z), v(0, CUME - 1.8, z), 0.55, ac); seg(F, v(0, CUME - 1.8, z), v(VAO / 2, PE - 1.6, z), 0.55, ac)
-    seg(F, v(-VAO / 2, PE - 1.6, z), v(-VAO / 2, PE, z), 0.6, ac); seg(F, v(VAO / 2, PE - 1.6, z), v(VAO / 2, PE, z), 0.6, ac)
-    for (let m = 1; m < 5; m++) {
-      const x = (-VAO / 2) + (VAO / 2) * (m / 5)
-      const ys = PE + (VAO / 2 - Math.abs(x)) * INCL
-      seg(F, v(x, ys - 1.7, z), v(x, ys, z), 0.7 + 0.05 * m, ac); seg(F, v(-x, ys - 1.7, z), v(-x, ys, z), 0.7 + 0.05 * m, ac)
-      const x2 = (-VAO / 2) + (VAO / 2) * ((m + 0.5) / 5), y2 = PE + (VAO / 2 - Math.abs(x2)) * INCL
-      seg(F, v(x, ys - 1.7, z), v(x2, y2, z), 0.75 + 0.05 * m, ac); seg(F, v(-x, ys - 1.7, z), v(-x2, y2, z), 0.75 + 0.05 * m, ac)
+    for (const lado of [-1, 1] as const) {
+      // Pilar: da base ao joelho.
+      perfil(F, [{ x: lado * W, y: 0, h: H_PILAR }, { x: lado * W, y: PE, h: H_PILAR }],
+        -lado, 0, z, 0.05, 0.3, ac, lado < 0 ? 'pilar-e' : 'pilar-d')
+      // Viga: do joelho ao cume, com a mísula morrendo em L_MISULA.
+      const joelho = { x: lado * W, y: PE, h: H_MISULA }
+      const fimMisula = { x: lado * (W - dirX * L_MISULA), y: PE + dirY * L_MISULA, h: H_VIGA }
+      const cume = { x: 0, y: CUME, h: H_VIGA }
+      perfil(F, [joelho, fimMisula, cume], -lado * nvx, nvy, z, 0.35, 0.8, ac, lado < 0 ? 'viga-e' : 'viga-d')
     }
     P.frames.push(F)
   }
