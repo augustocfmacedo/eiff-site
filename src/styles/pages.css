@@ -91,3 +91,6 @@
   .timeline__item .body { grid-column: 1; }
   .page-hero__media { aspect-ratio: 4 / 3; }
 }
+
+/* Roadmap discreto (linha de produtos ainda sem ficha técnica) ---- */
+.roadmap { display: grid; gap: 16px; justify-items: start; max-width: 54em; border-left: 1px solid var(--line-2); padding-left: clamp(18px, 3vw, 32px); }
