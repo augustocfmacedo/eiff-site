@@ -230,8 +230,26 @@ function iniciarReveals(pronto: Promise<void>) {
       : { trigger: el as HTMLElement, start: inicio }
   }
 
+  /**
+   * Modo palco (ver src/home/palcos.ts): a tela fica parada, então nada pode
+   * chegar deslizando — nem a seção, nem o que ela tem dentro.
+   *
+   * Sem isto a seção para de viajar e a sensação continua igual, porque quem
+   * de fato se vê deslizar é o conteúdo: cada elemento com `data-reveal` sobe
+   * 28 px (o `translateY` do CSS) e cada título com `data-split` entra linha
+   * por linha de baixo da própria máscara. A dissolução acontecia por trás
+   * desse movimento todo.
+   *
+   * O hero fica de fora: a entrada dele é na carga da página, não na rolagem.
+   */
+  const paradoNaTela = document.documentElement.classList.contains('palcos')
+  const semDeslize = (el: Element) => paradoNaTela && !dentroDoHero(el)
+
   // Elementos fora do hero animam ao entrar na viewport.
   $$('[data-reveal]').filter((el) => !dentroDoHero(el)).forEach((el) => {
+    // Zera o deslocamento que vem do CSS: assim o `y: 0` abaixo não tem de
+    // onde vir e só a opacidade anima.
+    if (paradoNaTela) gsap.set(el, { y: 0 })
     gsap.to(el, {
       opacity: 1, y: 0, duration: 1.1, ease: 'power3.out',
       delay: parseFloat(el.dataset.revealDelay || '0'),
@@ -246,8 +264,13 @@ function iniciarReveals(pronto: Promise<void>) {
     if (reduzMovimento) return
     const split = dividirTexto(el)
     const linhas = split.lines as HTMLElement[]
-    gsap.set(linhas, { yPercent: 110 })
-    const anim = () => gsap.to(linhas, { yPercent: 0, duration: 1.15, ease: 'power4.out', stagger: 0.09 })
+    // Na tela parada o título acende linha por linha, em vez de subir linha
+    // por linha. O escalonamento continua: é ele que dá a cadência da frase.
+    const dissolve = semDeslize(el)
+    gsap.set(linhas, dissolve ? { opacity: 0 } : { yPercent: 110 })
+    const anim = () => dissolve
+      ? gsap.to(linhas, { opacity: 1, duration: 0.9, ease: 'power2.out', stagger: 0.08 })
+      : gsap.to(linhas, { yPercent: 0, duration: 1.15, ease: 'power4.out', stagger: 0.09 })
     if (dentroDoHero(el)) pronto.then(() => anim())
     else ScrollTrigger.create({ ...gatilho(el, 'top 88%'), once: true, onEnter: anim })
   })
