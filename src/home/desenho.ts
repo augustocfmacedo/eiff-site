@@ -10,6 +10,19 @@ export const CUME = PE + (VAO / 2) * INCL
 export const COMP = BAIAS * PASSO
 export const Z0 = -COMP / 2
 export const FRAME_CENTRAL = Math.floor(BAIAS / 2)
+/**
+ * Onde correm as três linhas de cota. Geometria e rótulos leem daqui, para a
+ * medida escrita nunca se soltar da linha que a mede.
+ *
+ * Todas ficam do lado afastado e à esquerda: no enquadramento do hero é esse o
+ * lado que projeta para a parte alta da tela, livre do título. Do lado de cá
+ * elas cairiam por cima do texto.
+ */
+export const COTA_PE_X = -(VAO / 2 + 5)
+export const COTA_PE_Z = Z0 - 4
+export const COTA_VAO_Z = Z0 - 5
+export const COTA_COMP_X = -(VAO / 2 + 4)
+export const COTA_COMP_Y = PE
 
 export const COR_LINHA = new THREE.Color('#f2f0ec')
 export const COR_ACENTO = new THREE.Color('#e2582d')
@@ -173,16 +186,43 @@ export function gerarPartes(): Partes {
   }
 
   // Cotas (laranja)
-  const zc = -Z0 + 5
+  // Vão, na empena afastada
+  const zc = COTA_VAO_Z
   seg(P.cotas, v(-VAO / 2, 0.4, zc), v(VAO / 2, 0.4, zc), 0.2, 1)
   seg(P.cotas, v(-VAO / 2, 0, zc), v(-VAO / 2, 1.2, zc), 0.2, 1); seg(P.cotas, v(VAO / 2, 0, zc), v(VAO / 2, 1.2, zc), 0.2, 1)
-  const xc = VAO / 2 + 5
-  seg(P.cotas, v(xc, 0, Z0), v(xc, PE, Z0), 0.6, 1)
-  seg(P.cotas, v(xc - 0.8, 0, Z0), v(xc + 0.8, 0, Z0), 0.6, 1); seg(P.cotas, v(xc - 0.8, PE, Z0), v(xc + 0.8, PE, Z0), 0.6, 1)
-  seg(P.cotas, v(-VAO / 2 - 4, 0.4, Z0), v(-VAO / 2 - 4, 0.4, -Z0), 0.9, 1)
-  seg(P.cotas, v(-VAO / 2 - 4.8, 0.4, Z0), v(-VAO / 2 - 3.2, 0.4, Z0), 0.9, 1); seg(P.cotas, v(-VAO / 2 - 4.8, 0.4, -Z0), v(-VAO / 2 - 3.2, 0.4, -Z0), 0.9, 1)
+  // Pé-direito, pela esquerda
+  const xc = COTA_PE_X, zp = COTA_PE_Z
+  seg(P.cotas, v(xc, 0, zp), v(xc, PE, zp), 0.6, 1)
+  seg(P.cotas, v(xc - 0.8, 0, zp), v(xc + 0.8, 0, zp), 0.6, 1); seg(P.cotas, v(xc - 0.8, PE, zp), v(xc + 0.8, PE, zp), 0.6, 1)
+  // Comprimento, correndo na altura do beiral
+  const xl = COTA_COMP_X, yl = COTA_COMP_Y
+  seg(P.cotas, v(xl, yl, Z0), v(xl, yl, -Z0), 0.9, 1)
+  seg(P.cotas, v(xl - 0.8, yl, Z0), v(xl + 0.8, yl, Z0), 0.9, 1); seg(P.cotas, v(xl - 0.8, yl, -Z0), v(xl + 0.8, yl, -Z0), 0.9, 1)
 
   return P
+}
+
+/* ---------------------------------------------------------------
+   Cotas escritas: o desenho diz a medida, como em prancha
+--------------------------------------------------------------- */
+export interface RotuloCota {
+  /** Onde o número fica, em metros, no mesmo espaço da estrutura. */
+  pos: THREE.Vector3
+  texto: string
+  /** Em que ponto da camada de cotas (0..1) a medida fica pronta. */
+  t: number
+}
+
+const metros = (n: number) => `${n.toFixed(2).replace('.', ',')} m`
+
+/** As três medidas que a cota desenha: vão, pé-direito e comprimento. */
+export function cotasEscritas(): RotuloCota[] {
+  return [
+    { pos: v(0, 2.6, COTA_VAO_Z), texto: metros(VAO), t: 0.2 },
+    // No topo da própria linha, e não no meio: é onde sobra tela sobre o título.
+    { pos: v(COTA_PE_X - 3.4, PE - 0.6, COTA_PE_Z), texto: metros(PE), t: 0.6 },
+    { pos: v(COTA_COMP_X - 3.4, COTA_COMP_Y, 0), texto: metros(COMP), t: 0.9 },
+  ]
 }
 
 /* ---------------------------------------------------------------
@@ -206,6 +246,13 @@ export function criarLinhas(segs: Segmento[], opacidade: number, cor = COR_LINHA
     uniforms: {
       uProgresso: { value: 0 }, uOpacidade: { value: opacidade }, uCor: { value: cor }, uAcento: { value: acento },
       uCam: { value: new THREE.Vector3() }, uFade: { value: new THREE.Vector2(80, 170) },
+      // Linha fantasma: o que ainda não foi desenhado, mas já está decidido.
+      // uAlcance é o quanto à frente da linha de desenho o fantasma aparece,
+      // em unidades de progresso; uFantasma é o quanto ele pesa. Zerados, o
+      // material se comporta exatamente como antes.
+      uFantasma: { value: 0 }, uAlcance: { value: 0.0001 },
+      // Ponta laranja na frente de desenho — o lápis.
+      uPonta: { value: 0 },
     },
     vertexShader: /* glsl */ `
       attribute float aT; attribute float aAcento;
@@ -214,14 +261,30 @@ export function criarLinhas(segs: Segmento[], opacidade: number, cor = COR_LINHA
     fragmentShader: /* glsl */ `
       precision highp float;
       varying float vT; varying float vAc; varying float vDist;
-      uniform float uProgresso, uOpacidade; uniform vec3 uCor, uAcento; uniform vec2 uFade;
+      uniform float uProgresso, uOpacidade, uFantasma, uAlcance, uPonta;
+      uniform vec3 uCor, uAcento; uniform vec2 uFade;
       void main() {
-        if (vT > uProgresso) discard;
-        float borda = 1.0 - smoothstep(0.0, 0.07, uProgresso - vT);
+        float adiante = vT - uProgresso;          // > 0: ainda não desenhado
+        if (adiante > uAlcance) discard;          // fora até do alcance do fantasma
         float fade = 1.0 - smoothstep(uFade.x, uFade.y, vDist);
+
+        if (adiante > 0.0) {
+          // Ainda não executado: aparece como intenção, nunca como estrutura.
+          float queda = 1.0 - adiante / max(uAlcance, 0.0001);
+          float a = uOpacidade * fade * uFantasma * queda * queda;
+          if (a < 0.002) discard;
+          gl_FragColor = vec4(uCor, a);
+          return;
+        }
+
+        float atras = -adiante;
+        float borda = 1.0 - smoothstep(0.0, 0.07, atras);
+        float ponta = 1.0 - smoothstep(0.0, 0.016, atras);
         vec3 cor = mix(uCor, uAcento, vAc);
+        cor = mix(cor, uAcento, ponta * uPonta);
         float a = uOpacidade * fade * (0.8 + 0.2 * borda) + borda * 0.3 * fade;
         if (vAc > 0.5) a = min(1.0, a * 1.3);
+        a = min(1.0, a + ponta * uPonta * 0.45 * fade);
         gl_FragColor = vec4(cor + borda * 0.2, a);
       }`,
   })
@@ -229,6 +292,13 @@ export function criarLinhas(segs: Segmento[], opacidade: number, cor = COR_LINHA
 }
 
 export const setP = (l: Linhas, p: number) => { l.material.uniforms.uProgresso.value = p }
+/** Liga a linha fantasma: o traço que mostra onde a estrutura ainda vai passar. */
+export const setFantasma = (l: Linhas, peso: number, alcance: number) => {
+  l.material.uniforms.uFantasma.value = peso
+  l.material.uniforms.uAlcance.value = Math.max(alcance, 0.0001)
+}
+/** Liga a ponta laranja na frente de desenho. */
+export const setPonta = (l: Linhas, p: number) => { l.material.uniforms.uPonta.value = p }
 export const setO = (l: Linhas, o: number) => { l.material.uniforms.uOpacidade.value = o; l.visible = o > 0.002 }
 export const setCam = (obj: THREE.Object3D, cam: THREE.Vector3) => {
   obj.traverse((o) => { const m = (o as THREE.Mesh).material as THREE.ShaderMaterial | undefined; if (m?.uniforms?.uCam) m.uniforms.uCam.value.copy(cam) })

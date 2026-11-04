@@ -7,6 +7,7 @@
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import type { App } from '../core/app'
+import type { HudHero } from './hero3d'
 import { registrarSite } from '../core/eventos'
 
 const ETAPAS_ENG = ['Grade e eixos', 'Pórtico e cotas', 'Nós e ligações', 'Fundações, piso e interfaces', 'Marcas e lotes', 'Sequência de içamento']
@@ -36,14 +37,29 @@ export function iniciarManifesto(reduzMovimento: boolean) {
   })
 }
 
-export function iniciarHudHero() {
+/**
+ * HUD do hero. Sozinho ele reveza as medidas no relógio; quando a cena 3D
+ * carrega, ela assume e cada medida acende no momento em que a estrutura
+ * correspondente é desenhada. Sem WebGL, o revezamento continua valendo.
+ */
+export function iniciarHudHero(): HudHero | null {
   const itens = Array.from(document.querySelectorAll<HTMLElement>('#heroHud > div'))
-  if (!itens.length) return
+  if (!itens.length) return null
+  const destacar = (i: number) => itens.forEach((el, k) => el.classList.toggle('is-on', k === i))
   let i = 0
-  setInterval(() => {
+  let relogio: number | undefined = window.setInterval(() => {
     i = (i + 1) % itens.length
-    itens.forEach((el, k) => el.classList.toggle('is-on', k === i))
+    destacar(i)
   }, 3200)
+  return {
+    destacar,
+    assumir() {
+      if (relogio === undefined) return
+      window.clearInterval(relogio)
+      relogio = undefined
+      destacar(0)
+    },
+  }
 }
 
 export function iniciarEngenharia(reduzMovimento: boolean) {
@@ -189,11 +205,12 @@ function medirChegadaProjetos() {
 
 export function iniciarHome(app: App, reduzMovimento: boolean, temMouse: boolean) {
   iniciarManifesto(reduzMovimento)
-  iniciarHudHero()
+  const hud = iniciarHudHero()
   iniciarEngenharia(reduzMovimento)
   iniciarDestaque()
   iniciarFabricacao(app)
   iniciarSolucoes(temMouse)
   iniciarProdutoIso()
   medirChegadaProjetos()
+  return hud
 }

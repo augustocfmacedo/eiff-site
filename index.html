@@ -41,12 +41,15 @@
       <div class="hero__ground" aria-hidden="true"></div>
       <div class="hero__veil" aria-hidden="true"></div>
       <canvas class="hero__canvas" id="heroCanvas" aria-hidden="true"></canvas>
+      <!-- As medidas do desenho. Preenchidas pela cena 3D a partir da própria
+           geometria; sem WebGL o bloco fica vazio e nada aparece. -->
+      <div class="hero__cotas" id="heroCotas" aria-hidden="true"></div>
       <div class="corners" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
 
       <div class="hero__content">
         <div>
           <span class="eyebrow" data-reveal>Engenharia · Fabricação · Construção</span>
-          <h1 class="h1 hero__title" data-split="hero">Do terreno à estrutura pronta.</h1>
+          <h1 class="h1 hero__title" data-split="hero">Do terreno à estrutura <span class="hero__fecho">pronta.</span></h1>
           <p class="lead hero__lead" data-reveal data-reveal-delay=".9">Galpões industriais, logísticos e edificações metálicas com engenharia própria, fábrica em Goiânia e montagem pela mesma equipe. Do estudo do terreno à obra entregue, um único responsável.</p>
           <div class="hero__actions" data-reveal data-reveal-delay="1.05">
             <a class="btn btn--primary" href="/contato/" data-magnetic><span>Iniciar um projeto</span><svg class="btn__arrow" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 12 12 2M4 2h8v8"/></svg></a>

@@ -10,6 +10,23 @@
   linear-gradient(to top, var(--bg) 0%, rgba(10,10,11,.55) 30%, rgba(10,10,11,.15) 60%, rgba(10,10,11,.35) 100%),
   linear-gradient(to right, rgba(10,10,11,.7) 0%, transparent 55%); }
 .hero__canvas { z-index: 1; }
+
+/* Cotas escritas sobre o desenho: prancha, não legenda de foto.
+   Posicionadas pela cena 3D; aqui só o traje e a entrada. */
+.hero__cotas { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.hero__cotas .cota {
+  position: absolute; left: 0; top: 0; opacity: 0;
+  font-family: var(--font-mono); font-size: .75rem; letter-spacing: .08em;
+  font-variant-numeric: tabular-nums; color: var(--ink);
+  background: rgba(10, 10, 11, .62); border: 1px solid var(--brand-dim);
+  padding: 4px 8px; white-space: nowrap; backdrop-filter: blur(6px);
+  transition: opacity .5s var(--ease-out);
+}
+.hero__cotas .cota.is-on { opacity: 1; }
+
+/* A última palavra do título ganha o acento quando a cumeeira fecha. */
+.hero__fecho { color: inherit; transition: color .9s var(--ease-out); }
+.hero__fecho.is-fechado { color: var(--brand-2); }
 .hero__content { position: absolute; z-index: 3; left: var(--gutter); right: var(--gutter); bottom: clamp(56px, 9vh, 120px); display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 40px; align-items: end; }
 .hero__title { max-width: 8.4em; margin: 22px 0 26px; }
 .hero__title .line { overflow: hidden; }
@@ -188,6 +205,9 @@
 /* Responsivo ----------------------------------------------- */
 @media (max-width: 1080px) {
   .hero__content { grid-template-columns: 1fr; }
+  /* Abaixo disso o desenho fica centralizado atrás do texto e as cotas
+     cairiam sobre o título. A medida continua no HUD. */
+  .hero__cotas { display: none; }
   .hero__hud { text-align: left; grid-auto-flow: column; }
   .hero__hud > div { border-right: 0; border-left: 2px solid var(--line-2); padding: 0 0 0 12px; }
   .manifesto__pillars { grid-template-columns: 1fr 1fr; }
