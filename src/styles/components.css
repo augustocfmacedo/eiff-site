@@ -197,6 +197,9 @@ html.js .hr--grow { transform: scaleX(0); }
 .footer__col a:hover { color: var(--ink); }
 .footer__brand { display: flex; flex-direction: column; gap: 18px; }
 .footer__brand .brand-link__logo { height: 40px; }
+.footer__dados { display: grid; gap: 8px; justify-items: start; font-style: normal; }
+.footer__dados a { color: var(--ink-2); border-bottom: 1px solid var(--line-2); transition: color .3s, border-color .3s; }
+.footer__dados a:hover { color: var(--ink); border-color: var(--brand); }
 .footer__bottom { position: relative; z-index: 1; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: clamp(40px, 6vw, 80px); padding-top: 20px; border-top: 1px solid var(--line); font-family: var(--font-mono); font-size: .64rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
 
 /* Formulário ---------------------------------------------- */
