@@ -213,16 +213,33 @@ function iniciarReveals(pronto: Promise<void>) {
   const heroSel = '.hero, .page-hero'
   const dentroDoHero = (el: Element) => !!el.closest(heroSel)
 
+  /**
+   * Em que ponto da rolagem um elemento deve animar.
+   *
+   * Fora de um palco, no ponto de sempre: quando ele entra na viewport.
+   * Dentro de um palco (ver src/home/palcos.ts), a seção chega travada no
+   * topo e aparece por opacidade — se cada elemento mantivesse o próprio
+   * gatilho, animaria durante a viagem invisível e a seção surgiria com tudo
+   * já montado. O gatilho passa a ser o espaçador da dissolução, para que o
+   * conteúdo se monte enquanto a seção aparece.
+   */
+  const gatilho = (el: Element, inicio: string) => {
+    const curso = el.closest('.palco')?.nextElementSibling
+    return curso?.classList.contains('palco-curso')
+      ? { trigger: curso as HTMLElement, start: 'top bottom' }
+      : { trigger: el as HTMLElement, start: inicio }
+  }
+
   // Elementos fora do hero animam ao entrar na viewport.
   $$('[data-reveal]').filter((el) => !dentroDoHero(el)).forEach((el) => {
     gsap.to(el, {
       opacity: 1, y: 0, duration: 1.1, ease: 'power3.out',
       delay: parseFloat(el.dataset.revealDelay || '0'),
-      scrollTrigger: { trigger: el, start: 'top 90%', once: true },
+      scrollTrigger: { ...gatilho(el, 'top 90%'), once: true },
     })
   })
   $$('.hr--grow').forEach((el) => {
-    gsap.to(el, { scaleX: 1, duration: 1.4, ease: 'power3.inOut', scrollTrigger: { trigger: el, start: 'top 92%', once: true } })
+    gsap.to(el, { scaleX: 1, duration: 1.4, ease: 'power3.inOut', scrollTrigger: { ...gatilho(el, 'top 92%'), once: true } })
   })
 
   $$('[data-split]').forEach((el) => {
@@ -232,7 +249,7 @@ function iniciarReveals(pronto: Promise<void>) {
     gsap.set(linhas, { yPercent: 110 })
     const anim = () => gsap.to(linhas, { yPercent: 0, duration: 1.15, ease: 'power4.out', stagger: 0.09 })
     if (dentroDoHero(el)) pronto.then(() => anim())
-    else ScrollTrigger.create({ trigger: el, start: 'top 88%', once: true, onEnter: anim })
+    else ScrollTrigger.create({ ...gatilho(el, 'top 88%'), once: true, onEnter: anim })
   })
 
   // Hero: espera o preloader e entra em sequência.
@@ -248,7 +265,7 @@ function iniciarReveals(pronto: Promise<void>) {
     const fmt = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: decimais, maximumFractionDigits: decimais })
     const obj = { v: 0 }
     ScrollTrigger.create({
-      trigger: el, start: 'top 88%', once: true,
+      ...gatilho(el, 'top 88%'), once: true,
       onEnter: () => gsap.to(obj, { v: alvo, duration: 1.8, ease: 'power3.out', onUpdate: () => { el.textContent = fmt.format(obj.v) } }),
     })
   })
@@ -314,10 +331,26 @@ export function iniciarApp(): App {
     lenis,
     pronto,
     scrollPara(alvo, opts) {
-      const offset = opts?.offset ?? -12
-      if (lenis) lenis.scrollTo(alvo, { offset, duration: 1.4, immediate: opts?.immediate, easing: (t) => 1 - Math.pow(1 - t, 4) })
+      let destino = alvo
+      let offset = opts?.offset ?? -12
+      // Uma seção-palco (ver src/home/palcos.ts) trava no topo INVISÍVEL e só
+      // aparece ao longo do espaçador que vem logo depois. Parar no topo dela
+      // é parar no quadro em que ela ainda não existe: `/#projetos` deixava
+      // Soluções na tela. O destino de uma âncora é o FIM da dissolução.
+      //
+      // A conta sai do espaçador, não da seção: `offsetTop` de um elemento
+      // `sticky` devolve a posição RENDERIZADA, que muda enquanto ele está
+      // travado — medir por ali dá um destino diferente a cada ponto de
+      // partida. O espaçador não é pegajoso e fica parado no fluxo.
+      const el = typeof alvo === 'string' ? document.querySelector<HTMLElement>(alvo) : (typeof alvo === 'number' ? null : alvo)
+      const curso = el?.classList.contains('palco') ? (el.nextElementSibling as HTMLElement | null) : null
+      if (curso?.classList.contains('palco-curso')) {
+        destino = curso.offsetTop + curso.offsetHeight - window.innerHeight
+        offset = 0
+      }
+      if (lenis) lenis.scrollTo(destino, { offset, duration: 1.4, immediate: opts?.immediate, easing: (t) => 1 - Math.pow(1 - t, 4) })
       else {
-        const y = typeof alvo === 'number' ? alvo : (typeof alvo === 'string' ? document.querySelector<HTMLElement>(alvo) : alvo)?.getBoundingClientRect().top! + window.scrollY + offset
+        const y = typeof destino === 'number' ? destino : (typeof destino === 'string' ? document.querySelector<HTMLElement>(destino) : destino)?.getBoundingClientRect().top! + window.scrollY + offset
         window.scrollTo({ top: y, behavior: opts?.immediate ? 'auto' : 'smooth' })
       }
     },

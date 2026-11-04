@@ -2,10 +2,23 @@ import './styles/main.css'
 import { iniciarApp, reduzMovimento, temMouse } from './core/app'
 import { iniciarFilme } from './home/filme'
 import { iniciarHome } from './home/secoes'
+import { prepararPalcos, ligarPalcos } from './home/palcos'
+
+// Fase 1 dos palcos, antes de qualquer gatilho: muda a altura e o
+// posicionamento das seções e cria os espaçadores da dissolução. Quem vem
+// depois mede o documento como ele ficou, e os reveals de dentro de um palco
+// precisam existir já sabendo que vão se pendurar no espaçador.
+const palcos = prepararPalcos(reduzMovimento)
 
 const app = iniciarApp()
 iniciarFilme(app, reduzMovimento)
 const hud = iniciarHome(app, reduzMovimento, temMouse)
+
+// Fase 2, e a ordem é obrigatória: os pins do Processo e da Fabricação só
+// passam a existir nas duas linhas acima, e cada um insere no documento o
+// espaçador da própria rolagem — perto de 6 mil px no caso do Processo. Um
+// gatilho criado antes disso mede um documento que deixa de existir.
+ligarPalcos(palcos)
 
 // A cena 3D entra por import dinâmico: Three.js só é baixado na Home e não
 // bloqueia o preloader. O download também não começa junto com o resto: ele

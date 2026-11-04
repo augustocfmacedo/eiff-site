@@ -31,9 +31,16 @@ export function iniciarManifesto(reduzMovimento: boolean) {
     gsap.set(palavras, { opacity: 1 })
     return
   }
+  // Com palco, o texto não sobe mais pela tela: ele chega travado no topo e
+  // aparece por opacidade. Então as palavras acendem durante a dissolução —
+  // a frase se escreve enquanto a seção surge, em vez de acender antes, fora
+  // de quadro, enquanto a seção ainda viajava invisível.
+  const curso = document.querySelector<HTMLElement>('#manifesto + .palco-curso')
   gsap.to(palavras, {
     opacity: 1, stagger: 0.06, ease: 'none',
-    scrollTrigger: { trigger: el, start: 'top 78%', end: 'bottom 45%', scrub: 0.4 },
+    scrollTrigger: curso
+      ? { trigger: curso, start: 'top bottom', end: 'bottom bottom', scrub: 0.4 }
+      : { trigger: el, start: 'top 78%', end: 'bottom 45%', scrub: 0.4 },
   })
 }
 
