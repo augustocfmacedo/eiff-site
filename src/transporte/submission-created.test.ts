@@ -12,10 +12,15 @@
  * o corpo que o Netlify manda (`{ payload: … }`), e um teste separado prende
  * a ausência de um export `handler` — porque exportar `handler` e `default`
  * ao mesmo tempo deixa a plataforma escolher o contrato de chamada.
+ *
+ * E vive FORA de netlify/functions de propósito: todo arquivo solto naquela
+ * pasta é uma função para a plataforma (a documentação não declara exceção
+ * para arquivo de teste), e um teste empacotado como função levaria o vitest
+ * para o deploy e publicaria um endpoint que não existe.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import * as modulo from './submission-created.mts'
-import reencaminhar, { corpoDoEvento } from './submission-created.mts'
+import * as modulo from '../../netlify/functions/submission-created.mts'
+import reencaminhar, { corpoDoEvento } from '../../netlify/functions/submission-created.mts'
 
 const SUBMISSAO = JSON.stringify({
   payload: {
