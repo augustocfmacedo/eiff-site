@@ -4,16 +4,29 @@
  * O que estes testes protegem: o segredo nunca sai do servidor, o corpo vai
  * como veio, falha transitória é repetida, 4xx não é, e NADA do conteúdo do
  * lead aparece em log. A entrega não é garantida — e o teste registra isso
- * em vez de finjir que é.
+ * em vez de fingir que é.
+ *
+ * E protegem a FORMA DO EVENTO, que é onde isto quase foi ao ar errado: a
+ * convenção de nome de arquivo entrega um **Request**, não um objeto com
+ * `.body`. O teste principal roda com um Request de verdade, construído com
+ * o corpo que o Netlify manda (`{ payload: … }`), e um teste separado prende
+ * a ausência de um export `handler` — porque exportar `handler` e `default`
+ * ao mesmo tempo deixa a plataforma escolher o contrato de chamada.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { handler } from './submission-created.mts'
+import * as modulo from './submission-created.mts'
+import reencaminhar, { corpoDoEvento } from './submission-created.mts'
 
 const SUBMISSAO = JSON.stringify({
   payload: {
     id: 'nf-123', form_name: 'simular-galpao', created_at: '2026-11-09T14:00:00.000Z',
     data: { nome: 'Ana (FICTÍCIO)', email: 'ana@exemplo.com.br', telefone: '62 90000-0000', area: '900' },
   },
+})
+
+/** O evento como a plataforma o entrega hoje: um Request com o corpo cru. */
+const evento = (corpo = SUBMISSAO) => new Request('https://eiff.com.br/.netlify/functions/submission-created', {
+  method: 'POST', headers: { 'content-type': 'application/json' }, body: corpo,
 })
 
 const chamadas: { url: string; init: RequestInit }[] = []
@@ -49,12 +62,38 @@ const responder = (sequencia: (number | 'rede')[]) => {
   }) as unknown as typeof fetch
 }
 
-/** Executa o handler deixando os temporizadores da espera correrem. */
-const rodar = async () => {
-  const p = handler({ body: SUBMISSAO })
+/** Executa a função deixando os temporizadores da espera correrem. */
+const rodar = async (entrada: unknown = evento()) => {
+  const p = reencaminhar(entrada)
   await vi.runAllTimersAsync()
   return p
 }
+
+describe('transporte · a forma do evento', () => {
+  it('lê o corpo de um Request — o contrato da convenção de nome de arquivo', async () => {
+    expect(await corpoDoEvento(evento())).toBe(SUBMISSAO)
+  })
+
+  it('e também do contrato antigo, com `.body` em texto: versão de API não perde lead', async () => {
+    expect(await corpoDoEvento({ body: SUBMISSAO })).toBe(SUBMISSAO)
+  })
+
+  it('o que não é nenhum dos dois vira corpo vazio, não lixo autenticado', async () => {
+    expect(await corpoDoEvento(null)).toBe('')
+    expect(await corpoDoEvento({ body: null })).toBe('')
+    expect(await corpoDoEvento('texto solto')).toBe('')
+  })
+
+  it('o módulo exporta UM contrato de chamada: default, e nenhum `handler`', () => {
+    expect(typeof modulo.default).toBe('function')
+    expect('handler' in modulo).toBe(false)
+  })
+
+  it('e o retorno é vazio: a plataforma não usa o valor devolvido', async () => {
+    responder([200])
+    expect(await rodar()).toBeUndefined()
+  })
+})
 
 describe('transporte · o pedido que sai', () => {
   it('manda o corpo como veio, com o segredo no cabeçalho', async () => {
@@ -77,10 +116,9 @@ describe('transporte · o pedido que sai', () => {
 
   it('sem corpo não manda nada', async () => {
     responder([200])
-    const p = handler({ body: '' })
-    await vi.runAllTimersAsync()
-    await p
+    await rodar(evento(''))
     expect(chamadas.length).toBe(0)
+    expect(logs.some((l) => l.includes('"outcome":"sem_corpo"'))).toBe(true)
   })
 })
 
