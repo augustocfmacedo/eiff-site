@@ -94,3 +94,23 @@
 
 /* Roadmap discreto (linha de produtos ainda sem ficha técnica) ---- */
 .roadmap { display: grid; gap: 16px; justify-items: start; max-width: 54em; border-left: 1px solid var(--line-2); padding-left: clamp(18px, 3vw, 32px); }
+
+/* Chamado para o filme institucional ------------------------------- */
+/* A capa é o único peso que a página paga: o vídeo só existe depois do
+   clique, dentro do lightbox. Por isso aqui é uma imagem, não um <video>. */
+.institucional { position: relative; aspect-ratio: 16 / 9; overflow: hidden; border-radius: var(--radius); background: var(--bg-3); margin-top: clamp(40px, 5vw, 80px); }
+.institucional img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s var(--ease-out); }
+.institucional:hover img { transform: scale(1.03); }
+/* Véu na base, como em .page-hero__media: o botão pousa sobre a arte da capa
+   e precisa de contraste próprio. `pointer-events: none` porque decoração
+   nunca deve comer clique — foi exatamente esse o defeito dos palcos. */
+.institucional::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to top, rgba(10,10,11,.6), transparent 55%); }
+.institucional .play { position: absolute; left: clamp(16px, 3vw, 28px); bottom: clamp(16px, 3vw, 28px); z-index: 1; }
+.institucional__cap { position: absolute; right: clamp(16px, 3vw, 28px); bottom: clamp(22px, 3vw, 34px); font-family: var(--font-mono); font-size: .75rem; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+@media (max-width: 640px) {
+  /* Com a tela estreita a legenda disputa espaço com o botão e perde. */
+  .institucional__cap { display: none; }
+  /* E o círculo de 64 px toma um terço de uma capa de 188 px de altura. */
+  .institucional .play i { width: 48px; height: 48px; }
+  .institucional .play { gap: 12px; }
+}

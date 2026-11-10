@@ -108,7 +108,7 @@ export function prepararPalcos(reduzMovimento: boolean): HTMLElement[] | null {
   }
 
   for (const sec of palcos) {
-    sec.style.opacity = '0'
+    aparecer(sec, 0)
     const curso = document.createElement('div')
     curso.className = 'palco-curso'
     curso.setAttribute('aria-hidden', 'true')
@@ -131,6 +131,26 @@ const CRUZAMENTO = 0.16
 const trava = (x: number) => Math.max(0, Math.min(1, x))
 
 /**
+ * Opacidade e alvo de clique andam juntos.
+ *
+ * Um palco que ainda NÃO chegou continua `position: sticky` no topo, por
+ * cima de quem está na tela. Invisível ele fica; alvo de clique ele
+ * continuava sendo — e, como vem depois no documento, ele é quem o mouse
+ * encontra. Quem lê a seção de baixo clica e nada acontece.
+ *
+ * O defeito é antigo e nunca apareceu porque nenhuma seção coberta tinha o
+ * que clicar. O espaçador da dissolução já nascia com `pointer-events:
+ * none` pela mesma razão; faltava o palco em si.
+ *
+ * Fica aqui, e não no CSS, porque a opacidade é escrita por JS a cada
+ * quadro: só quem a escreve sabe quando ela chegou a zero.
+ */
+function aparecer(sec: HTMLElement, o: number) {
+  sec.style.opacity = String(o)
+  sec.style.pointerEvents = o === 0 ? 'none' : ''
+}
+
+/**
  * Liga a opacidade de `sec` e de quem está atrás a um progresso de 0 a 1 e,
  * quando a nova chega inteira, esconde a anterior — um palco travado continua
  * no topo para sempre, e seis camadas de tela cheia empilhadas custam
@@ -139,9 +159,9 @@ const trava = (x: number) => Math.max(0, Math.min(1, x))
 function dissolver(sec: HTMLElement, atras: HTMLElement | null) {
   const meio = 0.5 + CRUZAMENTO
   return (p: number) => {
-    sec.style.opacity = String(trava((p - (1 - meio)) / meio))
+    aparecer(sec, trava((p - (1 - meio)) / meio))
     if (!atras) return
-    atras.style.opacity = String(1 - trava(p / meio))
+    aparecer(atras, 1 - trava(p / meio))
     if (p >= 1) { atras.style.visibility = 'hidden'; atras.setAttribute('inert', '') }
     else if (p <= 0) { atras.style.visibility = ''; atras.removeAttribute('inert') }
   }
@@ -164,7 +184,7 @@ export function ligarPalcos(palcos: HTMLElement[] | null) {
   cenas.forEach((sec, i) => {
     const atras = i > 0 ? cenas[i - 1] : null
     const aplicar = dissolver(sec, atras)
-    sec.style.opacity = '0'
+    aparecer(sec, 0)
     const curso = sec.nextElementSibling
     const ehPalco = curso?.classList.contains('palco-curso')
 
