@@ -13,12 +13,14 @@
     "skipLibCheck": true,
     "isolatedModules": true,
     "resolveJsonModule": true,
+    "allowImportingTsExtensions": true,
     "types": [
       "vite/client",
       "node"
     ]
   },
   "include": [
-    "src"
+    "src",
+    "netlify"
   ]
 }
