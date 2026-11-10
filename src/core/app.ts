@@ -9,6 +9,7 @@ import { SplitText } from 'gsap/SplitText'
 import { DrawSVGPlugin } from 'gsap/DrawSVGPlugin'
 import Lenis from 'lenis'
 import { registrarSite } from './eventos'
+import { FILME_EIFF, marcacaoDoFilme } from './filme'
 
 gsap.registerPlugin(ScrollTrigger, SplitText, DrawSVGPlugin)
 
@@ -303,21 +304,39 @@ function iniciarLightbox(lenis: Lenis | null) {
   const fechar = $('#lightboxClose')
   if (!box || !frame) return
   let ultimoFoco: HTMLElement | null = null
-  const abrir = (id: string) => {
-    frame.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&modestbranding=1" title="Vídeo do projeto" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`
+  const abrir = (conteudo: string, rotulo: string) => {
+    frame.innerHTML = conteudo
+    box.setAttribute('aria-label', rotulo)
     box.classList.add('is-open'); box.setAttribute('aria-hidden', 'false')
     lenis?.stop(); fechar?.focus()
+    /* O atributo `autoplay` basta no caso normal — o clique da pessoa já é o
+       gesto que o navegador exige. Se ainda assim recusar, ela tem os
+       controles; o que não pode é a promessa estourar sem tratamento. */
+    frame.querySelector('video')?.play().catch(() => { /* fica no poster */ })
   }
+  const abrirYoutube = (id: string) => abrir(
+    `<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&modestbranding=1" title="Vídeo do projeto" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`,
+    'Vídeo do projeto',
+  )
   const close = () => {
+    /* Pausar ANTES de fechar. O frame só é esvaziado depois da transição, e
+       sem isto o som do filme continuaria tocando por mais 400 ms sobre uma
+       tela já fechada. Com o iframe do YouTube isso nunca apareceu porque o
+       `<iframe>` não tem `pause()` — some junto com o innerHTML. */
+    frame.querySelector('video')?.pause()
     box.classList.remove('is-open'); box.setAttribute('aria-hidden', 'true')
     setTimeout(() => { frame.innerHTML = '' }, 400)
     lenis?.start(); ultimoFoco?.focus()
   }
   document.addEventListener('click', (e) => {
-    const t = (e.target as HTMLElement).closest<HTMLElement>('[data-video]')
-    if (t) {
-      ultimoFoco = t
-      abrir(t.dataset.video!)
+    const t = (e.target as HTMLElement).closest<HTMLElement>('[data-video], [data-filme]')
+    if (!t) return
+    ultimoFoco = t
+    if (t.dataset.filme !== undefined) {
+      abrir(marcacaoDoFilme(FILME_EIFF), FILME_EIFF.titulo)
+      registrarSite('video_play', t.dataset.evento || FILME_EIFF.evento)
+    } else {
+      abrirYoutube(t.dataset.video!)
       registrarSite('video_play', t.dataset.evento || t.textContent?.trim())
     }
   })
