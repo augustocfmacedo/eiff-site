@@ -172,6 +172,11 @@
                   <p class="sim__erro" data-erro="escopo" role="alert" hidden></p>
                 </div>
               </div>
+              <fieldset class="sim-tipologia" id="simTipologia" aria-describedby="simTipologiaAjuda" hidden>
+                <legend>O galpão tem alguma destas características?</legend>
+                <p class="sim__ajuda" id="simTipologiaAjuda">Marque as que se aplicam, ou «nenhuma das anteriores». Ajuda a engenharia a saber por onde começar; se preferir, pode deixar em branco.</p>
+                <div class="sim-tipologia__opcoes" id="simTipologiaOpcoes"></div>
+              </fieldset>
             </fieldset>
 
             <!-- 04 · CONTEXTO -->
@@ -225,6 +230,7 @@
             <fieldset class="sim__etapa" data-etapa="contato" data-oculta>
               <legend class="sim__legenda sr-only">Contato</legend>
               <h2 class="sim__pergunta" tabindex="-1" data-foco>Para quem a engenharia responde?</h2>
+              <section class="sim-solicitacao" id="simSolicitacao" aria-label="Resumo da solicitação" hidden></section>
               <p class="sim__ajuda">Seus dados são usados para analisar esta solicitação e responder com o estudo preliminar. Se você chegou por um anúncio, a origem da visita também serve para medir a campanha — e a esse uso você pode se opor. Sem lista de e-mail, sem anúncio direcionado e sem venda de dados. Quem recebe, por quanto tempo ficam e como pedir a exclusão: <a href="/privacidade/" data-canal="privacidade">Política de Privacidade</a>.</p>
               <div class="sim__campos sim__campos--2">
                 <div class="sim__campo">
@@ -273,6 +279,13 @@
           </div>
           <p class="sim-leitura__resumo" id="simResumo">Configure os primeiros campos</p>
 
+          <div class="sim-vistas" id="simVistas" role="group" aria-label="Vista da ilustração" hidden>
+            <button type="button" class="sim-vistas__bt" data-vista="volume" aria-pressed="true">Volume</button>
+            <button type="button" class="sim-vistas__bt" data-vista="planta" aria-pressed="false">Planta</button>
+            <button type="button" class="sim-vistas__bt" data-vista="corte" aria-pressed="false">Corte</button>
+          </div>
+          <div class="sim-ilu" id="simIlustracao" data-vista-atual="volume" hidden></div>
+
           <svg class="sim__croqui" id="simCroqui" viewBox="0 0 420 260" role="img" aria-label="Croqui esquemático do pórtico com vão e pé-direito informados">
             <path id="cqSolo" data-traco="solo" d="M 13.6 184 H 346.4"/>
             <path id="cqAlma" data-traco d="M 34 111 L 66.1 95.5 L 180 84.2 L 293.9 95.5 L 326 111 M 34 90.6 V 111 M 326 90.6 V 111 M 180 76 V 84.2"/>
@@ -283,11 +296,14 @@
             <path id="cqCotaPe" data-traco="cota" d="M 336.3 184 H 346.3 M 341.3 184 V 90.6 M 336.3 90.6 H 346.3"/>
             <text id="cqTextoPe" x="351.3" y="137.3">8 m</text>
           </svg>
+          <p class="sim-ilu__aviso" id="simIlustracaoAviso" hidden>Ilustração das dimensões informadas. Não é modelo estrutural calculado: não mostra perfis, contraventamentos, fundações nem quantidades.</p>
 
           <div class="sim-leitura__numeros">
             <div class="sim-leitura__num"><b id="simArea">1.500 m²</b><span>Área coberta</span></div>
             <div class="sim-leitura__num"><b id="simCumeeira">9,3 m</b><span>Altura total</span></div>
           </div>
+
+          <div class="sim-enquadramento" id="simEnquadramento" aria-live="polite" hidden></div>
 
           <ul class="sim__obs" id="simObs" aria-live="polite">
             <li class="sim__obs-vazio">A leitura técnica aparece conforme você configura.</li>

@@ -7,10 +7,9 @@
  */
 
 import {
-  COBERTURAS, ESCOPOS, FECHAMENTOS, PISOS, PRAZOS, PROJETOS, TERRENOS, USOS,
   type ConfiguracaoGalpao, type Contato, type Observacao,
   areaCoberta, exigeEstudoEspecifico, formatarArea, formatarMedida, lerConfiguracao,
-  lerNumero, nomeOpcao, resumoConfiguracao,
+  lerNumero, resumoConfiguracao,
 } from './parametros'
 import {
   ETAPAS, TOTAL_ETAPAS, type EstadoSimulador, type IdEtapa,
@@ -22,6 +21,12 @@ import { MOTIVO_INDISPONIVEL, PROVEDOR_INDISPONIVEL, type ProvedorPreEngenharia 
 import {
   capturarOrigem, faixaDeArea, guardarOrigem, lerOrigem, origemEmTexto, registrar, ufDeCidade,
 } from './analytics'
+import { ESCOPO_PADRONIZADO, type DeclaracaoDeTipologia } from './enquadramento'
+import { linhasDoResumo, montarApresentacaoPublica, rotulosDaTipologia, type ApresentacaoPublica } from './apresentacao'
+import { ilustracaoVolumetrica, implantacaoConceitual } from './ilustracao'
+import { AVISO_DO_ENQUADRAMENTO, especificacaoDoLead, textoDoEnquadramento } from './especificacao'
+
+type Vista = 'volume' | 'planta' | 'corte'
 
 const CAMPOS_CONTATO = ['nome', 'empresa', 'email', 'telefone'] as const
 const CAMPOS_NUMERO = ['vao', 'comprimento', 'peDireito'] as const
@@ -56,6 +61,27 @@ export function iniciarSimulador(raiz: Document | HTMLElement = document, opcoes
   const painelResumo = raiz.querySelector<HTMLElement>('#simResumo')
   const painelObs = raiz.querySelector<HTMLElement>('#simObs')
   const painelArea = raiz.querySelector<HTMLElement>('#simArea')
+  const caixaTipologia = raiz.querySelector<HTMLElement>('#simTipologia')
+  const opcoesTipologia = raiz.querySelector<HTMLElement>('#simTipologiaOpcoes')
+  const botoesVista = raiz.querySelector<HTMLElement>('#simVistas')
+  const ilustracao = raiz.querySelector<HTMLElement>('#simIlustracao')
+  const avisoIlustracao = raiz.querySelector<HTMLElement>('#simIlustracaoAviso')
+  const caixaEnquadramento = raiz.querySelector<HTMLElement>('#simEnquadramento')
+  const caixaSolicitacao = raiz.querySelector<HTMLElement>('#simSolicitacao')
+  const regras = ESCOPO_PADRONIZADO
+
+  /*
+   * Tipologia declarada e vista da ilustração. Ficam FORA do estado do fluxo de
+   * propósito: não são campos do formulário (as caixas não têm `name`, então o
+   * Netlify não as registra) e não bloqueiam nenhuma etapa. O que delas segue
+   * para o lead vai dentro de `especificacao`.
+   */
+  let tipologiaMarcada: string[] = []
+  let tipologiaNenhuma = false
+  let vista: Vista = 'volume'
+  let enquadramentoDesenhado = ''
+  const declaracao = (): DeclaracaoDeTipologia | null =>
+    tipologiaMarcada.length === 0 && !tipologiaNenhuma ? null : { itens: [...tipologiaMarcada], nenhumaDasAnteriores: tipologiaNenhuma }
   const painelCumeeira = raiz.querySelector<HTMLElement>('#simCumeeira')
   const svg = raiz.querySelector<SVGSVGElement>('#simCroqui')
   const nota = raiz.querySelector<HTMLElement>('#simNota')
@@ -144,6 +170,40 @@ export function iniciarSimulador(raiz: Document | HTMLElement = document, opcoes
     }
     desenhar()
   })
+
+  /* -------------------------------------------------------------
+     Tipologia e vistas da ilustração
+  ------------------------------------------------------------- */
+  if (caixaTipologia && opcoesTipologia) {
+    const opcao = (atributo: string, rotulo: string, extra = '') =>
+      `<label class="sim-tipologia__opcao${extra}"><input type="checkbox" ${atributo}><span>${escapar(rotulo)}</span></label>`
+    opcoesTipologia.innerHTML = regras.tipologiasForaDoPadrao.map((t) => opcao(`data-tipologia="${escapar(t.id)}"`, t.rotulo)).join('')
+      + opcao('data-tipologia-nenhuma', 'Nenhuma das anteriores', ' sim-tipologia__opcao--nenhuma')
+    caixaTipologia.hidden = false
+    // «Nenhuma das anteriores» e as características se excluem: marcar uma desmarca a outra.
+    opcoesTipologia.addEventListener('change', (e) => {
+      const el = e.target as HTMLInputElement
+      const caixas = Array.from(opcoesTipologia.querySelectorAll<HTMLInputElement>('[data-tipologia]'))
+      const nenhumaEl = opcoesTipologia.querySelector<HTMLInputElement>('[data-tipologia-nenhuma]')
+      if (el.hasAttribute('data-tipologia-nenhuma') && el.checked) caixas.forEach((c) => { c.checked = false })
+      if (el.hasAttribute('data-tipologia') && el.checked && nenhumaEl) nenhumaEl.checked = false
+      tipologiaMarcada = caixas.filter((c) => c.checked).map((c) => c.dataset.tipologia!)
+      tipologiaNenhuma = nenhumaEl?.checked ?? false
+      atualizarResumo()
+    })
+  }
+
+  if (botoesVista && ilustracao) {
+    botoesVista.hidden = false
+    ilustracao.hidden = false
+    if (avisoIlustracao) avisoIlustracao.hidden = false
+    botoesVista.addEventListener('click', (e) => {
+      const bt = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-vista]')
+      if (!bt) return
+      vista = bt.dataset.vista as Vista
+      atualizarResumo()
+    })
+  }
 
   /* -------------------------------------------------------------
      Navegação entre etapas
@@ -320,7 +380,8 @@ export function iniciarSimulador(raiz: Document | HTMLElement = document, opcoes
       }
       texto('cqTextoVao', `${formatarMedida(c.vao)} m`, croqui.cotaVao.x, croqui.cotaVao.y)
       texto('cqTextoPe', `${formatarMedida(c.peDireito)} m`, croqui.cotaPeDireito.x, croqui.cotaPeDireito.y)
-      svg.removeAttribute('hidden')
+      // Com as vistas ativas, o corte só aparece quando é a vista escolhida.
+      svg.toggleAttribute('hidden', Boolean(botoesVista && ilustracao) && vista !== 'corte')
       if (painelCumeeira) painelCumeeira.textContent = `${formatarMedida(croqui.alturaCumeeira)} m`
     }
 
@@ -330,7 +391,73 @@ export function iniciarSimulador(raiz: Document | HTMLElement = document, opcoes
         ? '<li class="sim__obs-vazio">A leitura técnica aparece conforme você configura.</li>'
         : obs.map(linhaObs).join('')
     }
+
+    desenharComercial()
   }
+
+  /**
+   * Ilustração, enquadramento e resumo da solicitação. Tudo sai do objeto de
+   * apresentação, que só aceita o que o visitante declarou; se ele não puder ser
+   * montado com segurança, esses blocos somem e o formulário segue como antes.
+   */
+  const desenharComercial = (): void => {
+    const entrega = montarApresentacaoPublica(estado.configuracao, declaracao(), regras)
+    const a = entrega.ok ? entrega.apresentacao : null
+
+    if (botoesVista && ilustracao) {
+      botoesVista.querySelectorAll<HTMLButtonElement>('[data-vista]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.vista === vista)))
+      ilustracao.dataset.vistaAtual = vista
+      const desenho = !a ? null : vista === 'volume' ? ilustracaoVolumetrica(a.configuracao) : vista === 'planta' ? implantacaoConceitual(a.configuracao) : null
+      const cfg = a?.configuracao
+      const cotas = !desenho || !cfg ? '' : vista === 'volume'
+        ? `vão ${formatarMedida(cfg.vao!)} m · comprimento ${formatarMedida(cfg.comprimento!)} m · pé-direito ${formatarMedida(cfg.peDireito!)} m`
+        : `${formatarMedida(cfg.vao!)} × ${formatarMedida(cfg.comprimento!)} m · ${formatarArea(areaCoberta(cfg)!)} m² de projeção`
+      ilustracao.innerHTML = desenho
+        ? `${desenho}<p class="sim-ilu__cotas" aria-hidden="true">${escapar(cotas)} · ilustração</p>`
+        : (vista === 'corte' ? '' : '<p class="sim-ilu__vazio">Informe vão, comprimento e pé-direito para ver a ilustração.</p>')
+      ilustracao.hidden = vista === 'corte'
+      svg?.toggleAttribute('hidden', vista !== 'corte')
+    }
+    if (caixaEnquadramento) {
+      // Antes de a configuração estar completa, o enquadramento não diz nada útil: fica oculto.
+      caixaEnquadramento.hidden = !a || a.enquadramento.classe === 'CONFIGURACAO_INCOMPLETA'
+      // Região anunciada por leitor de tela: só é reescrita quando o texto muda, não a cada tecla.
+      const novo = a ? blocoEnquadramento(a) : ''
+      if (enquadramentoDesenhado !== novo) {
+        caixaEnquadramento.innerHTML = novo
+        enquadramentoDesenhado = novo
+      }
+    }
+    if (caixaSolicitacao) {
+      caixaSolicitacao.hidden = !a
+      caixaSolicitacao.innerHTML = a ? blocoSolicitacao(a) : ''
+    }
+  }
+
+  const blocoEnquadramento = (a: ApresentacaoPublica): string => {
+    // O cartão só aparece com a configuração completa, então os motivos nunca são erros de preenchimento.
+    const t = textoDoEnquadramento(a, regras)
+    const classe = a.enquadramento.classe
+    const motivos = t.motivos
+    return `<span class="eyebrow">Enquadramento${t.provisorio ? ' preliminar' : ''}</span>
+      <p class="sim-enquadramento__titulo" data-classe="${classe}">${escapar(t.titulo)}</p>
+      ${motivos.length ? `<ul class="sim-enquadramento__motivos">${motivos.map((m) => `<li>${escapar(m)}</li>`).join('')}</ul>` : ''}
+      <p class="sim-enquadramento__passo">${escapar(t.proximoPasso)}</p>
+      <p class="sim-enquadramento__aviso">${escapar(AVISO_DO_ENQUADRAMENTO)} ${escapar(t.regras)}</p>`
+  }
+
+  const blocoSolicitacao = (a: ApresentacaoPublica): string => {
+    const t = textoDoEnquadramento(a, regras)
+    const tipologia = rotulosDaTipologia(a, regras)
+    const linhas = [
+      ...linhasDoResumo(a),
+      { rotulo: 'Características', valor: tipologia.length ? tipologia.join('; ') : 'não informadas' },
+      { rotulo: 'Enquadramento', valor: t.titulo },
+    ]
+    return `<h3 class="sim-solicitacao__titulo">O que segue para a engenharia</h3>
+      <dl class="sim-solicitacao__lista">${linhas.map((l) => `<div><dt>${escapar(l.rotulo)}</dt><dd>${escapar(l.valor)}</dd></div>`).join('')}</dl>`
+  }
+
 
   const linhaObs = (o: Observacao): string => {
     const fonte = o.fonte ? `<span class="sim__obs-fonte">${escapar(o.fonte)}</span>` : ''
@@ -350,16 +477,8 @@ export function iniciarSimulador(raiz: Document | HTMLElement = document, opcoes
     }
     definir('area', area !== undefined ? `${formatarArea(area)} m²` : '')
     definir('resumo', resumoConfiguracao(c))
-    definir('especificacao', [
-      `Cobertura: ${nomeOpcao(COBERTURAS, c.cobertura)}`,
-      `Fechamento: ${nomeOpcao(FECHAMENTOS, c.fechamento)}`,
-      `Piso: ${nomeOpcao(PISOS, c.piso)}`,
-      `Escopo: ${nomeOpcao(ESCOPOS, c.escopo)}`,
-      `Terreno: ${nomeOpcao(TERRENOS, c.terreno)}`,
-      `Projeto: ${nomeOpcao(PROJETOS, c.projeto)}`,
-      `Prazo: ${nomeOpcao(PRAZOS, c.prazo)}`,
-      `Uso: ${nomeOpcao(USOS, c.uso)}`,
-    ].join(' · '))
+    // Os mesmos itens de antes, e no fim a tipologia declarada e o enquadramento comercial.
+    definir('especificacao', especificacaoDoLead(c, declaracao(), regras))
     // A fonte acompanha cada afirmação também no lead. No painel ela já aparecia
     // sob a linha; aqui era descartada, e a mesma frase chegava ao comercial sem
     // a obra que a sustenta — que é exatamente o que não pode acontecer.
