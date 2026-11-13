@@ -198,11 +198,15 @@ html.js .sim__etapa[data-oculta] { display: none; }
   .lp-passos { grid-template-columns: repeat(4, 1fr); }
 }
 @media (max-width: 899px) {
+  /* A coluna única nunca cresce além da tela: sem isso, um filho largo (o botão de envio) alargava a página no celular. */
+  .sim-grid { grid-template-columns: minmax(0, 1fr); }
   .sim-leitura { position: static; }
   /* No celular o painel vem depois do formulário, mas o croqui sobe junto da etapa de dimensões. */
   .sim-grid > .sim-leitura { order: 2; }
 }
 @media (max-width: 560px) {
+  /* "Enviar para a engenharia" media 322 px com o padding do botão grande, num espaço de 295 px. */
+  .sim__acoes .btn--lg { padding-left: 20px; padding-right: 20px; max-width: 100%; white-space: normal; }
   /* A etiqueta some, mas o alvo de toque continua com 24 px (WCAG 2.2 AA). */
   .sim__passo { font-size: 0; padding-top: 10px; min-height: 24px; }
   .sim__passo::before { height: 3px; }
@@ -218,3 +222,61 @@ html.js .sim__etapa[data-oculta] { display: none; }
 .sim-leitura--embutida { margin-top: 24px; background: var(--bg-3); }
 .sim-leitura--embutida .sim-leitura__topo { display: none; }
 .sim-leitura--embutida .sim__croqui { max-height: 210px; }
+
+/* Tipologia declarada (etapa 3) ------------------------------ */
+/* As caixas não têm `name`: não viram campo do formulário. Sem JS o bloco fica oculto. */
+.sim-tipologia { margin: 28px 0 0; padding: 18px 0 0; border: 0; border-top: 1px solid var(--line); min-width: 0; }
+.sim-tipologia legend { padding: 0; font-family: var(--font-mono); font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
+.sim-tipologia .sim__ajuda { margin: 10px 0 12px; }
+.sim-tipologia__opcoes { display: grid; gap: 4px; }
+.sim-tipologia__opcao { display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 4px 8px; border-radius: var(--radius); color: var(--ink-2); font-size: .92rem; line-height: 1.4; cursor: pointer; }
+.sim-tipologia__opcao:hover { background: var(--bg-3); }
+.sim-tipologia__opcao input { width: 20px; height: 20px; flex: 0 0 auto; accent-color: var(--brand); }
+.sim-tipologia__opcao input:focus-visible { outline: 2px solid var(--brand-2); outline-offset: 3px; }
+.sim-tipologia__opcao--nenhuma { border-top: 1px dashed var(--line); margin-top: 4px; padding-top: 10px; color: var(--ink); }
+
+/* Vistas da ilustração (painel) ------------------------------- */
+.sim-vistas { display: flex; gap: 6px; }
+.sim-vistas__bt { flex: 1 1 0; min-height: 44px; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); color: var(--ink-3); font-family: var(--font-mono); font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }
+.sim-vistas__bt:hover { color: var(--ink); border-color: var(--ink-4); }
+.sim-vistas__bt:focus-visible { outline: 2px solid var(--brand-2); outline-offset: 2px; }
+.sim-vistas__bt[aria-pressed="true"] { color: var(--ink); border-color: var(--brand); background: var(--brand-dim); }
+.sim-ilu { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); padding: 6px; }
+.sim-ilu-svg { display: block; width: 100%; height: auto; }
+.sim-ilu-piso { fill: var(--bg-3); stroke: var(--line); stroke-width: 1; stroke-dasharray: 4 4; }
+.sim-ilu-parede { fill: #2a2c30; stroke: var(--steel); stroke-width: 1.2; stroke-linejoin: round; }
+.sim-ilu-oitao { fill: #34373c; stroke: var(--steel); stroke-width: 1.2; stroke-linejoin: round; }
+.sim-ilu-agua { fill: #4a4d53; stroke: var(--ink-2); stroke-width: 1.2; stroke-linejoin: round; }
+.sim-ilu-agua--tras { fill: #3d4045; }
+.sim-ilu-figura { stroke: var(--brand-2); fill: var(--brand-2); stroke-width: 2; stroke-linecap: round; }
+.sim-ilu-projecao { fill: #2f3236; stroke: var(--ink-2); stroke-width: 1.4; }
+.sim-ilu-cumeeira { stroke: var(--steel); stroke-width: 1; stroke-dasharray: 6 5; }
+.sim-ilu-linha-cota { stroke: var(--brand-2); stroke-width: 1; }
+.sim-ilu-cota { font-family: var(--font-mono); font-size: 20px; fill: var(--ink); }
+.sim-ilu-area { font-family: var(--font-display); font-size: 22px; fill: var(--ink); }
+.sim-ilu-selo { font-family: var(--font-mono); font-size: 15px; letter-spacing: .12em; fill: var(--ink-3); }
+.sim-ilu__vazio { font-size: .86rem; color: var(--ink-3); padding: 18px 12px; }
+.sim-ilu__aviso { font-size: .78rem; color: var(--ink-3); line-height: 1.5; margin-top: -8px; }
+
+/* Enquadramento (painel) ------------------------------------- */
+.sim-enquadramento { display: grid; gap: 8px; border: 1px solid var(--line); border-left: 3px solid var(--brand); border-radius: var(--radius); background: var(--bg); padding: 14px 16px; }
+.sim-enquadramento__titulo { font-size: 1rem; color: var(--ink); line-height: 1.4; }
+.sim-enquadramento__motivos { margin: 0; padding-left: 1.1em; display: grid; gap: 4px; font-size: .86rem; color: var(--ink-2); line-height: 1.45; }
+.sim-enquadramento__passo { font-size: .86rem; color: var(--ink-2); line-height: 1.5; }
+.sim-enquadramento__aviso { font-size: .78rem; color: var(--ink-3); line-height: 1.5; }
+
+/* Resumo da solicitação (etapa 5) ---------------------------- */
+.sim-solicitacao { border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-2); padding: 16px 18px; margin-bottom: 22px; }
+.sim-solicitacao__titulo { font-family: var(--font-mono); font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); font-weight: 400; margin-bottom: 12px; }
+.sim-solicitacao__lista { display: grid; gap: 10px 22px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); margin: 0; }
+.sim-solicitacao__lista div { min-width: 0; }
+.sim-solicitacao__lista dt { font-family: var(--font-mono); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 2px; }
+.sim-solicitacao__lista dd { margin: 0; font-size: .9rem; color: var(--ink); line-height: 1.45; overflow-wrap: anywhere; }
+
+.sim-leitura--embutida .sim-ilu-svg { max-height: 230px; }
+
+.sim-ilu__cotas { font-family: var(--font-mono); font-size: .78rem; letter-spacing: .06em; color: var(--ink-2); margin: 8px 4px 2px; }
+@media (max-width: 560px) {
+  /* No celular o desenho encolhe e os textos dentro dele ficariam ilegíveis ou se tocariam: as medidas vão para a linha abaixo. */
+  .sim-ilu-cota, .sim-ilu-area, .sim-ilu-selo { display: none; }
+}
