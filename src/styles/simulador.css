@@ -260,6 +260,10 @@ html.js .sim__etapa[data-oculta] { display: none; }
 
 /* Enquadramento (painel) ------------------------------------- */
 .sim-enquadramento { display: grid; gap: 8px; border: 1px solid var(--line); border-left: 3px solid var(--brand); border-radius: var(--radius); background: var(--bg); padding: 14px 16px; }
+/* Sempre no documento (região anunciada pelo leitor de tela). Vazia, sai do fluxo da grade: sem
+   altura, sem borda e sem abrir o espaço de 18 px entre os vizinhos. Não usar display: none, que tira
+   a região da árvore de acessibilidade e faz o leitor perder o primeiro anúncio. */
+.sim-enquadramento:empty { position: absolute; border: 0; padding: 0; background: none; }
 .sim-enquadramento__titulo { font-size: 1rem; color: var(--ink); line-height: 1.4; }
 .sim-enquadramento__motivos { margin: 0; padding-left: 1.1em; display: grid; gap: 4px; font-size: .86rem; color: var(--ink-2); line-height: 1.45; }
 .sim-enquadramento__passo { font-size: .86rem; color: var(--ink-2); line-height: 1.5; }

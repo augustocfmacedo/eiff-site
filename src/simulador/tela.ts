@@ -30,6 +30,8 @@ type Vista = 'volume' | 'planta' | 'corte'
 
 const CAMPOS_CONTATO = ['nome', 'empresa', 'email', 'telefone'] as const
 const CAMPOS_NUMERO = ['vao', 'comprimento', 'peDireito'] as const
+/** Teclas com que o grupo de opções muda a marcação sem que a pessoa tenha confirmado nada. */
+const SETAS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'])
 type CampoContato = (typeof CAMPOS_CONTATO)[number]
 
 const ehContato = (nome: string): nome is CampoContato => (CAMPOS_CONTATO as readonly string[]).includes(nome)
@@ -80,6 +82,7 @@ export function iniciarSimulador(raiz: Document | HTMLElement = document, opcoes
   let tipologiaNenhuma = false
   let vista: Vista = 'volume'
   let enquadramentoDesenhado = ''
+  let obsDesenhadas: string | null = null
   const declaracao = (): DeclaracaoDeTipologia | null =>
     tipologiaMarcada.length === 0 && !tipologiaNenhuma ? null : { itens: [...tipologiaMarcada], nenhumaDasAnteriores: tipologiaNenhuma }
   const painelCumeeira = raiz.querySelector<HTMLElement>('#simCumeeira')
@@ -159,12 +162,31 @@ export function iniciarSimulador(raiz: Document | HTMLElement = document, opcoes
     desenhar()
   })
 
+  /*
+   * Nas opções de uso, a seta só percorre: marca a opção (é o comportamento
+   * nativo do grupo) mas não avança de etapa, senão quem navega pelo teclado ou
+   * com leitor de tela é levado adiante antes de conhecer as outras opções.
+   * Clique, toque e Espaço continuam avançando; Enter segue o envio implícito.
+   */
+  let usoPorSeta = false
+  form.addEventListener('keydown', (e) => {
+    const el = e.target as HTMLInputElement
+    usoPorSeta = el.name === 'uso' && el.type === 'radio' && SETAS.has(e.key)
+    // Espaço numa opção que a seta já marcou não gera `change`: é a confirmação explícita.
+    if (e.key === ' ' && el.name === 'uso' && el.type === 'radio' && el.checked && estado.etapa === 'uso') {
+      e.preventDefault()
+      irAdiante()
+    }
+  })
+
   form.addEventListener('change', (e) => {
     const el = e.target as HTMLInputElement
     if (!el.name) return
     lerControle(el)
+    const pelaSeta = usoPorSeta
+    usoPorSeta = false
     // Escolher o uso no primeiro passo já avança: menos cliques no celular.
-    if (el.name === 'uso' && estado.etapa === 'uso' && el.type === 'radio') {
+    if (el.name === 'uso' && estado.etapa === 'uso' && el.type === 'radio' && !pelaSeta) {
       window.setTimeout(() => irAdiante(), reduz ? 0 : 160)
       return
     }
@@ -387,9 +409,15 @@ export function iniciarSimulador(raiz: Document | HTMLElement = document, opcoes
 
     if (painelObs) {
       const obs = lerConfiguracao(c)
-      painelObs.innerHTML = obs.length === 0
+      const novo = obs.length === 0
         ? '<li class="sim__obs-vazio">A leitura técnica aparece conforme você configura.</li>'
         : obs.map(linhaObs).join('')
+      // Região anunciada por leitor de tela: reescrever o mesmo texto faria a leitura se repetir
+      // a cada troca de vista, de característica ou de campo.
+      if (obsDesenhadas !== novo) {
+        painelObs.innerHTML = novo
+        obsDesenhadas = novo
+      }
     }
 
     desenharComercial()
@@ -419,10 +447,11 @@ export function iniciarSimulador(raiz: Document | HTMLElement = document, opcoes
       svg?.toggleAttribute('hidden', vista !== 'corte')
     }
     if (caixaEnquadramento) {
-      // Antes de a configuração estar completa, o enquadramento não diz nada útil: fica oculto.
-      caixaEnquadramento.hidden = !a || a.enquadramento.classe === 'CONFIGURACAO_INCOMPLETA'
+      // Antes de a configuração estar completa, o enquadramento não diz nada útil: fica VAZIO.
+      // Nunca `hidden`: uma região ao vivo que nasce oculta não é anunciada quando aparece,
+      // então ela fica sempre presente e o que muda é só o conteúdo (vazia, o CSS a recolhe).
       // Região anunciada por leitor de tela: só é reescrita quando o texto muda, não a cada tecla.
-      const novo = a ? blocoEnquadramento(a) : ''
+      const novo = a && a.enquadramento.classe !== 'CONFIGURACAO_INCOMPLETA' ? blocoEnquadramento(a) : ''
       if (enquadramentoDesenhado !== novo) {
         caixaEnquadramento.innerHTML = novo
         enquadramentoDesenhado = novo
