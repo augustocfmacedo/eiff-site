@@ -224,11 +224,13 @@ describe('página pública: formulário preservado e superfície comercial isola
     ])
   })
   it('os blocos novos nascem ocultos: sem JavaScript a página é o formulário de antes', () => {
-    for (const id of ['simTipologia', 'simVistas', 'simIlustracao', 'simIlustracaoAviso', 'simEnquadramento', 'simSolicitacao']) {
+    for (const id of ['simTipologia', 'simVistas', 'simIlustracao', 'simIlustracaoAviso', 'simSolicitacao']) {
       const tag = new RegExp(`<[a-z]+ [^>]*id="${id}"[^>]*>`).exec(HTML)?.[0]
       expect(tag, id).toBeDefined()
       expect(tag, id).toMatch(/\shidden(>|\s)/)
     }
+    // O enquadramento é a exceção: nasce VAZIO, não oculto (ver o teste de acessibilidade abaixo).
+    expect(HTML).toContain('<div class="sim-enquadramento" id="simEnquadramento" aria-live="polite"></div>')
     // As opções de tipologia são desenhadas pelo script, sem `name`.
     expect(HTML).not.toMatch(/data-tipologia/)
     const tela = ler('src', 'simulador', 'tela.ts')
@@ -254,5 +256,47 @@ describe('página pública: formulário preservado e superfície comercial isola
     }
     const novos = ['enquadramento.ts', 'ilustracao.ts', 'apresentacao.ts', 'especificacao.ts']
     for (const n of novos) expect(readFileSync(resolve(dir, n), 'utf8'), n).not.toMatch(/\bfetch\(|XMLHttpRequest|sendBeacon|localStorage|sessionStorage|document\.cookie/)
+  })
+})
+
+describe('acessibilidade com leitor de tela (E10.7B)', () => {
+  const tela = ler('src', 'simulador', 'tela.ts')
+  const css = ler('src', 'styles', 'simulador.css')
+
+  it('P1: a armadilha anti-robô fica fora do Tab e da árvore de acessibilidade, sem perder o nome', () => {
+    const p = /<p class="sr-only" aria-hidden="true"><label>Não preencha: <input name="empresa-site" tabindex="-1" autocomplete="off"><\/label><\/p>/
+    expect(HTML).toMatch(p)
+    // Nada focalizável por Tab dentro de um bloco aria-hidden.
+    for (const [bloco] of HTML.matchAll(/<(\w+)[^>]*aria-hidden="true"[^>]*>[\s\S]*?<\/\1>/g)) {
+      for (const [ctrl] of bloco.matchAll(/<(input|select|textarea|button|a)\b[^>]*>/g)) expect(ctrl, bloco).toMatch(/tabindex="-1"|type="hidden"/)
+    }
+    // O campo não é `disabled`: um campo desabilitado não seria enviado e o Netlify não veria o robô.
+    expect(HTML).not.toMatch(/name="empresa-site"[^>]*disabled/)
+  })
+
+  it('P2: a seta percorre as opções de uso sem avançar; clique, Espaço e Enter continuam avançando', () => {
+    expect(tela).toContain("const SETAS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'])")
+    expect(tela).toMatch(/usoPorSeta = el\.name === 'uso' && el\.type === 'radio' && SETAS\.has\(e\.key\)/)
+    expect(tela).toMatch(/el\.name === 'uso' && estado\.etapa === 'uso' && el\.type === 'radio' && !pelaSeta\)/)
+    // O sinal da seta vale para uma única mudança: é zerado antes de decidir.
+    expect(tela.indexOf('usoPorSeta = false')).toBeLessThan(tela.indexOf('!pelaSeta)'))
+    // Espaço numa opção já marcada (sem `change`) confirma e avança.
+    expect(tela).toMatch(/e\.key === ' ' && el\.name === 'uso' && el\.type === 'radio' && el\.checked && estado\.etapa === 'uso'/)
+  })
+
+  it('P3: a região do enquadramento nunca é ocultada; o que muda é só o conteúdo', () => {
+    expect(tela).not.toMatch(/caixaEnquadramento\.hidden/)
+    expect(tela).toMatch(/a\.enquadramento\.classe !== 'CONFIGURACAO_INCOMPLETA' \? blocoEnquadramento\(a\) : ''/)
+    expect(tela).toMatch(/if \(enquadramentoDesenhado !== novo\) \{\s*caixaEnquadramento\.innerHTML = novo/)
+    // Vazia, não ocupa espaço nem mostra a borda.
+    expect(css).toMatch(/\.sim-enquadramento:empty \{ position: absolute; border: 0; padding: 0; background: none; \}/)
+    // display: none tiraria a região da árvore de acessibilidade e o primeiro anúncio se perderia.
+    expect(css).not.toMatch(/\.sim-enquadramento[^{]*\{[^}]*display: none/)
+  })
+
+  it('P4: as observações só são reescritas quando o texto muda', () => {
+    expect(tela).toMatch(/if \(obsDesenhadas !== novo\) \{\s*painelObs\.innerHTML = novo\s*obsDesenhadas = novo/)
+    // Nenhuma outra escrita direta na região.
+    expect(tela.match(/painelObs\.innerHTML\s*=/g)).toHaveLength(1)
   })
 })
