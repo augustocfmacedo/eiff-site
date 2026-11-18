@@ -71,7 +71,7 @@ jobs:
       - name: Nenhum formulário no build de preview
         run: |
           set -e
-          if grep -rlE 'data-netlify|netlify-honeypot|name="form-name"' --include=*.html dist; then
+          if grep -rliE 'data-netlify|netlify-honeypot|name=.?form-name' --include=*.html dist; then
             echo "formulário ativo fora da produção"; exit 1
           fi
           grep -q 'data-formulario-desativado="nao-produtivo"' dist/contato/index.html

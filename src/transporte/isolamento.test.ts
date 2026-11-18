@@ -38,6 +38,28 @@ describe('build · fora da produção não há formulário', () => {
     })
   }
 
+  it('variações de caixa e de aspas também são desativadas (o Netlify não diferencia)', () => {
+    const variantes = [
+      '<FORM NAME="iniciar-projeto" DATA-NETLIFY="true" NETLIFY-HONEYPOT="empresa-site"><INPUT TYPE="hidden" NAME="form-name" VALUE="iniciar-projeto"></FORM>',
+      "<form name='iniciar-projeto' data-netlify='true' netlify-honeypot='empresa-site'><input type='hidden' name='form-name' value='iniciar-projeto'></form>",
+      '<form name="iniciar-projeto" data-netlify=true netlify-honeypot=empresa-site><input type=hidden name=form-name value=iniciar-projeto></form>',
+      '<form name="iniciar-projeto" data-netlify="TRUE"><input name="form-name" value="iniciar-projeto"></form>',
+    ]
+    for (const html of variantes) {
+      const { html: fora } = desativarFormularios(html)
+      expect(restosDeFormulario(fora), html).toEqual([])
+    }
+  })
+
+  it('produção exige o form-name DENTRO do próprio form, e honeypot', () => {
+    const forms = '<form name="iniciar-projeto" data-netlify="true" netlify-honeypot="h"></form><form name="simular-galpao" data-netlify="true" netlify-honeypot="h"></form>'
+    const inputs = '<input type="hidden" name="form-name" value="iniciar-projeto"><input type="hidden" name="form-name" value="simular-galpao">'
+    /* form-name em outra página (ou fora do form) não conta */
+    expect(faltasEmProducao([forms, inputs])).toEqual(['iniciar-projeto', 'simular-galpao'])
+    /* sem honeypot também não */
+    expect(faltasEmProducao(['<form name="iniciar-projeto" data-netlify="true"><input name="form-name" value="iniciar-projeto"></form>'])).toContain('iniciar-projeto')
+  })
+
   it('o HTML-fonte é o de produção: os dois formulários estão declarados', () => {
     expect(faltasEmProducao([CONTATO, SIMULADOR])).toEqual([])
     expect(FORMULARIOS).toEqual(FORMULARIOS_DE_PRODUCAO)
@@ -112,6 +134,14 @@ describe('função · só a produção publicada deste site encaminha', () => {
       expect(logs.join('\n')).toContain(`"motivo":"${motivo}"`)
     })
   }
+
+  it('sem contexto da plataforma o log dispara o alarme: todo lead estaria parando', async () => {
+    await reencaminhar(evento(corpo('iniciar-projeto')), undefined)
+    expect(logs.join('\n')).toContain('"alerta":"TODO_LEAD_BLOQUEADO"')
+    logs.length = 0
+    await reencaminhar(evento(corpo('iniciar-projeto')), { ...PRODUCAO, deploy: { context: 'deploy-preview', published: false } })
+    expect(logs.join('\n')).not.toContain('alerta')
+  })
 
   it('formulário que não é de produção não encaminha, nem em produção', async () => {
     for (const nome of ['iniciar-projeto--teste', 'outro', '']) {

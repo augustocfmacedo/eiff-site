@@ -139,7 +139,9 @@ export async function reencaminhar(entrada: unknown, contexto?: unknown): Promis
   const origem = origemAutorizada(contexto, corpo)
   if (!origem.ok) {
     // Não encaminha. O lead (se for um) continua no painel de formulários. Só o motivo vai ao log.
-    log({ outcome: 'bloqueado', motivo: origem.motivo })
+    // `contexto_ausente` no deploy publicado significa que a plataforma não passou o contexto: TODO lead está
+    // parando aqui. É o alarme que o smoke de publicação procura (e o que a prova H-0 previne).
+    log({ outcome: 'bloqueado', motivo: origem.motivo, ...(origem.motivo === 'contexto_ausente' ? { alerta: 'TODO_LEAD_BLOQUEADO' } : {}) })
     return
   }
 
