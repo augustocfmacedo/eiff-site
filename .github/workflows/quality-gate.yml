@@ -1,0 +1,62 @@
+# EIFF Site Quality Gate
+#
+# Somente validação. O site é a porta de entrada dos leads (formulários → EIFF Control),
+# e até aqui o único lugar em que os testes rodavam era o build do próprio Netlify,
+# depois do merge. Este gate roda o MESMO `npm run build` (tsc + vitest + vite + URLs
+# limpas) em cada PR, antes do merge.
+#
+# Nunca: segredo, chamada ao Netlify, deploy, envio de formulário ou acesso ao CRM.
+# Conferência: `grep -nEi 'secrets\.|netlify (deploy|api)|EIFF_FORM' .github/workflows/quality-gate.yml`
+# tem de devolver só esta linha de comentário.
+name: EIFF Site Quality Gate
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-gate-${{ github.event.pull_request.number || github.ref }}
+  # Em PR, um commit novo cancela o run anterior. Em main, nunca: cada merge precisa do próprio resultado.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  gate:
+    name: EIFF Site Quality Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      # O Netlify usa a versão padrão dele (o repositório não fixa NODE_VERSION); fixá-la lá muda o build de
+      # produção e é decisão à parte. Aqui fica a 20, a mesma do gate do EIFF Control.
+      - name: Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install (npm ci)
+        run: npm ci
+
+      - name: Build (tsc + testes + vite, o mesmo comando do Netlify)
+        run: npm run build
+
+      - name: Formulários no HTML publicado
+        run: |
+          set -e
+          for f in dist/contato/index.html dist/simular-galpao/index.html; do
+            test -f "$f" || { echo "ausente: $f"; ls dist | head -50; exit 1; }
+            grep -q 'data-netlify="true"' "$f" || { echo "sem data-netlify: $f"; exit 1; }
+          done
+          grep -q 'name="iniciar-projeto"' dist/contato/index.html
+          grep -q 'name="simular-galpao"' dist/simular-galpao/index.html
+          echo "formulários detectáveis pelo Netlify Forms no dist"
