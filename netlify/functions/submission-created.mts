@@ -77,7 +77,52 @@ export async function corpoDoEvento(entrada: unknown): Promise<string> {
   return typeof o.body === 'string' ? o.body : ''
 }
 
-export async function reencaminhar(entrada: unknown): Promise<void> {
+
+/* ── P1: ISOLAMENTO DE PRODUÇÃO ────────────────────────────────────────────────────────────────────
+ *
+ * O que esta guarda resolve e o que ela NÃO resolve, para ninguém confiar nela além da conta:
+ *
+ *   • NÃO separa uma submissão feita num preview: os formulários são do site inteiro e o evento roda no
+ *     deploy publicado de produção, então para esta função as duas são idênticas. Quem impede o preview de
+ *     produzir submissão é o build (`scripts/formularios-por-contexto.mjs`: fora da produção não existe
+ *     formulário) e a limpeza dos previews antigos.
+ *   • Resolve: esta função, num deploy que não seja o de produção publicado deste site, nunca encaminha —
+ *     e sem o contexto da plataforma também não. Fail-closed: na dúvida o lead fica no painel de
+ *     formulários (de onde a conferência C o recupera), nunca vai para o CRM por um caminho não comprovado.
+ *   • Só os dois formulários de produção seguem; qualquer outro nome para aqui, antes de gastar o segredo.
+ *
+ * O contexto vem do 2º argumento que a plataforma passa ao handler (`Context` da Functions API:
+ * `deploy.context`, `deploy.published`, `site.id`). Nada vem do corpo, de campo oculto, de `referrer`
+ * ou de cabeçalho do navegador. Que a plataforma preencha esse argumento também em função de EVENTO não está
+ * escrito na documentação: é comprovado em projeto descartável antes de publicar (prova H-0 do plano P1).
+ */
+export const SITE_DE_PRODUCAO = 'fdb653b1-0ffc-4f64-92f9-2624328d2e45'
+export const FORMULARIOS_DE_PRODUCAO: readonly string[] = Object.freeze(['iniciar-projeto', 'simular-galpao'])
+
+export type MotivoBloqueio =
+  | 'contexto_ausente' | 'outro_site' | 'contexto_nao_produtivo' | 'deploy_nao_publicado'
+  | 'corpo_ilegivel' | 'formulario_nao_aceito'
+
+interface ContextoDaPlataforma {
+  site?: { id?: unknown }
+  deploy?: { context?: unknown; published?: unknown }
+}
+
+/** Pode encaminhar? Só produção publicada deste site, e só os formulários de produção. */
+export function origemAutorizada(contexto: unknown, corpo: string): { ok: true } | { ok: false; motivo: MotivoBloqueio } {
+  if (contexto === null || typeof contexto !== 'object') return { ok: false, motivo: 'contexto_ausente' }
+  const c = contexto as ContextoDaPlataforma
+  if (c.site === undefined || c.deploy === undefined) return { ok: false, motivo: 'contexto_ausente' }
+  if (c.site.id !== SITE_DE_PRODUCAO) return { ok: false, motivo: 'outro_site' }
+  if (c.deploy.context !== 'production') return { ok: false, motivo: 'contexto_nao_produtivo' }
+  if (c.deploy.published !== true) return { ok: false, motivo: 'deploy_nao_publicado' }
+  let nome: unknown
+  try { nome = (JSON.parse(corpo) as { payload?: { form_name?: unknown } })?.payload?.form_name } catch { return { ok: false, motivo: 'corpo_ilegivel' } }
+  if (typeof nome !== 'string' || !FORMULARIOS_DE_PRODUCAO.includes(nome)) return { ok: false, motivo: 'formulario_nao_aceito' }
+  return { ok: true }
+}
+
+export async function reencaminhar(entrada: unknown, contexto?: unknown): Promise<void> {
   const segredo = (process.env.EIFF_FORM_SECRET ?? '').trim()
   const destino = (process.env.EIFF_CRM_FORM_ENDPOINT ?? '').trim() || DESTINO_PADRAO
   const corpo = await corpoDoEvento(entrada)
@@ -89,6 +134,12 @@ export async function reencaminhar(entrada: unknown): Promise<void> {
   }
   if (corpo === '') {
     log({ outcome: 'sem_corpo' })
+    return
+  }
+  const origem = origemAutorizada(contexto, corpo)
+  if (!origem.ok) {
+    // Não encaminha. O lead (se for um) continua no painel de formulários. Só o motivo vai ao log.
+    log({ outcome: 'bloqueado', motivo: origem.motivo })
     return
   }
 
