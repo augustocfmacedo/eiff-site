@@ -123,32 +123,52 @@ export function iniciarVisual3D(raiz: Document | HTMLElement, opcoes: OpcoesVisu
   }
 
   /*
-   * Ampliada, a caixa vai para o fim do <body>: dentro do painel ela ficaria presa ao
-   * contexto de empilhamento dele, atrás do menu e das seções seguintes. Ao fechar,
-   * volta para o lugar marcado. O canvas e a cena são os mesmos.
+   * Ampliada, a caixa vai para dentro de um <dialog> modal, na CAMADA SUPERIOR do navegador: fica acima do menu,
+   * do título e de qualquer seção, independentemente de empilhamento, e o resto da página fica inerte. Esc fecha
+   * (evento nativo do diálogo). Ao fechar, a caixa volta para o lugar marcado. O canvas e a cena são os mesmos.
+   * Sem suporte a <dialog>, cai no modo fixo com Esc tratado no documento.
    */
   const marcador = document.createComment('sim3d')
+  let dialogo: HTMLDialogElement | null = null
+  const ampliada = (): boolean => caixa.classList.contains('sim-3d--ampliada')
+  const aoEscape = (e: KeyboardEvent): void => {
+    if (e.key === 'Escape' && ampliada()) { e.preventDefault(); ampliar(false) }
+  }
   const ampliar = (sim: boolean): void => {
-    if (sim === caixa.classList.contains('sim-3d--ampliada')) return
+    if (sim === ampliada()) return
+    const bt = caixa.querySelector<HTMLButtonElement>('[data-cam="ampliar"]')
     if (sim) {
       caixa.before(marcador)
-      document.body.appendChild(caixa)
-    } else if (marcador.parentNode) {
-      marcador.replaceWith(caixa)
+      if (!dialogo) {
+        dialogo = document.createElement('dialog')
+        dialogo.className = 'sim-3d-dialogo'
+        dialogo.setAttribute('aria-label', 'Visualização 3D ampliada')
+        // Esc e qualquer outro fechamento nativo passam por aqui: o estado nunca fica pela metade
+        dialogo.addEventListener('close', () => ampliar(false))
+        document.body.appendChild(dialogo)
+      }
+      dialogo.appendChild(caixa)
+      caixa.classList.add('sim-3d--ampliada')
+      if (typeof dialogo.showModal === 'function') {
+        try { dialogo.showModal() } catch { dialogo.setAttribute('open', '') }
+      } else {
+        dialogo.setAttribute('open', '')
+        document.addEventListener('keydown', aoEscape)
+      }
+    } else {
+      caixa.classList.remove('sim-3d--ampliada')
+      document.removeEventListener('keydown', aoEscape)
+      if (marcador.parentNode) marcador.replaceWith(caixa)
+      if (dialogo?.open) dialogo.close()
     }
-    caixa.classList.toggle('sim-3d--ampliada', sim)
-    const bt = caixa.querySelector<HTMLButtonElement>('[data-cam="ampliar"]')
     if (bt) {
       bt.setAttribute('aria-pressed', String(sim))
       bt.textContent = sim ? 'Fechar' : 'Ampliar'
       bt.setAttribute('aria-label', sim ? 'Fechar a visualização ampliada' : 'Ampliar a visualização')
+      bt.focus({ preventScroll: true })
     }
-    document.documentElement.style.overflow = sim ? 'hidden' : ''
-    if (bt) bt.focus()
+    document.documentElement.classList.toggle('sim-3d-travada', sim)
   }
-  caixa.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && caixa.classList.contains('sim-3d--ampliada')) { e.stopPropagation(); ampliar(false) }
-  })
 
   caixa.addEventListener('click', (e) => {
     const bt = (e.target as HTMLElement).closest<HTMLButtonElement>('button')

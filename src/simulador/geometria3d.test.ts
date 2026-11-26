@@ -5,6 +5,7 @@ import { H_MISULA, H_PILAR, H_VIGA, MOLDURA_PADRAO, desenharPortico } from './cr
 import {
   HIPOTESES_3D, SELO_3D, alturaDeReferencia, elementosDaEstrutura, geometriaDoGalpao, hipotesesDeRepresentacao, linhaInferiorDaViga, topoDaViga,
 } from './geometria3d'
+import { CAIMENTO_DO_DESENHO, ilustracaoVolumetrica } from './ilustracao'
 import { LIMITES, areaCoberta, type ConfiguracaoGalpao } from './parametros'
 import { mesmaGeometria, temWebGL } from './visual3d'
 
@@ -215,5 +216,69 @@ describe('a página com a visualização 3D', () => {
   it('não promete projeto aprovado nem mostra preço', () => {
     const bloco = html.slice(html.indexOf('id="sim3d"'), html.indexOf('id="simEnquadramento"'))
     expect(bloco).not.toMatch(/aprovad|homologad|R\$|or[cç]amento|checkout|comprar|pagamento/i)
+  })
+})
+
+describe('inclinação da cobertura nas três representações (divergência conhecida, aguardando decisão)', () => {
+  /*
+   * Caracterização, não aprovação. O croqui em corte e o 3D sobem a cumeeira 10 % do MEIO vão (5 % do vão), e é daí
+   * que sai a «Altura total» do painel. A ilustração «Volume» sobe 7 % do VÃO INTEIRO (`CAIMENTO_DO_DESENHO`), o
+   * que equivale a 14 % de inclinação. Este teste prende os três valores como estão: quem mudar um deles tem de
+   * mudar este teste junto, e portanto decidir às claras. A proposta de unificação está em docs/site-3d-01.md.
+   */
+  it('croqui e 3D: 10 % sobre o meio vão; Volume: 7 % sobre o vão inteiro', () => {
+    const vao = 25, pe = 8
+    const subidaDoCroqui = desenharPortico({ vao, peDireito: pe }, MOLDURA_PADRAO).alturaCumeeira - pe
+    const subidaDo3d = geometriaDoGalpao(cfg(vao, 60, pe))!.alturaDeReferenciaNaCumeeira - pe
+    const subidaDoVolume = vao * CAIMENTO_DO_DESENHO
+    expect(subidaDoCroqui).toBeCloseTo(1.3, 1)                     // 1,25 m, arredondado a uma casa pelo croqui
+    expect(subidaDo3d).toBeCloseTo(1.25, 6)
+    expect(subidaDoVolume).toBeCloseTo(1.75, 6)
+    expect(HIPOTESES_3D.inclinacao).toBe(0.10)
+    expect(CAIMENTO_DO_DESENHO).toBe(0.07)
+    expect(subidaDoVolume / (vao / 2)).toBeCloseTo(0.14, 6)        // inclinação equivalente da ilustração Volume
+    expect(subidaDoVolume).not.toBeCloseTo(subidaDo3d, 1)          // a divergência existe e está registrada
+  })
+
+  it('a ilustração Volume não mostra número de altura: a divergência é só de forma', () => {
+    const svg = ilustracaoVolumetrica(cfg(25, 60, 8))!
+    expect(svg).toContain('pé-direito 8 m')
+    expect(svg).not.toMatch(/9,[0-9] m|altura total|cumeeira \d/i)
+  })
+})
+
+describe('modo ampliado e rótulos', () => {
+  const visual = ler('src/simulador/visual3d.ts')
+  const cena = ler('src/simulador/cena3d.ts')
+  const css = ler('src/styles/simulador.css')
+  const pagina = ler('simular-galpao.html')
+
+  it('amplia dentro de um diálogo modal: camada superior do navegador, Esc nativo', () => {
+    expect(visual).toMatch(/createElement\('dialog'\)/)
+    expect(visual).toMatch(/showModal\(\)/)
+    expect(visual).toMatch(/addEventListener\('close'/)
+    expect(css).toMatch(/\.sim-3d-dialogo \{[^}]*inset: 0/)
+    expect(css).toMatch(/\.sim-3d-dialogo \{[^}]*100dvh/)
+  })
+
+  it('o selo fica dentro do palco, que é o que vai para o diálogo: aparece nos três modos e ampliado', () => {
+    const palco = pagina.slice(pagina.indexOf('class="sim-3d__palco"'), pagina.indexOf('class="sim-3d__camera"'))
+    expect(palco).toContain('id="sim3dSelo"')
+    expect(palco).toContain('VISUALIZAÇÃO CONCEITUAL — NÃO É PROJETO EXECUTIVO.')
+    expect(cena).not.toMatch(/sim3dSelo|__selo'\)\.hidden|selo\.hidden/)   // nenhum modo esconde o selo
+    expect(css).not.toMatch(/sim-3d__selo[^{]*\{[^}]*display:\s*none/)
+  })
+
+  it('os rótulos são posicionados com medida, limite de área e teste de sobreposição', () => {
+    expect(cena).toMatch(/function posicionarRotulos/)
+    expect(cena).toMatch(/ocupadas\.some/)
+    expect(cena).toMatch(/offsetWidth/)
+    expect(css).toMatch(/\.sim-3d__cota\[data-visivel="0"\] \{ visibility: hidden; \}/)
+  })
+
+  it('a chamada comercial não pode estourar o cartão', () => {
+    expect(css).toMatch(/\.sim-cta3d \{[^}]*grid-template-columns: minmax\(0, 1fr\)/)
+    expect(css).toMatch(/\.sim-cta3d \.btn \{[^}]*max-width: 100%/)
+    expect(css).toMatch(/\.sim-cta3d \.btn \{[^}]*white-space: normal/)
   })
 })

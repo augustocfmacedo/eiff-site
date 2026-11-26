@@ -36,13 +36,14 @@ export interface Cena3D {
   restaurar(): void
   zoom(fator: number): void
   girar(dAz: number, dEl: number): void
-  estatisticas(): { chamadas: number; triangulos: number; ultimaMontagemMs: number; quadros: number }
+  estatisticas(): { chamadas: number; triangulos: number; ultimaMontagemMs: number; quadros: number; geometrias: number; texturas: number; raio: number; azimute: number; elevacao: number; modo: Modo; rotulosVisiveis: number }
   destruir(): void
 }
 
 const COR = {
   fundo: 0xefede8, solo: 0xe3e0da, piso: 0xcfccc6, aco: 0x2b2f33, secundario: 0x6f757c, laranja: 0xc84119,
-  telhaSimples: 0xb9bdc3, termoacustica: 0xe7e8e9, pir: 0xf3f3f1, neutro: 0xd2d4d7, paredeMetalica: 0x3a3e44, alvenaria: 0xbdb7ad,
+  telhaSimples: 0xb9bdc3, termoacustica: 0xe7e8e9, pir: 0xf3f3f1, neutro: 0xd2d4d7, paredeMetalica: 0x565c64, alvenaria: 0xbdb7ad,
+  arestaClara: 0xb4bac1, arestaEscura: 0x2b2f33, rodape: 0xa9a59e,
 }
 const fmt = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 })
 
@@ -83,24 +84,30 @@ export function criarCena(tela: HTMLCanvasElement, rotulos: HTMLElement, opcoes:
   const cena = new THREE.Scene()
   cena.fog = new THREE.Fog(COR.fundo, 200, 900)
   const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 4000)
-  cena.add(new THREE.HemisphereLight(0xffffff, 0xb9b4ab, 1.05))
-  const sol = new THREE.DirectionalLight(0xffffff, 1.5)
+  cena.add(new THREE.HemisphereLight(0xffffff, 0xc9c4bb, 1.9))
+  const sol = new THREE.DirectionalLight(0xffffff, 2.3)
   sol.position.set(0.6, 1, 0.8)
   cena.add(sol)
+  // luz de preenchimento pelo lado oposto: as faces grafite à sombra continuam legíveis
+  const preenchimento = new THREE.DirectionalLight(0xffffff, 1.1)
+  preenchimento.position.set(-0.8, 0.45, -0.5)
+  cena.add(preenchimento)
 
   const nervV = texturaDeNervuras(true, 0.3)
   const nervH = texturaDeNervuras(false, 0.3)
   const sombra = texturaDeSombra()
   const mat = {
-    aco: new THREE.MeshStandardMaterial({ color: COR.aco, roughness: 0.55, metalness: 0.35 }),
-    secundario: new THREE.MeshStandardMaterial({ color: COR.secundario, roughness: 0.6, metalness: 0.3 }),
-    laranja: new THREE.MeshStandardMaterial({ color: COR.laranja, roughness: 0.5, metalness: 0.2 }),
+    aco: new THREE.MeshStandardMaterial({ color: COR.aco, roughness: 0.6, metalness: 0 }),
+    secundario: new THREE.MeshStandardMaterial({ color: COR.secundario, roughness: 0.65, metalness: 0 }),
+    laranja: new THREE.MeshStandardMaterial({ color: COR.laranja, roughness: 0.55, metalness: 0 }),
     piso: new THREE.MeshStandardMaterial({ color: COR.piso, roughness: 0.95 }),
     solo: new THREE.MeshBasicMaterial({ color: COR.solo }),
     sombra: new THREE.MeshBasicMaterial({ map: sombra, transparent: true, depthWrite: false }),
-    cobertura: new THREE.MeshStandardMaterial({ color: COR.neutro, roughness: 0.6, metalness: 0.25, side: THREE.DoubleSide, map: nervH }),
-    parede: new THREE.MeshStandardMaterial({ color: COR.neutro, roughness: 0.7, metalness: 0.15, side: THREE.DoubleSide, map: nervV }),
-    oitao: new THREE.MeshStandardMaterial({ color: COR.neutro, roughness: 0.7, metalness: 0.15, side: THREE.DoubleSide }),
+    cobertura: new THREE.MeshStandardMaterial({ color: COR.neutro, roughness: 0.7, metalness: 0, side: THREE.DoubleSide, map: nervH }),
+    parede: new THREE.MeshStandardMaterial({ color: COR.neutro, roughness: 0.75, metalness: 0, side: THREE.DoubleSide, map: nervV }),
+    oitao: new THREE.MeshStandardMaterial({ color: COR.neutro, roughness: 0.75, metalness: 0, side: THREE.DoubleSide }),
+    rodape: new THREE.MeshStandardMaterial({ color: COR.rodape, roughness: 0.9, metalness: 0 }),
+    aresta: new THREE.LineBasicMaterial({ color: COR.arestaEscura, transparent: true, opacity: 0.55 }),
     cota: new THREE.LineBasicMaterial({ color: COR.laranja }),
   }
 
@@ -247,6 +254,8 @@ export function criarCena(tela: HTMLCanvasElement, rotulos: HTMLElement, opcoes:
     if (xs) grupos.estrutura.add(new THREE.Mesh(xs, mat.laranja))
 
     // ---- envoltória: cobertura e fechamentos
+    const arestas: THREE.BufferGeometry[] = []
+    const contornar = (geo: THREE.BufferGeometry) => { arestas.push(new THREE.EdgesGeometry(geo, 25)) }
     const esp = g.cobertura === 'pir' ? 0.1 : g.cobertura === 'termoacustica' ? 0.06 : 0.03
     const corCob = { 'telha-simples': COR.telhaSimples, termoacustica: COR.termoacustica, pir: COR.pir, indefinido: COR.neutro }[g.cobertura]
     mat.cobertura.color.setHex(corCob)
@@ -263,12 +272,15 @@ export function criarCena(tela: HTMLCanvasElement, rotulos: HTMLElement, opcoes:
       const b = new THREE.Vector3(0, zCob(de / 2), 0)
       const agua = caixaEntre(a, b, esp, L + 2 * (frente + beiral), new THREE.Vector3(0, 1, 0))
       grupos.envoltoria.add(new THREE.Mesh(agua, mat.cobertura))
+      contornar(agua)
     }
     // cumeeira e rufo de beiral em laranja: a assinatura da EIFF na volumetria
     const cume = new THREE.BoxGeometry(0.5, 0.05, L + 2 * (frente + beiral)).translate(0, zCob(de / 2) + esp / 2 + 0.03, 0)
     grupos.envoltoria.add(new THREE.Mesh(cume, mat.laranja))
 
+    mat.aresta.color.setHex(COR.arestaEscura)
     if (g.fechado) {
+      // fachada escura pede aresta clara; fachada clara, aresta grafite
       const corPar = g.fechamento === 'pir' ? COR.pir : g.fechamento === 'alvenaria' ? COR.alvenaria : g.fechamento === 'metalico' ? COR.paredeMetalica : COR.neutro
       for (const m of [mat.parede, mat.oitao]) {
         m.color.setHex(corPar)
@@ -283,15 +295,32 @@ export function criarCena(tela: HTMLCanvasElement, rotulos: HTMLElement, opcoes:
       const hPar = zCob(-xFora) - esp / 2 - 0.02
       for (const lado of [1, -1]) {
         const x = (lado === 1 ? -xFora - tp / 2 : de + xFora + tp / 2) - de / 2
-        grupos.envoltoria.add(new THREE.Mesh(new THREE.BoxGeometry(tp, hPar, L + 2 * frente).translate(x, hPar / 2, 0), mat.parede))
+        const parede = new THREE.BoxGeometry(tp, hPar, L + 2 * frente).translate(x, hPar / 2, 0)
+        grupos.envoltoria.add(new THREE.Mesh(parede, mat.parede))
+        contornar(parede)
+        // rodapé claro: separa a fachada escura do piso e dá a leitura da base
+        grupos.envoltoria.add(new THREE.Mesh(new THREE.BoxGeometry(tp + 0.08, Math.min(0.45, hPar * 0.08), L + 2 * frente + 0.08).translate(x, Math.min(0.45, hPar * 0.08) / 2, 0), mat.rodape))
         // rufo laranja no topo da fachada
         grupos.envoltoria.add(new THREE.Mesh(new THREE.BoxGeometry(tp + 0.06, 0.08, L + 2 * frente).translate(x, hPar - 0.04, 0), mat.laranja))
       }
       const x0 = -xFora - de / 2, x1 = de + xFora - de / 2
       const forma = new THREE.Shape([new THREE.Vector2(x0, 0), new THREE.Vector2(x1, 0), new THREE.Vector2(x1, hPar), new THREE.Vector2(0, zCob(de / 2) - esp / 2 - 0.02), new THREE.Vector2(x0, hPar)])
       for (const z of [L / 2 + frente, -L / 2 - frente - tp]) {
-        grupos.envoltoria.add(new THREE.Mesh(new THREE.ExtrudeGeometry(forma, { depth: tp, bevelEnabled: false }).translate(0, 0, z), mat.oitao))
+        const oitao = new THREE.ExtrudeGeometry(forma, { depth: tp, bevelEnabled: false }).translate(0, 0, z)
+        grupos.envoltoria.add(new THREE.Mesh(oitao, mat.oitao))
+        contornar(oitao)
+        grupos.envoltoria.add(new THREE.Mesh(new THREE.BoxGeometry(x1 - x0 + 0.08, Math.min(0.45, hPar * 0.08), tp + 0.08).translate(0, Math.min(0.45, hPar * 0.08) / 2, z + tp / 2), mat.rodape))
       }
+    }
+
+    if (arestas.length) {
+      const pos: number[] = []
+      for (const a of arestas) { pos.push(...(a.getAttribute('position').array as Float32Array)); a.dispose() }
+      const linhas = new THREE.BufferGeometry()
+      linhas.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))
+      mat.aresta.color.setHex(g.fechado && g.fechamento === 'metalico' ? COR.arestaClara : COR.arestaEscura)
+      mat.aresta.opacity = g.fechamentoIndefinido ? 0.35 : 0.6
+      grupos.envoltoria.add(new THREE.LineSegments(linhas, mat.aresta))
     }
 
     // ---- figura humana de referência (fora e dentro)
@@ -312,7 +341,7 @@ export function criarCena(tela: HTMLCanvasElement, rotulos: HTMLElement, opcoes:
       const el = document.createElement('span')
       el.className = 'sim-3d__cota'
       el.textContent = texto
-      el.hidden = true
+      el.dataset.visivel = '0'
       rotulos.appendChild(el)
       etiquetas.push({ el, ponto: a.clone().lerp(b, onde), modos })
     }
@@ -332,7 +361,10 @@ export function criarCena(tela: HTMLCanvasElement, rotulos: HTMLElement, opcoes:
     orbita.alvo.set(0, alturaTotal * 0.42, 0)
     const raioDoVolume = 0.5 * Math.hypot(de + 4, L + 4, alturaTotal)
     const aspecto = Math.max(0.5, camera.aspect)
-    const ajuste = (raioDoVolume / Math.sin(THREE.MathUtils.degToRad(35 / 2))) * Math.max(1, 1.36 / aspecto) * 0.72
+    const ajuste = (raioDoVolume / Math.sin(THREE.MathUtils.degToRad(35 / 2))) * Math.max(1, (aspecto < 0.9 ? 1.05 : 1.36) / aspecto) * 0.72
+    // palco em retrato (celular ampliado): a perspectiva padrão olha mais de frente, com o galpão em profundidade
+    PADRAO.perspectiva.az = aspecto < 0.9 ? 1.22 : 0.95
+    if (!encaixe.manual && !encaixe.girado) orbita.az = PADRAO.perspectiva.az
     orbita.raio = encaixe.manual ? THREE.MathUtils.clamp(orbita.raio * (ajuste / (encaixe.ultimo || ajuste)), ajuste * 0.25, ajuste * 3) : ajuste
     encaixe.ultimo = ajuste
     limites.raioMin = ajuste * 0.2
@@ -345,7 +377,7 @@ export function criarCena(tela: HTMLCanvasElement, rotulos: HTMLElement, opcoes:
     ultimaMontagemMs = performance.now() - t0
     aplicarModo()
   }
-  const encaixe = { manual: false, ultimo: 0 }
+  const encaixe = { manual: false, girado: false, ultimo: 0 }
 
   function aplicarModo(): void {
     grupos.envoltoria.visible = modo !== 'estrutura'
@@ -376,12 +408,44 @@ export function criarCena(tela: HTMLCanvasElement, rotulos: HTMLElement, opcoes:
     posicionarCamera()
     renderizador.render(cena, camera)
     quadros += 1
-    const w = tela.clientWidth, h = tela.clientHeight
+    posicionarRotulos()
+  }
+
+  /**
+   * Rótulos das cotas: cada um fica junto do ponto que mede, sempre dentro da área útil e sem cobrir outro rótulo
+   * nem o selo. Quando não há lugar livre perto do ponto, o rótulo some em vez de se sobrepor: a medida continua
+   * no formulário e no resumo do painel.
+   */
+  function posicionarRotulos(): void {
+    const W = tela.clientWidth, H = tela.clientHeight
+    const margem = 6
+    type Caixa = { x: number; y: number; w: number; h: number }
+    const ocupadas: Caixa[] = []
+    const selo = tela.parentElement?.querySelector<HTMLElement>('.sim-3d__selo')
+    if (selo) ocupadas.push({ x: selo.offsetLeft - 2, y: selo.offsetTop - 2, w: selo.offsetWidth + 4, h: selo.offsetHeight + 4 })
+    const cruza = (a: Caixa, b: Caixa) => a.x < b.x + b.w + 3 && a.x + a.w + 3 > b.x && a.y < b.y + b.h + 3 && a.y + a.h + 3 > b.y
     for (const e of etiquetas) {
       const p = e.ponto.clone().project(camera)
-      const visivel = e.modos.includes(modo) && p.z < 1 && p.z > -1 && Math.abs(p.x) < 0.98 && Math.abs(p.y) < 0.96
-      e.el.hidden = !visivel
-      if (visivel) e.el.style.transform = `translate(-50%, -50%) translate(${((p.x + 1) / 2 * w).toFixed(1)}px, ${((1 - p.y) / 2 * h).toFixed(1)}px)`
+      const px = (p.x + 1) / 2 * W, py = (1 - p.y) / 2 * H
+      let lugar: Caixa | null = null
+      // o ponto medido tem de estar à vista (com uma folga): rótulo de cota fora do quadro não é arrastado para dentro
+      if (e.modos.includes(modo) && p.z > -1 && p.z < 1 && px > -W * 0.1 && px < W * 1.1 && py > -H * 0.1 && py < H * 1.1) {
+        const w = e.el.offsetWidth, h = e.el.offsetHeight
+        if (w > 0 && w <= W - 2 * margem) {
+          const x = Math.min(Math.max(px - w / 2, margem), W - w - margem)
+          for (const passo of [0, -1, 1, -2, 2, -3, 3]) {
+            const y = py - h / 2 + passo * (h + 4)
+            if (y < margem || y > H - h - margem) continue
+            const c = { x, y, w, h }
+            if (!ocupadas.some((o) => cruza(c, o))) { lugar = c; break }
+          }
+        }
+      }
+      e.el.dataset.visivel = lugar ? '1' : '0'
+      if (lugar) {
+        ocupadas.push(lugar)
+        e.el.style.transform = `translate(${lugar.x.toFixed(1)}px, ${lugar.y.toFixed(1)}px)`
+      }
     }
   }
   function pedirQuadro(): void {
@@ -473,6 +537,9 @@ export function criarCena(tela: HTMLCanvasElement, rotulos: HTMLElement, opcoes:
     f()
   }
   const aoPerder = (e: Event) => { e.preventDefault(); opcoes.aoPerderContexto() }
+  // aba que volta do segundo plano: o navegador pode ter descartado o quadro; um quadro novo, e só um
+  const aoVoltar = () => { if (document.visibilityState === 'visible') pedirQuadro() }
+  document.addEventListener('visibilitychange', aoVoltar)
   tela.addEventListener('pointerdown', aoBaixar)
   tela.addEventListener('pointermove', aoMover)
   tela.addEventListener('pointerup', aoSoltar)
@@ -494,11 +561,13 @@ export function criarCena(tela: HTMLCanvasElement, rotulos: HTMLElement, opcoes:
       aplicarModo()
     },
     definirVista(nome) {
+      encaixe.girado = nome !== 'perspectiva'
       if (modo === 'interior') { Object.assign(interior, { yaw: nome === 'lateral' ? Math.PI / 2 : 0, pitch: nome === 'topo' ? 0.9 : 0.05 }); pedirQuadro(); return }
       irPara(PADRAO[nome].az, PADRAO[nome].el, encaixe.ultimo)
     },
     restaurar() {
       encaixe.manual = false
+      encaixe.girado = false
       if (modo === 'interior') { Object.assign(interior, { yaw: 0, pitch: 0.05, avanco: 0 }); pedirQuadro(); return }
       irPara(PADRAO.perspectiva.az, PADRAO.perspectiva.el, encaixe.ultimo)
     },
@@ -513,11 +582,16 @@ export function criarCena(tela: HTMLCanvasElement, rotulos: HTMLElement, opcoes:
         interior.pitch = THREE.MathUtils.clamp(interior.pitch + dEl, -0.6, 1.2)
       } else {
         orbita.az += dAz
+        encaixe.girado = true
         orbita.el = THREE.MathUtils.clamp(orbita.el + dEl, 0.03, 1.52)
       }
       pedirQuadro()
     },
-    estatisticas: () => ({ chamadas: renderizador.info.render.calls, triangulos: renderizador.info.render.triangles, ultimaMontagemMs, quadros }),
+    estatisticas: () => ({
+      chamadas: renderizador.info.render.calls, triangulos: renderizador.info.render.triangles, ultimaMontagemMs, quadros,
+      geometrias: renderizador.info.memory.geometries, texturas: renderizador.info.memory.textures,
+      raio: orbita.raio, azimute: orbita.az, elevacao: orbita.el, modo, rotulosVisiveis: etiquetas.filter((e) => e.el.dataset.visivel === '1').length,
+    }),
     destruir() {
       destruida = true
       cancelAnimationFrame(quadroPedido)
@@ -531,6 +605,7 @@ export function criarCena(tela: HTMLCanvasElement, rotulos: HTMLElement, opcoes:
       tela.removeEventListener('wheel', aoRodar)
       tela.removeEventListener('keydown', aoTeclar)
       tela.removeEventListener('webglcontextlost', aoPerder)
+      document.removeEventListener('visibilitychange', aoVoltar)
       Object.values(grupos).forEach(limpar)
       Object.values(mat).forEach((m) => m.dispose())
       nervV.dispose(); nervH.dispose(); sombra.dispose()

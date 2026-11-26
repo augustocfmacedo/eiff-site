@@ -289,10 +289,13 @@ html.js .sim__etapa[data-oculta] { display: none; }
    Visualização 3D (SITE-3D-01). O palco é claro de propósito: o volume
    em grafite e laranja lê melhor sobre fundo claro do que sobre o preto do site.
 --------------------------------------------------------------- */
-.sim-3d { display: grid; gap: 8px; }
+/* O painel é uma grade: sem `minmax(0, 1fr)` o filho mais largo (a fileira de botões) alarga a coluna além da tela. */
+.sim-leitura { grid-template-columns: minmax(0, 1fr); }
+.sim-vistas__bt { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sim-3d { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; min-width: 0; }
 .sim-3d[hidden], .sim-cta3d[hidden] { display: none; }
 .sim-3d__modos { display: flex; gap: 6px; }
-.sim-3d__modo { flex: 1 1 0; min-height: 44px; padding: 8px 6px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); color: var(--ink-3); font-family: var(--font-mono); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
+.sim-3d__modo { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-height: 44px; padding: 8px 6px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); color: var(--ink-3); font-family: var(--font-mono); font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
 .sim-3d__modo:hover { color: var(--ink); border-color: var(--ink-4); }
 .sim-3d__modo[aria-pressed="true"] { color: #fff; border-color: var(--brand); background: var(--brand); }
 .sim-3d__modo:focus-visible, .sim-3d__camera button:focus-visible, .sim-3d__tela:focus-visible { outline: 2px solid var(--brand-2); outline-offset: 2px; }
@@ -300,6 +303,7 @@ html.js .sim__etapa[data-oculta] { display: none; }
 .sim-3d__tela { display: block; width: 100%; height: 100%; touch-action: pan-y; cursor: grab; }
 .sim-3d__tela:active { cursor: grabbing; }
 .sim-3d__rotulos { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.sim-3d__cota[data-visivel="0"] { visibility: hidden; }
 .sim-3d__cota { position: absolute; left: 0; top: 0; white-space: nowrap; padding: 2px 6px; background: rgba(255, 255, 255, .9); border: 1px solid rgba(43, 47, 51, .18); border-radius: 2px; color: #2b2f33; font-family: var(--font-mono); font-size: .68rem; font-variant-numeric: tabular-nums; }
 .sim-3d__selo { position: absolute; left: 8px; top: 8px; margin: 0; padding: 3px 7px; background: rgba(43, 47, 51, .86); color: #f2f0ec; font-family: var(--font-mono); font-size: .58rem; letter-spacing: .08em; pointer-events: none; }
 .sim-3d__estado { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; background: #efede8; color: #2b2f33; font-family: var(--font-mono); font-size: .78rem; }
@@ -308,25 +312,41 @@ html.js .sim__etapa[data-oculta] { display: none; }
 .sim-3d__camera button { flex: 1 1 auto; min-width: 40px; min-height: 40px; padding: 4px 8px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); color: var(--ink-2); font-family: var(--font-mono); font-size: .68rem; letter-spacing: .04em; cursor: pointer; }
 .sim-3d__camera button:hover { border-color: var(--brand); color: var(--ink); }
 .sim-3d__camera button[aria-pressed="true"] { border-color: var(--brand); background: var(--brand-dim); color: var(--ink); }
-/* Ampliada: o palco ocupa a janela. A página continua atrás; Esc ou o mesmo botão fecham. */
-.sim-3d--ampliada { position: fixed; inset: 0; z-index: 4000; padding: 12px; background: var(--bg); grid-template-rows: auto 1fr auto; align-content: stretch; }
+/* Ampliada: dentro de um <dialog> modal, na camada superior do navegador. Nada da página fica por cima nem por baixo à vista. */
+.sim-3d-dialogo { position: fixed; inset: 0; width: 100vw; max-width: none; height: 100vh; height: 100dvh; max-height: none; margin: 0; padding: 0; border: 0; background: var(--bg); color: var(--ink); overflow: hidden; }
+.sim-3d-dialogo:not([open]) { display: none; }
+.sim-3d-dialogo::backdrop { background: var(--bg); }
+.sim-3d--ampliada { box-sizing: border-box; width: 100%; height: 100%; padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); background: var(--bg); grid-template-rows: auto minmax(0, 1fr) auto; align-content: stretch; overflow: hidden; }
 .sim-3d--ampliada .sim-3d__palco { aspect-ratio: auto; min-height: 0; }
 .sim-3d--ampliada .sim-3d__ajuda, .sim-3d--ampliada .sim-3d__hipoteses { display: none; }
+html.sim-3d-travada, html.sim-3d-travada body { overflow: hidden; }
 .sim-3d__ajuda { margin: 0; font-size: .74rem; color: var(--ink-3); }
 .sim-3d__hipoteses { font-size: .78rem; color: var(--ink-3); }
 .sim-3d__hipoteses summary { cursor: pointer; color: var(--ink-2); min-height: 32px; display: flex; align-items: center; }
 .sim-3d__hipoteses ul { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 6px; line-height: 1.45; }
-.sim-cta3d { display: grid; gap: 8px; padding: 16px; border: 1px solid var(--brand); background: var(--brand-dim); border-radius: var(--radius); }
+.sim-cta3d { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 16px; border: 1px solid var(--brand); background: var(--brand-dim); border-radius: var(--radius); min-width: 0; overflow: hidden; }
 .sim-cta3d__titulo { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 1.02rem; letter-spacing: .04em; text-transform: uppercase; color: var(--ink); }
 .sim-cta3d__texto { margin: 0; font-size: .9rem; color: var(--ink-2); }
-.sim-cta3d .btn { justify-self: start; }
+.sim-cta3d .btn { justify-self: start; box-sizing: border-box; max-width: 100%; min-width: 0; white-space: normal; text-align: center; }
+.sim-cta3d .btn span { min-width: 0; overflow-wrap: anywhere; }
 @media (max-width: 899px) {
   .sim-3d__palco { aspect-ratio: 1 / 1; }
   .sim-3d__cota { font-size: .6rem; padding: 1px 4px; }
-  .sim-cta3d .btn { justify-self: stretch; justify-content: center; max-width: 100%; }
+  .sim-cta3d .btn { justify-self: stretch; justify-content: center; padding-inline: 14px; letter-spacing: .1em; }
   .sim-3d__camera button { min-height: 40px; }
   .sim-leitura--embutida .sim-3d__hipoteses { display: none; }
 }
 @media (pointer: coarse) {
   .sim-3d__ajuda { display: none; }
+}
+@media (max-width: 560px) {
+  .sim-vistas { gap: 4px; }
+  .sim-vistas__bt, .sim-3d__modo { padding-inline: 4px; font-size: .64rem; letter-spacing: .04em; }
+  .sim-3d__modos { gap: 4px; }
+  .sim-3d__modo { flex: 1 1 auto; }      /* largura pelo nome: «Arquitetura» é o mais longo e não pode ser cortado */
+  .sim-3d__selo { font-size: .5rem; letter-spacing: .04em; right: 8px; }
+  .sim-3d__camera button { padding-inline: 6px; font-size: .64rem; }
+}
+@media (max-width: 350px) {
+  .sim-vistas__bt, .sim-3d__modo { padding-inline: 2px; font-size: .56rem; letter-spacing: 0; }
 }
