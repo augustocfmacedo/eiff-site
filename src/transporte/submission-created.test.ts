@@ -68,8 +68,11 @@ const responder = (sequencia: (number | 'rede')[]) => {
 }
 
 /** Executa a função deixando os temporizadores da espera correrem. */
-const rodar = async (entrada: unknown = evento()) => {
-  const p = reencaminhar(entrada)
+/** O contexto que a plataforma passa no deploy de produção publicado deste site (P1). */
+const PRODUCAO = { site: { id: 'fdb653b1-0ffc-4f64-92f9-2624328d2e45' }, deploy: { context: 'production', published: true } }
+
+const rodar = async (entrada: unknown = evento(), contexto: unknown = PRODUCAO) => {
+  const p = reencaminhar(entrada, contexto)
   await vi.runAllTimersAsync()
   return p
 }

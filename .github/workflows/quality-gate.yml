@@ -47,16 +47,33 @@ jobs:
       - name: Install (npm ci)
         run: npm ci
 
-      - name: Build (tsc + testes + vite, o mesmo comando do Netlify)
+      # P1: o build da PRODUÇÃO mantém os formulários; qualquer outro contexto (inclusive ausente) os desativa.
+      - name: Build de produção (CONTEXT=production)
         run: npm run build
+        env:
+          CONTEXT: production
 
-      - name: Formulários no HTML publicado
+      - name: Formulários presentes no build de produção
         run: |
           set -e
           for f in dist/contato/index.html dist/simular-galpao/index.html; do
-            test -f "$f" || { echo "ausente: $f"; ls dist | head -50; exit 1; }
+            test -f "$f" || { echo "ausente: $f"; exit 1; }
             grep -q 'data-netlify="true"' "$f" || { echo "sem data-netlify: $f"; exit 1; }
+            grep -q 'name="form-name"' "$f" || { echo "sem form-name: $f"; exit 1; }
           done
-          grep -q 'name="iniciar-projeto"' dist/contato/index.html
-          grep -q 'name="simular-galpao"' dist/simular-galpao/index.html
-          echo "formulários detectáveis pelo Netlify Forms no dist"
+          echo "produção: formulários detectáveis pelo Netlify Forms"
+
+      - name: Build de preview (CONTEXT=deploy-preview)
+        run: npm run build
+        env:
+          CONTEXT: deploy-preview
+
+      - name: Nenhum formulário no build de preview
+        run: |
+          set -e
+          if grep -rliE 'data-netlify|netlify-honeypot|name=.?form-name' --include=*.html dist; then
+            echo "formulário ativo fora da produção"; exit 1
+          fi
+          grep -q 'data-formulario-desativado="nao-produtivo"' dist/contato/index.html
+          grep -q 'data-formulario-desativado="nao-produtivo"' dist/simular-galpao/index.html
+          echo "preview: nenhum formulário ativo"
