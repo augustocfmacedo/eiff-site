@@ -39,9 +39,6 @@ projeto e nada foi dimensionado.
 
 ## Limitações conhecidas
 
-- No croqui em corte a espessura ilustrativa cresce para DENTRO do vão; no 3D, para fora. Os números são os mesmos,
-  mas o croqui deveria ser alinhado antes da publicação.
-- Inclinação: ver a seção «Divergência de inclinação», abaixo. Nada foi alterado.
 - Portas, docas, aberturas, mezaninos e piso não são desenhados.
 - «Alvenaria» é desenhada como fechamento total; a opção diz «total ou parcial».
 - Validado em navegador de mesa com emulação de celular. Falta teste em aparelhos reais (iOS e Android).
@@ -52,27 +49,23 @@ projeto e nada foi dimensionado.
 Reconciliada em 26/11/2026 com a produção: `origin/main` em `f00893a` (o commit publicado em eiff.com.br, com a
 correção P1 de isolamento dos formulários) foi mesclado localmente nesta branch, sem conflito.
 
-## Divergência de inclinação (investigada; nada alterado)
+## Convenção geométrica única (decisão da Direção de 26/11/2026, opção A)
 
-| Representação | Regra no código | Subida da cumeeira num vão de 25 m | Inclinação equivalente |
-|---|---|---|---|
-| Croqui em corte (`croqui.ts`) | 10 % sobre o MEIO vão | 1,25 m | 10 % |
-| Modelo 3D (`geometria3d.ts`) | 10 % sobre o MEIO vão | 1,25 m | 10 % |
-| «Altura total» do painel | sai do croqui | 8 + 1,25 = 9,25 m | 10 % |
-| Ilustração «Volume» (`ilustracao.ts`) | `CAIMENTO_DO_DESENHO` = 0,07 sobre o VÃO INTEIRO | 1,75 m | 14 % |
+Inclinação ilustrativa de 10 % sobre o meio vão em todas as representações, definida num só lugar:
+`src/simulador/convencao.ts`. O croqui em corte, a ilustração «Volume» e o modelo 3D importam dela a inclinação,
+a altura de referência e as proporções das seções. É convenção de desenho, não inclinação de projeto, e as seções
+não foram dimensionadas.
 
-A divergência é anterior à SITE-3D-01 e é só de forma: a ilustração «Volume» não mostra número de altura. Mas ela
-desenha uma cobertura mais alta do que a «Altura total» escrita logo abaixo.
+| Representação | Antes | Depois |
+|---|---|---|
+| Croqui em corte | 10 % sobre o meio vão; pilares desenhados para DENTRO do vão | 10 %; pilares para FORA do vão livre |
+| Ilustração «Volume» | 7 % sobre o vão inteiro (equivalia a 14 %) | 10 % sobre o meio vão |
+| Modelo 3D | 10 % sobre o meio vão | sem mudança |
+| «Altura total» do painel (25 m × 8 m) | 9,3 m | 9,3 m (não mudou) |
 
-Proposta (aguarda decisão; nenhuma das duas foi aplicada):
-
-- **A — recomendada.** Uma constante única de representação (10 %), usada pelo croqui, pelo 3D e pela ilustração
-  «Volume». Muda só o desenho do Volume. Nenhum número mostrado muda.
-- **B.** Levar o croqui e o 3D para a inclinação do Volume. Muda a «Altura total» mostrada ao visitante
-  (de 9,3 m para 9,8 m no exemplo), isto é, muda um número comercial.
-
-Em qualquer caso é hipótese de representação, não inclinação de projeto. O teste «inclinação da cobertura nas três
-representações» prende os valores atuais: quem mudar um deles tem de mudar o teste junto.
+No croqui, a cota do vão vai de face interna a face interna, a cota do pé-direito vai até a linha inferior da viga
+junto ao pilar, a viga fica acima dessa linha e a mísula abaixo dela só no joelho, como no 3D. Os testes do bloco
+«convenção única» conferem as três figuras contra a conta escrita à mão em toda a faixa do formulário.
 
 ## Correções da revisão visual
 

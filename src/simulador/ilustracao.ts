@@ -6,17 +6,20 @@
  * contraventamento, fundação, terça nem quantitativo, e nada aqui é calculado
  * por engenharia.
  *
- * O caimento da cobertura é uma CONSTANTE DE DESENHO (`CAIMENTO_DO_DESENHO`),
- * escolhida para a cobertura aparecer como duas águas. Não é inclinação de
- * projeto: a inclinação real é definida pela engenharia.
+ * A subida da cumeeira vem de `convencao.ts` (inclinação de representação, a
+ * mesma do croqui em corte e do modelo 3D). É convenção de desenho, não
+ * inclinação de projeto: a inclinação real é definida pela engenharia.
  *
  * Módulo puro: devolve SVG em texto. Sem DOM, sem rede.
  */
 
+import { alturaDeReferencia } from './convencao'
 import { areaCoberta, formatarArea, formatarMedida, validarMedida, type ConfiguracaoGalpao } from './parametros'
 
-/** Só para o desenho ter duas águas visíveis. Não é dado de projeto. */
-export const CAIMENTO_DO_DESENHO = 0.07
+/** Altura da cumeeira desenhada no Volume: a mesma altura de referência do croqui e do 3D. */
+export function cumeeiraDoVolume(d: { vao: number; peDireito: number }): number {
+  return alturaDeReferencia(d.peDireito, d.vao)
+}
 /** Altura da figura humana de referência, em metros. Só escala visual. */
 export const FIGURA_DE_ESCALA = 1.75
 
@@ -107,7 +110,7 @@ export function ilustracaoVolumetrica(c: ConfiguracaoGalpao): string | null {
   const d = dimensoesParaDesenho(c)
   if (!d) return null
   const { vao: W, comprimento: L, peDireito: H } = d
-  const r = W * CAIMENTO_DO_DESENHO
+  const r = cumeeiraDoVolume(d) - H
   const cos = Math.cos(Math.PI / 6)
   const sen = Math.sin(Math.PI / 6)
   const bruto = (x: number, y: number, z: number): P2 => [(x - y) * cos, (x + y) * sen - z]

@@ -28,14 +28,14 @@
  * primeiro pilar da fila A, no nível da base.
  */
 
-import { H_MISULA, H_PILAR, H_VIGA, ESPESSURA_MAX, MISULA_FRACAO } from './croqui'
+import { INCLINACAO_DE_REPRESENTACAO, alturaDeReferencia, secoesDeDesenho } from './convencao'
 import { dimensoesParaDesenho } from './ilustracao'
 import type { ConfiguracaoGalpao, Cobertura, Fechamento } from './parametros'
 
 /** Hipóteses de representação. Não são dados de projeto. */
 export const HIPOTESES_3D = {
   /** Inclinação da cobertura, a mesma do croqui em corte. */
-  inclinacao: 0.10,
+  inclinacao: INCLINACAO_DE_REPRESENTACAO,
   /** Distância-alvo entre pórticos, em metros. */
   moduloAlvo: 6,
   /** Distância-alvo entre terças, medida sobre a água. */
@@ -94,10 +94,7 @@ export interface Geometria3D {
 
 const arredondar = (n: number, casas = 4) => Math.round(n * 10 ** casas) / 10 ** casas
 
-/** Mesma conta do croqui em corte. */
-export function alturaDeReferencia(peDireito: number, vao: number, inclinacao: number = HIPOTESES_3D.inclinacao): number {
-  return peDireito + (vao / 2) * inclinacao
-}
+export { alturaDeReferencia }
 
 /**
  * Geometria para desenhar. `null` quando as três dimensões não são válidas pelas
@@ -106,9 +103,7 @@ export function alturaDeReferencia(peDireito: number, vao: number, inclinacao: n
 export function geometriaDoGalpao(c: ConfiguracaoGalpao): Geometria3D | null {
   const d = dimensoesParaDesenho(c)
   if (!d) return null
-  const pilar = Math.min(H_PILAR, d.vao * ESPESSURA_MAX)
-  const viga = pilar * (H_VIGA / H_PILAR)
-  const misula = pilar * (H_MISULA / H_PILAR)
+  const { pilar, viga, misula, comprimentoDaMisula } = secoesDeDesenho(d.vao)
   const modulos = Math.max(1, Math.round(d.comprimento / HIPOTESES_3D.moduloAlvo))
   const fechamento: Fechamento = c.fechamento ?? 'indefinido'
   return {
@@ -122,7 +117,7 @@ export function geometriaDoGalpao(c: ConfiguracaoGalpao): Geometria3D | null {
     modulo: d.comprimento / modulos,
     secoes: {
       pilar: arredondar(pilar), viga: arredondar(viga), misula: arredondar(misula),
-      comprimentoDaMisula: arredondar((d.vao / 2) * MISULA_FRACAO),
+      comprimentoDaMisula: arredondar(comprimentoDaMisula),
       secundario: arredondar(Math.max(0.12, pilar * 0.3)),
     },
     cobertura: c.cobertura ?? 'indefinido',

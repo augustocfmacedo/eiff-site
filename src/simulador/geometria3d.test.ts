@@ -5,7 +5,8 @@ import { H_MISULA, H_PILAR, H_VIGA, MOLDURA_PADRAO, desenharPortico } from './cr
 import {
   HIPOTESES_3D, SELO_3D, alturaDeReferencia, elementosDaEstrutura, geometriaDoGalpao, hipotesesDeRepresentacao, linhaInferiorDaViga, topoDaViga,
 } from './geometria3d'
-import { CAIMENTO_DO_DESENHO, ilustracaoVolumetrica } from './ilustracao'
+import { INCLINACAO_DE_REPRESENTACAO, alturaDeReferencia as referenciaDaConvencao, secoesDeDesenho, subidaDaCumeeira } from './convencao'
+import { cumeeiraDoVolume, ilustracaoVolumetrica } from './ilustracao'
 import { LIMITES, areaCoberta, type ConfiguracaoGalpao } from './parametros'
 import { mesmaGeometria, temWebGL } from './visual3d'
 
@@ -219,31 +220,120 @@ describe('a página com a visualização 3D', () => {
   })
 })
 
-describe('inclinação da cobertura nas três representações (divergência conhecida, aguardando decisão)', () => {
+describe('convenção única: croqui, Volume e 3D desenham o mesmo galpão', () => {
   /*
-   * Caracterização, não aprovação. O croqui em corte e o 3D sobem a cumeeira 10 % do MEIO vão (5 % do vão), e é daí
-   * que sai a «Altura total» do painel. A ilustração «Volume» sobe 7 % do VÃO INTEIRO (`CAIMENTO_DO_DESENHO`), o
-   * que equivale a 14 % de inclinação. Este teste prende os três valores como estão: quem mudar um deles tem de
-   * mudar este teste junto, e portanto decidir às claras. A proposta de unificação está em docs/site-3d-01.md.
+   * Decisão da Direção de 26/11/2026 (opção A): inclinação ilustrativa de 10 % sobre o meio vão em todas as
+   * representações, definida num só lugar (`convencao.ts`). É convenção de desenho; não é inclinação de projeto.
    */
-  it('croqui e 3D: 10 % sobre o meio vão; Volume: 7 % sobre o vão inteiro', () => {
-    const vao = 25, pe = 8
-    const subidaDoCroqui = desenharPortico({ vao, peDireito: pe }, MOLDURA_PADRAO).alturaCumeeira - pe
-    const subidaDo3d = geometriaDoGalpao(cfg(vao, 60, pe))!.alturaDeReferenciaNaCumeeira - pe
-    const subidaDoVolume = vao * CAIMENTO_DO_DESENHO
-    expect(subidaDoCroqui).toBeCloseTo(1.3, 1)                     // 1,25 m, arredondado a uma casa pelo croqui
-    expect(subidaDo3d).toBeCloseTo(1.25, 6)
-    expect(subidaDoVolume).toBeCloseTo(1.75, 6)
-    expect(HIPOTESES_3D.inclinacao).toBe(0.10)
-    expect(CAIMENTO_DO_DESENHO).toBe(0.07)
-    expect(subidaDoVolume / (vao / 2)).toBeCloseTo(0.14, 6)        // inclinação equivalente da ilustração Volume
-    expect(subidaDoVolume).not.toBeCloseTo(subidaDo3d, 1)          // a divergência existe e está registrada
+  const numeros = (d: string) => d.match(/-?\d+(\.\d+)?/g)!.map(Number)
+
+  it('a inclinação de representação é 10 % sobre o meio vão, e mora num só lugar', () => {
+    expect(INCLINACAO_DE_REPRESENTACAO).toBe(0.10)
+    expect(subidaDaCumeeira(25)).toBeCloseTo(1.25, 9)
+    expect(HIPOTESES_3D.inclinacao).toBe(INCLINACAO_DE_REPRESENTACAO)
+    for (const nome of ['croqui.ts', 'ilustracao.ts', 'geometria3d.ts', 'cena3d.ts', 'tela.ts']) {
+      const fonte = ler(`src/simulador/${nome}`)
+      expect(fonte, nome).not.toMatch(/CAIMENTO_DO_DESENHO/)
+      // nenhuma figura define inclinação por conta própria: todas importam a convenção ou recebem a geometria pronta
+      expect(fonte, nome).not.toMatch(/inclinacao\s*[:=]\s*0?\.\d|\?\?\s*10\b|\*\s*0\.07/)
+    }
+    for (const nome of ['croqui.ts', 'ilustracao.ts', 'geometria3d.ts']) expect(ler(`src/simulador/${nome}`), nome).toMatch(/from '\.\/convencao'/)
   })
 
-  it('a ilustração Volume não mostra número de altura: a divergência é só de forma', () => {
+  it('as três representações dão a mesma altura de cumeeira, em toda a faixa do formulário', () => {
+    for (let vao = LIMITES.vao.min; vao <= LIMITES.vao.max; vao += 2) {
+      for (let pe = LIMITES.peDireito.min; pe <= LIMITES.peDireito.max; pe += 1.5) {
+        const esperado = pe + (vao / 2) * 0.10                      // a conta, escrita à mão
+        const c = desenharPortico({ vao, peDireito: pe }, MOLDURA_PADRAO)
+        const ref = c.referencias
+        const noCroqui = (ref.base - ref.cumeeira) / ref.escala     // medido no próprio desenho
+        const no3d = geometriaDoGalpao(cfg(vao, 60, pe))!.alturaDeReferenciaNaCumeeira
+        const noVolume = cumeeiraDoVolume({ vao, peDireito: pe })
+        expect(noCroqui).toBeCloseTo(esperado, 6)
+        expect(no3d).toBeCloseTo(esperado, 4)
+        expect(noVolume).toBeCloseTo(esperado, 9)
+        expect(referenciaDaConvencao(pe, vao)).toBeCloseTo(esperado, 9)
+        expect(c.alturaCumeeira).toBe(Math.round(esperado * 10) / 10)          // o número do painel não mudou
+      }
+    }
+  })
+
+  it('a «Altura total» do painel continua a mesma de antes da unificação', () => {
+    expect(desenharPortico({ vao: 25, peDireito: 8 }, MOLDURA_PADRAO).alturaCumeeira).toBe(9.3)
+    expect(desenharPortico({ vao: 40, peDireito: 12 }, MOLDURA_PADRAO).alturaCumeeira).toBe(14)
+    expect(desenharPortico({ vao: 32, peDireito: 12 }, MOLDURA_PADRAO).alturaCumeeira).toBe(13.6)
+  })
+
+  it('a ilustração Volume desenha a cumeeira na altura de referência (antes subia 7 % do vão inteiro)', () => {
+    // Num desenho isométrico, dois pontos na mesma vertical distam (diferença de altura × escala) em tela.
+    // O oitão do Volume tem a cumeeira e a base no mesmo x: a razão entre as duas alturas desenhadas é a razão real.
+    for (const [vao, pe] of [[25, 8], [60, 3], [6, 20], [40, 12]] as const) {
+      const svg = ilustracaoVolumetrica(cfg(vao, 60, pe))!
+      const oitao = svg.match(/class="sim-ilu-oitao" points="([^"]+)"/)![1].split(' ').map((p) => p.split(',').map(Number))
+      // pontos do oitão: base esquerda, base direita, beiral direito, cumeeira, beiral esquerdo
+      const [, baseDir, beiralDir, cume] = oitao
+      const alturaDoBeiral = baseDir[1] - beiralDir[1]                 // pé-direito em tela
+      const yDaBaseSobACumeeira = (oitao[0][1] + baseDir[1]) / 2       // ponto médio da base, sob a cumeeira
+      const alturaDaCumeeira = yDaBaseSobACumeeira - cume[1]
+      expect(alturaDaCumeeira / alturaDoBeiral).toBeCloseTo((pe + (vao / 2) * 0.10) / pe, 1)
+    }
+    expect(cumeeiraDoVolume({ vao: 25, peDireito: 8 })).toBeCloseTo(9.25, 9)      // era 9,75 com a regra antiga
+  })
+
+  it('a ilustração Volume segue sem mostrar número de altura', () => {
     const svg = ilustracaoVolumetrica(cfg(25, 60, 8))!
     expect(svg).toContain('pé-direito 8 m')
     expect(svg).not.toMatch(/9,[0-9] m|altura total|cumeeira \d/i)
+  })
+
+  it('croqui: os pilares ficam FORA do vão livre, e a cota do vão vai de face interna a face interna', () => {
+    for (const [vao, pe] of [[25, 8], [6, 3], [60, 20], [12, 5], [40, 12]] as const) {
+      const c = desenharPortico({ vao, peDireito: pe }, MOLDURA_PADRAO)
+      const ref = c.referencias
+      expect((ref.faceInternaDireita - ref.faceInternaEsquerda) / ref.escala).toBeCloseTo(vao, 6)   // o vão livre, inteiro
+      expect(ref.faceExternaEsquerda).toBeLessThan(ref.faceInternaEsquerda)
+      expect(ref.faceExternaDireita).toBeGreaterThan(ref.faceInternaDireita)
+      const cota = c.cotaVao.caminho
+      expect(Number(cota.match(/^M (-?[\d.]+)/)![1])).toBeCloseTo(ref.faceInternaEsquerda, 1)
+      expect(Number(cota.match(/H (-?[\d.]+)/)![1])).toBeCloseTo(ref.faceInternaDireita, 1)
+      // nenhum traço do pilar entra no vão: todos os x do contorno ficam nas faces ou para fora delas
+      const xs = numeros(c.pilares).filter((_, i) => [0, 3, 5, 8].includes(i))
+      for (const x of xs) expect(x <= ref.faceInternaEsquerda + 0.06 || x >= ref.faceInternaDireita - 0.06).toBe(true)
+    }
+  })
+
+  it('croqui: a cota do pé-direito mede exatamente o pé-direito, até a linha inferior da viga', () => {
+    for (const [vao, pe] of [[25, 8], [6, 20], [60, 3]] as const) {
+      const c = desenharPortico({ vao, peDireito: pe }, MOLDURA_PADRAO)
+      const ref = c.referencias
+      expect((ref.base - ref.peDireito) / ref.escala).toBeCloseTo(pe, 6)
+      const n = numeros(c.cotaPeDireito.caminho)
+      expect(n).toContain(Math.round(ref.peDireito * 10) / 10)
+      // a viga fica acima da linha de referência; a mísula, abaixo dela, só no joelho
+      const yTopoNaCumeeira = numeros(c.cobertura)[3]
+      expect(yTopoNaCumeeira).toBeLessThan(ref.cumeeira)
+      expect(numeros(c.alma)[1]).toBeGreaterThan(ref.peDireito)
+    }
+  })
+
+  it('croqui e 3D usam as mesmas seções ilustrativas e a mesma posição dos pilares', () => {
+    for (const vao of [6, 12, 25, 40, 60]) {
+      const g = geometriaDoGalpao(cfg(vao, 60, 8))!
+      const sec = secoesDeDesenho(vao)
+      expect(g.secoes.pilar).toBeCloseTo(sec.pilar, 4)
+      expect(g.secoes.viga).toBeCloseTo(sec.viga, 4)
+      expect(g.secoes.misula).toBeCloseTo(sec.misula, 4)
+      expect(g.distanciaEntreEixos).toBeCloseTo(vao + sec.pilar, 4)           // 3D: eixos = vão livre + um pilar
+      const ref = desenharPortico({ vao, peDireito: 8 }, MOLDURA_PADRAO).referencias
+      const espessuraNoCroqui = (ref.faceInternaEsquerda - ref.faceExternaEsquerda) / ref.escala
+      expect(espessuraNoCroqui).toBeGreaterThanOrEqual(sec.pilar - 1e-6)      // igual, salvo o mínimo de 2 px do traço
+    }
+  })
+
+  it('nada na convenção fala de dimensionamento', () => {
+    const fonte = ler('src/simulador/convencao.ts').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '')
+    expect(fonte).not.toMatch(/NBR|kN|esfor|flecha|tens[aã]o|resist/i)
+    expect(ler('src/simulador/convencao.ts')).toMatch(/Nenhuma foi dimensionada nem verificada/)
   })
 })
 
