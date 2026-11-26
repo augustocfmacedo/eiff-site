@@ -28,9 +28,9 @@
  * primeiro pilar da fila A, no nível da base.
  */
 
-import { INCLINACAO_DE_REPRESENTACAO, alturaDeReferencia, secoesDeDesenho } from './convencao'
+import { INCLINACAO_DE_REPRESENTACAO, alturaDeReferencia, alturaTotalExibida, secoesDeDesenho } from './convencao'
 import { dimensoesParaDesenho } from './ilustracao'
-import type { ConfiguracaoGalpao, Cobertura, Fechamento } from './parametros'
+import { formatarMedida, type ConfiguracaoGalpao, type Cobertura, type Fechamento } from './parametros'
 
 /** Hipóteses de representação. Não são dados de projeto. */
 export const HIPOTESES_3D = {
@@ -222,15 +222,24 @@ export function elementosDaEstrutura(g: Geometria3D): Elemento[] {
   return el
 }
 
-const fmt = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 })
+/** Só a distância entre eixos precisa de duas casas (soma a seção ilustrativa). O resto usa a formatação do painel. */
+const fmtEixos = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 })
 
-/** O que a visualização presume, em frases para a tela. Nenhuma delas é dado de projeto. */
+/** A «Altura total» em texto, igual à do painel: mesma função de origem e mesma formatação. */
+export function alturaTotalEmTexto(g: Geometria3D): string {
+  return formatarMedida(alturaTotalExibida(g.alturaLivre, g.vaoLivre, g.inclinacao))
+}
+
+/**
+ * O que a visualização presume, em frases para a tela. Nenhuma delas é dado de projeto, e nenhuma traz
+ * quantidade (número de pórticos, de peças, peso): quantidade só existe depois do estudo de engenharia.
+ */
 export function hipotesesDeRepresentacao(g: Geometria3D): string[] {
   const lista = [
-    `Vão livre de ${fmt.format(g.vaoLivre)} m entre as faces internas dos pilares. A distância entre eixos desenhada (${fmt.format(g.distanciaEntreEixos)} m) soma a seção ilustrativa do pilar.`,
-    `Pé-direito de ${fmt.format(g.alturaLivre)} m até a linha inferior da viga, junto ao pilar. A mísula ilustrativa fica abaixo dessa linha no encontro com o pilar.`,
-    `Inclinação da cobertura de ${fmt.format(g.inclinacao * 100)} % adotada só para o desenho. A «Altura total» do painel (${fmt.format(g.alturaDeReferenciaNaCumeeira)} m) é a linha inferior da viga na cumeeira e não inclui viga nem cobertura.`,
-    `Pórticos desenhados a cada ${fmt.format(g.modulo)} m (${g.numeroDePorticos} pórticos). A modulação real é definida pela engenharia.`,
+    `Vão livre de ${formatarMedida(g.vaoLivre)} m entre as faces internas dos pilares. A distância entre eixos desenhada (${fmtEixos.format(g.distanciaEntreEixos)} m) soma a seção ilustrativa do pilar.`,
+    `Pé-direito de ${formatarMedida(g.alturaLivre)} m até a linha inferior da viga, junto ao pilar. A mísula ilustrativa fica abaixo dessa linha no encontro com o pilar.`,
+    `Inclinação da cobertura de ${formatarMedida(g.inclinacao * 100)} % adotada só para o desenho. A «Altura total» do painel (${alturaTotalEmTexto(g)} m) é a linha inferior da viga na cumeeira e não inclui viga nem cobertura.`,
+    `Pórticos desenhados a cada ${formatarMedida(g.modulo)} m, só para compor a figura. A modulação real é definida pela engenharia.`,
     'Perfis, mísulas, terças, travessas e contraventamentos são ilustrativos: não foram dimensionados nem verificados.',
     'Portas, docas, aberturas, fundações, piso e instalações não foram informados e não são desenhados.',
   ]

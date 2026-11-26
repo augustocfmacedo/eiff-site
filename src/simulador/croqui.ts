@@ -16,7 +16,7 @@
  *  - a viga é desenhada ACIMA dessa linha, e a mísula, abaixo dela, só no joelho.
  */
 
-import { INCLINACAO_DE_REPRESENTACAO, alturaDeReferencia, secoesDeDesenho } from './convencao'
+import { INCLINACAO_DE_REPRESENTACAO, alturaDeReferencia, alturaTotalExibida, secoesDeDesenho } from './convencao'
 
 export { ESPESSURA_MAX, H_MISULA, H_PILAR, H_VIGA, MISULA_FRACAO } from './convencao'
 
@@ -46,7 +46,7 @@ export interface Croqui {
   cotaVao: { caminho: string; x: number; y: number }
   /** Cota vertical do pé-direito, até a linha inferior da viga junto ao pilar. */
   cotaPeDireito: { caminho: string; x: number; y: number }
-  /** Altura da linha de referência na cumeeira, em metros (geometria, não engenharia). */
+  /** A «Altura total» como é mostrada no painel: `alturaTotalExibida` da convenção (geometria, não engenharia). */
   alturaCumeeira: number
   /** Posições em tela das referências, para conferência: faces dos pilares, base, pé-direito e cumeeira. */
   referencias: {
@@ -134,7 +134,7 @@ export function desenharPortico(m: MedidasPortico, moldura: Moldura): Croqui {
   }
 
   return {
-    pilares, cobertura, alma, solo, cotaVao, cotaPeDireito, alturaCumeeira: r(alturaCumeeira),
+    pilares, cobertura, alma, solo, cotaVao, cotaPeDireito, alturaCumeeira: alturaTotalExibida(peDireito, vao, inclinacao),
     referencias: {
       faceInternaEsquerda: faceEsq, faceInternaDireita: faceDir, faceExternaEsquerda: foraEsq, faceExternaDireita: foraDir,
       base, peDireito: yPe, cumeeira: yCume, escala,

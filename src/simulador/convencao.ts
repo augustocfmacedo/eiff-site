@@ -46,6 +46,15 @@ export function alturaDeReferencia(peDireito: number, vao: number, inclinacao: n
   return peDireito + subidaDaCumeeira(vao, inclinacao)
 }
 
+/**
+ * A «Altura total» COMO É MOSTRADA: a altura de referência arredondada a uma casa decimal.
+ * É a única regra de arredondamento desse número. O painel, o croqui e o texto das hipóteses do 3D mostram
+ * o que esta função devolve, formatado por `formatarMedida`: nunca cada um com a sua conta.
+ */
+export function alturaTotalExibida(peDireito: number, vao: number, inclinacao: number = INCLINACAO_DE_REPRESENTACAO): number {
+  return Math.round(alturaDeReferencia(peDireito, vao, inclinacao) * 10) / 10
+}
+
 export interface SecoesDeDesenho {
   /** Altura da seção desenhada do pilar, da viga e da mísula no joelho, em metros. */
   pilar: number

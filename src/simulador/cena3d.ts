@@ -26,7 +26,25 @@ export interface OpcoesDaCena {
   reduzMovimento: boolean
   /** Dispositivo de toque: limita a densidade de pixels para poupar a GPU. */
   toque: boolean
+  /** O navegador tirou o contexto WebGL. A cena para de desenhar e fica à espera. */
   aoPerderContexto: () => void
+  /** O navegador devolveu o contexto: a cena já foi remontada. */
+  aoRecuperarContexto: () => void
+  /** Erro ao desenhar ou redimensionar. A cena não é mais confiável: quem chama desliga o 3D. */
+  aoErro: () => void
+}
+
+/**
+ * Tira tudo de um grupo e descarta o que cada objeto guarda na GPU. `dispose()` do próprio objeto é o que libera
+ * o buffer de instâncias de um `InstancedMesh`; a geometria é descartada à parte. Materiais são compartilhados e
+ * só são descartados em `destruir`.
+ */
+export function limparGrupo(grupo: THREE.Group): void {
+  while (grupo.children.length) {
+    const o = grupo.children.pop() as THREE.Object3D & { geometry?: THREE.BufferGeometry; dispose?: () => void }
+    o.geometry?.dispose()
+    o.dispose?.()
+  }
 }
 
 export interface Cena3D {
@@ -120,6 +138,8 @@ export function criarCena(tela: HTMLCanvasElement, rotulos: HTMLElement, opcoes:
   let quadros = 0
   let ultimaMontagemMs = 0
   let destruida = false
+  /** Contexto WebGL perdido e ainda não devolvido pelo navegador. */
+  let semContexto = false
   let animacao = 0
   let etiquetas: { el: HTMLElement; ponto: THREE.Vector3; modos: Modo[] }[] = []
 
@@ -133,12 +153,7 @@ export function criarCena(tela: HTMLCanvasElement, rotulos: HTMLElement, opcoes:
 
   const v = (p: P3): THREE.Vector3 => new THREE.Vector3(p[0] - geo!.distanciaEntreEixos / 2, p[2], geo!.comprimento / 2 - p[1])
 
-  function limpar(grupo: THREE.Group): void {
-    while (grupo.children.length) {
-      const o = grupo.children.pop() as THREE.Mesh
-      o.geometry?.dispose()
-    }
-  }
+  const limpar = limparGrupo
 
   /** Caixa com o eixo X ao longo de a→b. `cima` orienta a altura da seção. */
   function caixaEntre(a: THREE.Vector3, b: THREE.Vector3, altura: number, largura: number, cima = new THREE.Vector3(0, 1, 0)): THREE.BufferGeometry {
@@ -402,13 +417,25 @@ export function criarCena(tela: HTMLCanvasElement, rotulos: HTMLElement, opcoes:
     camera.lookAt(orbita.alvo)
   }
 
+  /** Um erro ao desenhar não pode deixar a caixa visível e pela metade: avisa quem chama, uma vez só. */
+  let quebrada = false
+  function quebrar(): void {
+    if (quebrada || destruida) return
+    quebrada = true
+    opcoes.aoErro()
+  }
+
   function desenhar(): void {
     quadroPedido = 0
-    if (destruida || !geo) return
-    posicionarCamera()
-    renderizador.render(cena, camera)
-    quadros += 1
-    posicionarRotulos()
+    if (destruida || quebrada || semContexto || !geo) return
+    try {
+      posicionarCamera()
+      renderizador.render(cena, camera)
+      quadros += 1
+      posicionarRotulos()
+    } catch {
+      quebrar()
+    }
   }
 
   /**
@@ -454,13 +481,17 @@ export function criarCena(tela: HTMLCanvasElement, rotulos: HTMLElement, opcoes:
 
   function redimensionar(): void {
     const w = tela.clientWidth, h = tela.clientHeight
-    if (w === 0 || h === 0) return
-    renderizador.setSize(w, h, false)
-    const antes = camera.aspect
-    camera.aspect = w / h
-    camera.updateProjectionMatrix()
-    if (geo && Math.abs(antes - camera.aspect) > 0.05 && !encaixe.manual) montar()
-    pedirQuadro()
+    if (w === 0 || h === 0 || destruida || quebrada || semContexto) return
+    try {
+      renderizador.setSize(w, h, false)
+      const antes = camera.aspect
+      camera.aspect = w / h
+      camera.updateProjectionMatrix()
+      if (geo && Math.abs(antes - camera.aspect) > 0.05 && !encaixe.manual) montar()
+      pedirQuadro()
+    } catch {
+      quebrar()
+    }
   }
   const observador = new ResizeObserver(redimensionar)
   observador.observe(tela)
@@ -536,7 +567,27 @@ export function criarCena(tela: HTMLCanvasElement, rotulos: HTMLElement, opcoes:
     e.stopPropagation()
     f()
   }
-  const aoPerder = (e: Event) => { e.preventDefault(); opcoes.aoPerderContexto() }
+  // Perda de contexto (aba em segundo plano, pouca memória de vídeo). `preventDefault` é o que permite ao navegador
+  // devolvê-lo. Enquanto isso nada é desenhado. Na volta, o three.js refaz o estado interno e a cena é remontada.
+  const aoPerder = (e: Event) => {
+    e.preventDefault()
+    semContexto = true
+    cancelAnimationFrame(quadroPedido)
+    cancelAnimationFrame(animacao)
+    quadroPedido = 0
+    opcoes.aoPerderContexto()
+  }
+  const aoRecuperar = () => {
+    if (destruida || quebrada) return
+    semContexto = false
+    try {
+      if (geo) montar()
+      redimensionar()
+      opcoes.aoRecuperarContexto()
+    } catch {
+      quebrar()
+    }
+  }
   // aba que volta do segundo plano: o navegador pode ter descartado o quadro; um quadro novo, e só um
   const aoVoltar = () => { if (document.visibilityState === 'visible') pedirQuadro() }
   document.addEventListener('visibilitychange', aoVoltar)
@@ -548,6 +599,7 @@ export function criarCena(tela: HTMLCanvasElement, rotulos: HTMLElement, opcoes:
   tela.addEventListener('wheel', aoRodar, { passive: false })
   tela.addEventListener('keydown', aoTeclar)
   tela.addEventListener('webglcontextlost', aoPerder)
+  tela.addEventListener('webglcontextrestored', aoRecuperar)
 
   const api: Cena3D = {
     atualizar(g) {
@@ -605,11 +657,14 @@ export function criarCena(tela: HTMLCanvasElement, rotulos: HTMLElement, opcoes:
       tela.removeEventListener('wheel', aoRodar)
       tela.removeEventListener('keydown', aoTeclar)
       tela.removeEventListener('webglcontextlost', aoPerder)
+      tela.removeEventListener('webglcontextrestored', aoRecuperar)
       document.removeEventListener('visibilitychange', aoVoltar)
       Object.values(grupos).forEach(limpar)
       Object.values(mat).forEach((m) => m.dispose())
       nervV.dispose(); nervH.dispose(); sombra.dispose()
       renderizador.dispose()
+      // solta o contexto de vídeo de uma vez: um canvas oculto não pode ficar segurando memória da GPU
+      try { renderizador.forceContextLoss() } catch { /* contexto já perdido */ }
       rotulos.textContent = ''
     },
   }

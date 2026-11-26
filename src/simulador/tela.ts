@@ -14,7 +14,7 @@ import {
 import {
   ETAPAS, TOTAL_ETAPAS, type EstadoSimulador, type IdEtapa,
   avancar, definirConfiguracao, definirContato, erroDoCampo, estadoInicial,
-  etapaPorId, irPara, podeEnviar, progresso, validarEtapa, voltar,
+  etapaPorId, irPara, passoDaChamada, podeEnviar, progresso, validarEtapa, voltar,
 } from './fluxo'
 import { MOLDURA_PADRAO, desenharPortico } from './croqui'
 import { MOTIVO_INDISPONIVEL, PROVEDOR_INDISPONIVEL, type ProvedorPreEngenharia } from './orcamento'
@@ -88,6 +88,8 @@ export function iniciarSimulador(raiz: Document | HTMLElement = document, opcoes
   const caixa3d = raiz.querySelector<HTMLElement>('#sim3d')
   const botao3d = raiz.querySelector<HTMLButtonElement>('#simVistas [data-vista="3d"]')
   const cta3d = raiz.querySelector<HTMLElement>('#simCta3d')
+  const avisoPausa = raiz.querySelector<HTMLElement>('#sim3dPausa')
+  let voltarAo3d = false
   let enquadramentoDesenhado = ''
   let obsDesenhadas: string | null = null
   const declaracao = (): DeclaracaoDeTipologia | null =>
@@ -245,7 +247,22 @@ export function iniciarSimulador(raiz: Document | HTMLElement = document, opcoes
     reduzMovimento: reduz,
     aoFalhar: () => {
       if (botao3d) botao3d.hidden = true
+      if (avisoPausa) avisoPausa.hidden = true
       if (vista === '3d') vista = 'volume'
+      atualizarResumo()
+    },
+    // O navegador tirou o contexto de vídeo (aba em segundo plano, memória): o 3D pausa, a vista volta ao
+    // Volume e o botão continua lá. Quando o navegador devolve o contexto, quem estava no 3D volta para ele.
+    aoPausar: () => {
+      voltarAo3d = vista === '3d'
+      if (vista === '3d') vista = 'volume'
+      if (avisoPausa) avisoPausa.hidden = false
+      atualizarResumo()
+    },
+    aoRetomar: () => {
+      if (avisoPausa) avisoPausa.hidden = true
+      if (voltarAo3d && vista === 'volume') vista = '3d'
+      voltarAo3d = false
       atualizarResumo()
     },
   }) : null
@@ -253,7 +270,8 @@ export function iniciarSimulador(raiz: Document | HTMLElement = document, opcoes
     if (!visual3d) return
     const ok = await visual3d.ativar()
     if (!ok) {
-      if (botao3d) botao3d.hidden = true
+      // Pausado não é indisponível: o botão fica, e o 3D volta quando o navegador devolver o contexto.
+      if (botao3d && visual3d.situacao() === 'indisponivel') botao3d.hidden = true
       if (vista === '3d') vista = 'volume'
     } else if (!vistaEscolhida) {
       vista = '3d'
@@ -276,25 +294,24 @@ export function iniciarSimulador(raiz: Document | HTMLElement = document, opcoes
     }
   }
 
-  /** A chamada comercial leva ao contato, passando pelas mesmas validações de sempre. */
+  /**
+   * A chamada comercial avança UMA etapa, pelas mesmas validações do «Continuar» (regra em `passoDaChamada`).
+   * Nunca pula a Especificação e nunca registra no funil etapa em que o visitante não chegou.
+   */
   const irAoContato = (): void => {
+    const passo = passoDaChamada(estado)
     registrar('simulador_cta_3d', { etapa: estado.etapa })
-    for (let i = 0; i < TOTAL_ETAPAS && estado.etapa !== 'contato'; i += 1) {
-      // Etapa com campo obrigatório por preencher: para nela e leva o foco ao campo, sem acusar erro
-      // antes de a pessoa ter tido a chance de responder. A validação de sempre vale ao continuar.
-      const falta = validarEtapa(estado.etapa, estado)[0]
-      if (falta) {
-        focarEtapa(estado.etapa)
-        form.querySelector<HTMLElement>(`[name="${falta.campo}"]`)?.focus({ preventScroll: true })
-        return
-      }
-      const antes = estado.etapa
-      irAdiante()
-      if (estado.etapa === antes) return
+    if (passo.acao === 'PREENCHER') {
+      focarEtapa(estado.etapa)
+      form.querySelector<HTMLElement>(`[name="${passo.campo}"]`)?.focus({ preventScroll: true })
+      return
     }
-    form.querySelector<HTMLElement>('[name="nome"]')?.focus()
+    if (passo.acao === 'AVANCAR') irAdiante()
   }
-  cta3d?.querySelector<HTMLButtonElement>('button')?.addEventListener('click', (e) => { e.preventDefault(); irAoContato() })
+  const botaoCta = cta3d?.querySelector<HTMLButtonElement>('button')
+  botaoCta?.addEventListener('click', (e) => { e.preventDefault(); irAoContato() })
+  // No celular o painel fica dentro do formulário: Enter neste botão é o clique dele, não o «avançar» do formulário.
+  cta3d?.addEventListener('keydown', (e) => { if (e.key === 'Enter') e.stopPropagation() })
 
   /* -------------------------------------------------------------
      Navegação entre etapas
@@ -513,7 +530,7 @@ export function iniciarSimulador(raiz: Document | HTMLElement = document, opcoes
         ? `${desenho}<p class="sim-ilu__cotas" aria-hidden="true">${escapar(cotas)} · ilustração</p>`
         : (vista === 'corte' ? '' : '<p class="sim-ilu__vazio">Informe vão, comprimento e pé-direito para ver a ilustração.</p>')
       // 3D: só com as três dimensões válidas e a cena disponível; senão, a mensagem de sempre.
-      const em3d = vista === '3d' && Boolean(a) && geometriaDoGalpao(estado.configuracao) !== null && visual3d?.situacao() !== 'indisponivel'
+      const em3d = vista === '3d' && Boolean(a) && geometriaDoGalpao(estado.configuracao) !== null && visual3d !== null && !['indisponivel', 'pausada'].includes(visual3d.situacao())
       if (caixa3d) caixa3d.hidden = !em3d
       visual3d?.atualizar(estado.configuracao)
       visual3d?.mostrar(em3d)

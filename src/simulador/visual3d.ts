@@ -11,7 +11,7 @@ import { SELO_3D, geometriaDoGalpao, hipotesesDeRepresentacao, type Geometria3D 
 import type { ConfiguracaoGalpao } from './parametros'
 import type { Cena3D, Modo, VistaDaCamera } from './cena3d'
 
-export type Situacao = 'parada' | 'carregando' | 'pronta' | 'indisponivel'
+export type Situacao = 'parada' | 'carregando' | 'pronta' | 'pausada' | 'indisponivel'
 
 export interface Visual3D {
   /** O navegador consegue desenhar? Decidido uma vez, sem baixar nada. */
@@ -31,6 +31,10 @@ export interface OpcoesVisual3D {
   /** Chamado quando a cena deixa de existir depois de ter funcionado (contexto perdido, erro). */
   aoFalhar: () => void
   aoMudarModo?: (m: Modo) => void
+  /** O navegador tirou o contexto WebGL. A cena fica guardada; a página deve voltar às ilustrações. */
+  aoPausar?: () => void
+  /** O navegador devolveu o contexto e a cena foi remontada. */
+  aoRetomar?: () => void
 }
 
 /** WebGL disponível? Testa num canvas à parte e solta o contexto em seguida. */
@@ -118,6 +122,21 @@ export function iniciarVisual3D(raiz: Document | HTMLElement, opcoes: OpcoesVisu
     opcoes.aoFalhar()
   }
 
+  /** Contexto WebGL perdido: não é falha definitiva. A cena para de desenhar e espera o navegador devolvê-lo. */
+  const pausar = (): void => {
+    if (situacao !== 'pronta') return
+    ampliar(false)
+    situacao = 'pausada'
+    opcoes.aoPausar?.()
+  }
+  const retomar = (): void => {
+    if (situacao !== 'pausada') return
+    situacao = 'pronta'
+    desenhada = null                  // tudo é remontado no contexto novo
+    opcoes.aoRetomar?.()
+    agendar()
+  }
+
   const marcar = (grupo: string, valor: string): void => {
     caixa.querySelectorAll<HTMLButtonElement>(`[data-${grupo}]`).forEach((b) => b.setAttribute('aria-pressed', String(b.dataset[grupo] === valor)))
   }
@@ -185,10 +204,11 @@ export function iniciarVisual3D(raiz: Document | HTMLElement, opcoes: OpcoesVisu
     else if (bt.dataset.cam === 'restaurar') cena.restaurar()
     else if (bt.dataset.cam) cena.definirVista(bt.dataset.cam as VistaDaCamera)
   })
-  // Dentro do formulário (no celular o painel é movido para lá), Enter num botão
-  // do 3D não pode ser lido como «avançar etapa».
+  // Dentro do formulário (no celular o painel é movido para lá), Enter em QUALQUER ponto do bloco 3D — botão ou
+  // a própria cena — não pode ser lido como «avançar etapa». Num botão, o Enter segue sendo o clique dele: aqui só
+  // se impede que o evento suba até o formulário. Tab e as demais teclas não são tocadas.
   caixa.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && (e.target as HTMLElement).closest('button')) e.stopPropagation()
+    if (e.key === 'Enter') e.stopPropagation()
   })
 
   const api: Visual3D = {
@@ -196,7 +216,7 @@ export function iniciarVisual3D(raiz: Document | HTMLElement, opcoes: OpcoesVisu
     situacao: () => situacao,
     modo: () => modoAtual,
     ativar() {
-      if (!suportado || situacao === 'indisponivel') return Promise.resolve(false)
+      if (!suportado || situacao === 'indisponivel' || situacao === 'pausada') return Promise.resolve(false)
       if (pedido) return pedido
       situacao = 'carregando'
       dizer('Carregando a visualização 3D…')
@@ -204,7 +224,9 @@ export function iniciarVisual3D(raiz: Document | HTMLElement, opcoes: OpcoesVisu
         cena = m.criarCena(tela, rotulos, {
           reduzMovimento: opcoes.reduzMovimento,
           toque: window.matchMedia('(pointer: coarse)').matches,
-          aoPerderContexto: falhar,
+          aoPerderContexto: pausar,
+          aoRecuperarContexto: retomar,
+          aoErro: falhar,
         })
         situacao = 'pronta'
         dizer('')
