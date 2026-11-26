@@ -25,8 +25,10 @@ import { ESCOPO_PADRONIZADO, type DeclaracaoDeTipologia } from './enquadramento'
 import { linhasDoResumo, montarApresentacaoPublica, rotulosDaTipologia, type ApresentacaoPublica } from './apresentacao'
 import { ilustracaoVolumetrica, implantacaoConceitual } from './ilustracao'
 import { AVISO_DO_ENQUADRAMENTO, especificacaoDoLead, textoDoEnquadramento } from './especificacao'
+import { geometriaDoGalpao } from './geometria3d'
+import { iniciarVisual3D } from './visual3d'
 
-type Vista = 'volume' | 'planta' | 'corte'
+type Vista = '3d' | 'volume' | 'planta' | 'corte'
 
 const CAMPOS_CONTATO = ['nome', 'empresa', 'email', 'telefone'] as const
 const CAMPOS_NUMERO = ['vao', 'comprimento', 'peDireito'] as const
@@ -81,6 +83,11 @@ export function iniciarSimulador(raiz: Document | HTMLElement = document, opcoes
   let tipologiaMarcada: string[] = []
   let tipologiaNenhuma = false
   let vista: Vista = 'volume'
+  /** O visitante escolheu uma vista? Enquanto não, o 3D assume quando fica pronto. */
+  let vistaEscolhida = false
+  const caixa3d = raiz.querySelector<HTMLElement>('#sim3d')
+  const botao3d = raiz.querySelector<HTMLButtonElement>('#simVistas [data-vista="3d"]')
+  const cta3d = raiz.querySelector<HTMLElement>('#simCta3d')
   let enquadramentoDesenhado = ''
   let obsDesenhadas: string | null = null
   const declaracao = (): DeclaracaoDeTipologia | null =>
@@ -223,9 +230,71 @@ export function iniciarSimulador(raiz: Document | HTMLElement = document, opcoes
       const bt = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-vista]')
       if (!bt) return
       vista = bt.dataset.vista as Vista
+      vistaEscolhida = true
       atualizarResumo()
+      if (vista === '3d') void ligar3d()
     })
   }
+
+  /*
+   * Visualização 3D: aprimoramento em cima das ilustrações. Só existe com WebGL;
+   * é baixada quando o painel aparece na tela. Qualquer falha devolve a vista
+   * «Volume» e esconde o botão: o formulário não depende dela em nada.
+   */
+  const visual3d = botoesVista && ilustracao ? iniciarVisual3D(raiz, {
+    reduzMovimento: reduz,
+    aoFalhar: () => {
+      if (botao3d) botao3d.hidden = true
+      if (vista === '3d') vista = 'volume'
+      atualizarResumo()
+    },
+  }) : null
+  const ligar3d = async (): Promise<void> => {
+    if (!visual3d) return
+    const ok = await visual3d.ativar()
+    if (!ok) {
+      if (botao3d) botao3d.hidden = true
+      if (vista === '3d') vista = 'volume'
+    } else if (!vistaEscolhida) {
+      vista = '3d'
+    }
+    atualizarResumo()
+  }
+  if (visual3d?.suportado && botao3d && caixa3d) {
+    botao3d.hidden = false
+    const alvo = raiz.querySelector<HTMLElement>('.sim-leitura')
+    if (alvo && 'IntersectionObserver' in window) {
+      const olho = new IntersectionObserver((entradas) => {
+        if (!entradas.some((x) => x.isIntersecting)) return
+        olho.disconnect()
+        // Depois do primeiro desenho da página: o 3D nunca disputa rede nem CPU com a primeira tela.
+        const ocioso = (window as Window & { requestIdleCallback?: (f: () => void, o?: { timeout: number }) => number }).requestIdleCallback
+        if (ocioso) ocioso(() => void ligar3d(), { timeout: 2000 })
+        else window.setTimeout(() => void ligar3d(), 400)
+      }, { rootMargin: '200px' })
+      olho.observe(alvo)
+    }
+  }
+
+  /** A chamada comercial leva ao contato, passando pelas mesmas validações de sempre. */
+  const irAoContato = (): void => {
+    registrar('simulador_cta_3d', { etapa: estado.etapa })
+    for (let i = 0; i < TOTAL_ETAPAS && estado.etapa !== 'contato'; i += 1) {
+      // Etapa com campo obrigatório por preencher: para nela e leva o foco ao campo, sem acusar erro
+      // antes de a pessoa ter tido a chance de responder. A validação de sempre vale ao continuar.
+      const falta = validarEtapa(estado.etapa, estado)[0]
+      if (falta) {
+        focarEtapa(estado.etapa)
+        form.querySelector<HTMLElement>(`[name="${falta.campo}"]`)?.focus({ preventScroll: true })
+        return
+      }
+      const antes = estado.etapa
+      irAdiante()
+      if (estado.etapa === antes) return
+    }
+    form.querySelector<HTMLElement>('[name="nome"]')?.focus()
+  }
+  cta3d?.querySelector<HTMLButtonElement>('button')?.addEventListener('click', (e) => { e.preventDefault(); irAoContato() })
 
   /* -------------------------------------------------------------
      Navegação entre etapas
@@ -443,9 +512,16 @@ export function iniciarSimulador(raiz: Document | HTMLElement = document, opcoes
       ilustracao.innerHTML = desenho
         ? `${desenho}<p class="sim-ilu__cotas" aria-hidden="true">${escapar(cotas)} · ilustração</p>`
         : (vista === 'corte' ? '' : '<p class="sim-ilu__vazio">Informe vão, comprimento e pé-direito para ver a ilustração.</p>')
-      ilustracao.hidden = vista === 'corte'
+      // 3D: só com as três dimensões válidas e a cena disponível; senão, a mensagem de sempre.
+      const em3d = vista === '3d' && Boolean(a) && geometriaDoGalpao(estado.configuracao) !== null && visual3d?.situacao() !== 'indisponivel'
+      if (caixa3d) caixa3d.hidden = !em3d
+      visual3d?.atualizar(estado.configuracao)
+      visual3d?.mostrar(em3d)
+      if (avisoIlustracao) avisoIlustracao.hidden = em3d
+      ilustracao.hidden = vista === 'corte' || em3d
       svg?.toggleAttribute('hidden', vista !== 'corte')
     }
+    if (cta3d) cta3d.hidden = !a || geometriaDoGalpao(estado.configuracao) === null || estado.etapa === 'contato' || Boolean(estado.enviado)
     if (caixaEnquadramento) {
       // Antes de a configuração estar completa, o enquadramento não diz nada útil: fica VAZIO.
       // Nunca `hidden`: uma região ao vivo que nasce oculta não é anunciada quando aparece,

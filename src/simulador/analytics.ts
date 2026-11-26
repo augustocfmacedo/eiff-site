@@ -181,6 +181,7 @@ export type EventoSimulador =
   | 'simulador_envio'
   | 'simulador_envio_erro'
   | 'simulador_contato_alternativo'
+  | 'simulador_cta_3d'
 
 /**
  * Lista FECHADA de propriedades que podem acompanhar um evento. Qualquer outra

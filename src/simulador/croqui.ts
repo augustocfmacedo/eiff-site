@@ -12,16 +12,16 @@
  */
 
 /** Altura de seção, em metros, do pilar, da viga e do joelho. */
-const H_PILAR = 0.85
-const H_VIGA = 0.7
-const H_MISULA = 1.75
+export const H_PILAR = 0.85
+export const H_VIGA = 0.7
+export const H_MISULA = 1.75
 /**
  * Teto da espessura desenhada, como fração do vão em tela. Sem ele, um vão
  * pequeno com a proporção real daria um pilar absurdamente gordo no croqui.
  */
-const ESPESSURA_MAX = 0.035
+export const ESPESSURA_MAX = 0.035
 /** Comprimento da mísula em tela, como fração da meia-água. */
-const MISULA_FRACAO = 0.22
+export const MISULA_FRACAO = 0.22
 
 export interface MedidasPortico {
   vao: number
