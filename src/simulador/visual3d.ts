@@ -221,13 +221,20 @@ export function iniciarVisual3D(raiz: Document | HTMLElement, opcoes: OpcoesVisu
       situacao = 'carregando'
       dizer('Carregando a visualização 3D…')
       pedido = import('./cena3d').then((m) => {
-        cena = m.criarCena(tela, rotulos, {
+        const nova = m.criarCena(tela, rotulos, {
           reduzMovimento: opcoes.reduzMovimento,
           toque: window.matchMedia('(pointer: coarse)').matches,
           aoPerderContexto: pausar,
           aoRecuperarContexto: retomar,
           aoErro: falhar,
         })
+        // A cena pode avisar erro ainda DURANTE a criação (primeiro redimensionamento): aí ela já nasce descartada.
+        if (api.situacao() === 'indisponivel') {
+          try { nova.destruir() } catch { /* a cena já se foi */ }
+          dizer('')
+          return false
+        }
+        cena = nova
         situacao = 'pronta'
         dizer('')
         agendar()

@@ -15,12 +15,14 @@ const cenaFalsa = {
   opcoes: null as OpcoesDaCena | null,
   falharAoCriar: false,
   falharAoAtualizar: false,
+  avisarErroAoCriar: false,
 }
 vi.mock('./cena3d', () => ({
   criarCena: (_tela: unknown, _rotulos: unknown, opcoes: OpcoesDaCena) => {
     if (cenaFalsa.falharAoCriar) throw new Error('sem contexto')
     cenaFalsa.opcoes = opcoes
     cenaFalsa.chamadas.push('criar')
+    if (cenaFalsa.avisarErroAoCriar) opcoes.aoErro?.()
     return {
       atualizar: (g: { vaoLivre: number }) => {
         if (cenaFalsa.falharAoAtualizar) throw new Error('quebrou ao montar')
@@ -172,6 +174,21 @@ describe('fallback: a página nunca depende do 3D', () => {
     expect(await v.ativar()).toBe(false)
     expect(v.situacao()).toBe('indisponivel')
     expect(await v.ativar()).toBe(false)                       // não tenta de novo em laço
+  })
+
+  it('erro avisado pela cena DURANTE a criação não deixa uma cena quebrada como pronta', async () => {
+    const p = montarPagina()
+    cenaFalsa.avisarErroAoCriar = true
+    const { v, avisos } = await iniciar(p)
+    try {
+      expect(await v.ativar()).toBe(false)
+      expect(avisos).toEqual(['falhou'])
+      expect(v.situacao()).toBe('indisponivel')
+      expect(cenaFalsa.chamadas).toContain('destruir')
+      expect(p.caixa.hidden).toBe(true)
+    } finally {
+      cenaFalsa.avisarErroAoCriar = false
+    }
   })
 
   it('erro ao montar o modelo desliga o 3D, destrói a cena, esconde a caixa e avisa a página', async () => {

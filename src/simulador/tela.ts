@@ -256,7 +256,9 @@ export function iniciarSimulador(raiz: Document | HTMLElement = document, opcoes
     aoPausar: () => {
       voltarAo3d = vista === '3d'
       if (vista === '3d') vista = 'volume'
-      if (avisoPausa) avisoPausa.hidden = false
+      // O aviso só aparece para quem estava vendo o 3D. O texto é regravado ao aparecer: região ao vivo que
+      // nasce oculta não é anunciada só por deixar de estar oculta.
+      if (avisoPausa && voltarAo3d) { const texto = avisoPausa.textContent; avisoPausa.hidden = false; avisoPausa.textContent = ''; avisoPausa.textContent = texto }
       atualizarResumo()
     },
     aoRetomar: () => {
@@ -312,6 +314,8 @@ export function iniciarSimulador(raiz: Document | HTMLElement = document, opcoes
   botaoCta?.addEventListener('click', (e) => { e.preventDefault(); irAoContato() })
   // No celular o painel fica dentro do formulário: Enter neste botão é o clique dele, não o «avançar» do formulário.
   cta3d?.addEventListener('keydown', (e) => { if (e.key === 'Enter') e.stopPropagation() })
+  // O mesmo vale para os botões de vista (3D, Volume, Planta, Corte): Enter troca a vista, não a etapa.
+  botoesVista?.addEventListener('keydown', (e) => { if (e.key === 'Enter') e.stopPropagation() })
 
   /* -------------------------------------------------------------
      Navegação entre etapas
