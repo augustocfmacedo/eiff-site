@@ -280,27 +280,66 @@
           <p class="sim-leitura__resumo" id="simResumo">Configure os primeiros campos</p>
 
           <div class="sim-vistas" id="simVistas" role="group" aria-label="Vista da ilustração" hidden>
+            <button type="button" class="sim-vistas__bt" data-vista="3d" aria-pressed="false" hidden>3D</button>
             <button type="button" class="sim-vistas__bt" data-vista="volume" aria-pressed="true">Volume</button>
             <button type="button" class="sim-vistas__bt" data-vista="planta" aria-pressed="false">Planta</button>
             <button type="button" class="sim-vistas__bt" data-vista="corte" aria-pressed="false">Corte</button>
           </div>
           <div class="sim-ilu" id="simIlustracao" data-vista-atual="volume" hidden></div>
 
+          <div class="sim-3d" id="sim3d" hidden>
+            <div class="sim-3d__modos" role="group" aria-label="Modo da visualização 3D">
+              <button type="button" class="sim-3d__modo" data-modo="arquitetura" aria-pressed="true">Arquitetura</button>
+              <button type="button" class="sim-3d__modo" data-modo="estrutura" aria-pressed="false">Estrutura</button>
+              <button type="button" class="sim-3d__modo" data-modo="interior" aria-pressed="false">Interior</button>
+            </div>
+            <div class="sim-3d__palco">
+              <canvas class="sim-3d__tela" id="sim3dTela" tabindex="0" role="img" aria-label="Visualização conceitual em 3D do galpão configurado"></canvas>
+              <div class="sim-3d__rotulos" id="sim3dRotulos" aria-hidden="true"></div>
+              <p class="sim-3d__selo" id="sim3dSelo">VISUALIZAÇÃO CONCEITUAL — NÃO É PROJETO EXECUTIVO.</p>
+              <p class="sim-3d__estado" id="sim3dEstado" role="status" hidden></p>
+            </div>
+            <div class="sim-3d__camera" role="group" aria-label="Câmera">
+                <button type="button" data-cam="perspectiva" aria-label="Vista em perspectiva">Persp.</button>
+                <button type="button" data-cam="frente" aria-label="Vista de frente">Frente</button>
+                <button type="button" data-cam="lateral" aria-label="Vista lateral">Lateral</button>
+                <button type="button" data-cam="topo" aria-label="Vista de cima">Topo</button>
+                <button type="button" data-cam="menos" aria-label="Afastar">−</button>
+                <button type="button" data-cam="mais" aria-label="Aproximar">+</button>
+                <button type="button" data-cam="restaurar" aria-label="Restaurar a câmera">Restaurar</button>
+                <button type="button" data-cam="ampliar" aria-pressed="false" aria-label="Ampliar a visualização">Ampliar</button>
+            </div>
+            <p class="sim-3d__nota">Perfis e elementos ilustrativos: não foram dimensionados nem verificados.</p>
+            <p class="sim-3d__ajuda">Arraste para girar. Use + e − para aproximar. No teclado: setas, + e −.</p>
+            <details class="sim-3d__hipoteses">
+              <summary>O que esta visualização presume</summary>
+              <ul id="sim3dHipoteses"></ul>
+            </details>
+          </div>
+
           <svg class="sim__croqui" id="simCroqui" viewBox="0 0 420 260" role="img" aria-label="Croqui esquemático do pórtico com vão e pé-direito informados">
-            <path id="cqSolo" data-traco="solo" d="M 13.6 184 H 346.4"/>
-            <path id="cqAlma" data-traco d="M 34 111 L 66.1 95.5 L 180 84.2 L 293.9 95.5 L 326 111 M 34 90.6 V 111 M 326 90.6 V 111 M 180 76 V 84.2"/>
-            <path id="cqPilares" data-traco d="M 34 184 V 90.6 H 43.9 V 184 M 326 184 V 90.6 H 316.1 V 184"/>
-            <path id="cqCobertura" data-traco d="M 34 90.6 L 180 76 L 326 90.6"/>
-            <path id="cqCotaVao" data-traco="cota" d="M 34 194.3 V 204.3 M 34 199.3 H 326 M 326 194.3 V 204.3"/>
-            <text id="cqTextoVao" x="180" y="191.3">25 m</text>
-            <path id="cqCotaPe" data-traco="cota" d="M 336.3 184 H 346.3 M 341.3 184 V 90.6 M 336.3 90.6 H 346.3"/>
-            <text id="cqTextoPe" x="351.3" y="137.3">8 m</text>
+            <path id="cqSolo" data-traco="solo" d="M 13.6 184.4 H 346.4"/>
+            <path id="cqAlma" data-traco d="M 43.3 108.4 L 73.4 93.9 L 180 83.2 L 286.6 93.9 L 316.7 108.4 M 43.3 89.3 V 108.4 M 316.7 89.3 V 108.4 M 180 75.6 V 83.2"/>
+            <path id="cqPilares" data-traco d="M 34 184.4 V 90.2 H 43.3 V 184.4 M 326 184.4 V 90.2 H 316.7 V 184.4"/>
+            <path id="cqCobertura" data-traco d="M 34 90.2 L 180 75.6 L 326 90.2"/>
+            <path id="cqCotaVao" data-traco="cota" d="M 43.3 194.7 V 204.7 M 43.3 199.7 H 316.7 M 316.7 194.7 V 204.7"/>
+            <text id="cqTextoVao" x="180" y="191.7">25 m</text>
+            <path id="cqCotaPe" data-traco="cota" d="M 336.3 184.4 H 346.3 M 341.3 184.4 V 96.9 M 336.3 96.9 H 346.3"/>
+            <text id="cqTextoPe" x="351.3" y="140.7">8 m</text>
           </svg>
           <p class="sim-ilu__aviso" id="simIlustracaoAviso" hidden>Ilustração das dimensões informadas. Não é modelo estrutural calculado: não mostra perfis, contraventamentos, fundações nem quantidades.</p>
 
           <div class="sim-leitura__numeros">
             <div class="sim-leitura__num"><b id="simArea">1.500 m²</b><span>Área coberta</span></div>
             <div class="sim-leitura__num"><b id="simCumeeira">9,3 m</b><span>Altura total</span></div>
+          </div>
+
+          <p class="sim-3d__pausa" id="sim3dPausa" role="status" hidden>A visualização 3D foi pausada pelo navegador e volta sozinha. Se não voltar, recarregue a página. O formulário continua funcionando.</p>
+
+          <div class="sim-cta3d" id="simCta3d" hidden>
+            <p class="sim-cta3d__titulo">Seu galpão começou a tomar forma.</p>
+            <p class="sim-cta3d__texto">Transforme sua configuração em um projeto de engenharia.</p>
+            <button class="btn btn--primary" type="button"><span>Solicitar meu projeto</span><svg class="btn__arrow" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M1 7h12M8 2l5 5-5 5"/></svg></button>
           </div>
 
           <div class="sim-enquadramento" id="simEnquadramento" aria-live="polite"></div>

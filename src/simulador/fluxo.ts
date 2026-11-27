@@ -129,3 +129,24 @@ export function definirContato(estado: EstadoSimulador, parcial: Partial<Contato
 export function erroDoCampo(estado: EstadoSimulador, campo: string): string | undefined {
   return estado.erros.find((e) => e.campo === campo)?.mensagem
 }
+
+/**
+ * O que a chamada «Solicitar meu projeto» faz a partir do estado atual.
+ *
+ * Ela NUNCA pula etapa: avança uma etapa por vez, como o «Continuar». Assim o visitante sempre passa pela
+ * Especificação (cobertura, fechamento e piso, que são opcionais) antes do Contato, e o funil só registra etapa
+ * em que ele de fato chegou. A diferença para o «Continuar» é só não acusar erro antes de a pessoa responder:
+ * com campo obrigatório por preencher, a chamada leva o foco ao campo.
+ */
+export type PassoDaChamada =
+  | { acao: 'PREENCHER'; etapa: IdEtapa; campo: ErroCampo['campo'] }
+  | { acao: 'AVANCAR'; de: IdEtapa; para: IdEtapa }
+  | { acao: 'NENHUMA'; etapa: IdEtapa }
+
+export function passoDaChamada(estado: EstadoSimulador): PassoDaChamada {
+  if (estado.enviado || estado.etapa === 'contato') return { acao: 'NENHUMA', etapa: estado.etapa }
+  const falta = validarEtapa(estado.etapa, estado)[0]
+  if (falta) return { acao: 'PREENCHER', etapa: estado.etapa, campo: falta.campo }
+  const proxima = ETAPAS[etapaPorId(estado.etapa).indice + 1]
+  return proxima ? { acao: 'AVANCAR', de: estado.etapa, para: proxima.id } : { acao: 'NENHUMA', etapa: estado.etapa }
+}

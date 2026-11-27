@@ -6,27 +6,24 @@
  * quantidade: só traduz vão e pé-direito em coordenadas de tela.
  *
  * O pórtico é de alma cheia, com mísula no joelho, porque é isso que a EIFF
- * constrói. As alturas de seção estão repetidas aqui de propósito: a cena 3D
- * da home importa three.js, e o simulador não pode carregar isso só para ler
- * três números.
+ * constrói. A inclinação e as proporções das seções vêm de `convencao.ts`, a
+ * mesma fonte do modelo 3D e da ilustração «Volume».
+ *
+ * ONDE FICAM AS MEDIDAS (igual ao 3D):
+ *  - a cota do vão vai de face interna a face interna dos pilares: é o vão livre.
+ *    A espessura ilustrativa do pilar é desenhada para FORA do vão;
+ *  - a cota do pé-direito vai da base à linha inferior da viga, junto ao pilar;
+ *  - a viga é desenhada ACIMA dessa linha, e a mísula, abaixo dela, só no joelho.
  */
 
-/** Altura de seção, em metros, do pilar, da viga e do joelho. */
-const H_PILAR = 0.85
-const H_VIGA = 0.7
-const H_MISULA = 1.75
-/**
- * Teto da espessura desenhada, como fração do vão em tela. Sem ele, um vão
- * pequeno com a proporção real daria um pilar absurdamente gordo no croqui.
- */
-const ESPESSURA_MAX = 0.035
-/** Comprimento da mísula em tela, como fração da meia-água. */
-const MISULA_FRACAO = 0.22
+import { INCLINACAO_DE_REPRESENTACAO, alturaDeReferencia, alturaTotalExibida, secoesDeDesenho } from './convencao'
+
+export { ESPESSURA_MAX, H_MISULA, H_PILAR, H_VIGA, MISULA_FRACAO } from './convencao'
 
 export interface MedidasPortico {
   vao: number
   peDireito: number
-  /** Inclinação da cobertura em porcentagem. 10% é a usada no desenho do site. */
+  /** Inclinação da cobertura em porcentagem. Sem valor, vale a convenção de representação (10 %). */
   inclinacao?: number
 }
 
@@ -45,12 +42,17 @@ export interface Croqui {
   alma: string
   /** Linha do terreno. */
   solo: string
-  /** Cota horizontal do vão: caminho e ponto do rótulo. */
+  /** Cota horizontal do vão livre, entre as faces internas: caminho e ponto do rótulo. */
   cotaVao: { caminho: string; x: number; y: number }
-  /** Cota vertical do pé-direito. */
+  /** Cota vertical do pé-direito, até a linha inferior da viga junto ao pilar. */
   cotaPeDireito: { caminho: string; x: number; y: number }
-  /** Altura total até a cumeeira, em metros (geometria, não engenharia). */
+  /** A «Altura total» como é mostrada no painel: `alturaTotalExibida` da convenção (geometria, não engenharia). */
   alturaCumeeira: number
+  /** Posições em tela das referências, para conferência: faces dos pilares, base, pé-direito e cumeeira. */
+  referencias: {
+    faceInternaEsquerda: number; faceInternaDireita: number; faceExternaEsquerda: number; faceExternaDireita: number
+    base: number; peDireito: number; cumeeira: number; escala: number
+  }
 }
 
 /**
@@ -66,64 +68,76 @@ const r = (n: number) => Math.round(n * 10) / 10
  * e altura e deixando folga para as cotas.
  */
 export function desenharPortico(m: MedidasPortico, moldura: Moldura): Croqui {
-  const inclinacao = m.inclinacao ?? 10
+  const inclinacao = m.inclinacao !== undefined ? m.inclinacao / 100 : INCLINACAO_DE_REPRESENTACAO
   const vao = Math.max(1, m.vao)
   const peDireito = Math.max(0.5, m.peDireito)
-  const alturaCumeeira = peDireito + (vao / 2) * (inclinacao / 100)
+  const alturaCumeeira = alturaDeReferencia(peDireito, vao, inclinacao)
+  const sec = secoesDeDesenho(vao)
 
-  // Escala única para os dois eixos: o croqui não distorce a proporção real.
+  // Escala única para os dois eixos: o croqui não distorce a proporção real. O que precisa caber é o vão livre
+  // mais os dois pilares (que ficam fora dele) e a altura de referência mais a viga (que fica acima dela).
   const util = { largura: moldura.largura - moldura.margem * 2, altura: moldura.altura - moldura.margem * 2 }
-  const escala = Math.min(util.largura / vao, util.altura / alturaCumeeira)
+  const escala = Math.min(util.largura / (vao + 2 * sec.pilar), util.altura / (alturaCumeeira + sec.viga))
 
-  const larguraTela = vao * escala
-  const alturaTela = alturaCumeeira * escala
-  const esquerda = moldura.margem + (util.largura - larguraTela) / 2
-  const direita = esquerda + larguraTela
+  // Espessuras em tela, com um mínimo de 2 px para o traço não sumir em galpão muito alto.
+  const espPilar = Math.max(sec.pilar * escala, 2)
+  const espViga = espPilar * (sec.viga / sec.pilar)
+  const espMisula = espPilar * (sec.misula / sec.pilar)
+  const lMisula = sec.comprimentoDaMisula * escala
+
+  const larguraTela = vao * escala                          // o vão livre, entre faces internas
+  const alturaTela = alturaCumeeira * escala + espViga
+  const faceEsq = moldura.margem + (util.largura - (larguraTela + 2 * espPilar)) / 2 + espPilar
+  const faceDir = faceEsq + larguraTela
+  const foraEsq = faceEsq - espPilar
+  const foraDir = faceDir + espPilar
   const base = moldura.margem + util.altura - (util.altura - alturaTela) / 2
-  const topoPilar = base - peDireito * escala
-  const cumeeira = base - alturaTela
-  const meio = (esquerda + direita) / 2
+  const yPe = base - peDireito * escala                     // linha inferior da viga junto ao pilar
+  const yCume = base - alturaCumeeira * escala              // linha inferior da viga na cumeeira
+  const meio = (faceEsq + faceDir) / 2
 
-  // Espessura das seções: proporcional ao vão real, com teto em fração da
-  // largura desenhada, para o croqui não engordar em vão pequeno.
-  const espPilar = Math.min(Math.max(H_PILAR * escala, 2), Math.max(larguraTela * ESPESSURA_MAX, 2))
-  const espViga = espPilar * (H_VIGA / H_PILAR)
-  const espMisula = espPilar * (H_MISULA / H_PILAR)
-  const lMisula = (larguraTela / 2) * MISULA_FRACAO
+  // Linha de referência (face inferior da viga) e face superior, a uma espessura de viga acima.
+  const ref = (x: number) => yPe + (yCume - yPe) * (Math.min(x - faceEsq, faceDir - x) / (meio - faceEsq))
+  const topo = (x: number) => ref(x) - espViga
 
   const pilares =
-    `M ${r(esquerda)} ${r(base)} V ${r(topoPilar)} H ${r(esquerda + espPilar)} V ${r(base)} `
-    + `M ${r(direita)} ${r(base)} V ${r(topoPilar)} H ${r(direita - espPilar)} V ${r(base)}`
+    `M ${r(foraEsq)} ${r(base)} V ${r(topo(foraEsq))} H ${r(faceEsq)} V ${r(base)} `
+    + `M ${r(foraDir)} ${r(base)} V ${r(topo(foraDir))} H ${r(faceDir)} V ${r(base)}`
 
-  const cobertura = `M ${r(esquerda)} ${r(topoPilar)} L ${r(meio)} ${r(cumeeira)} L ${r(direita)} ${r(topoPilar)}`
+  const cobertura = `M ${r(foraEsq)} ${r(topo(foraEsq))} L ${r(meio)} ${r(topo(meio))} L ${r(foraDir)} ${r(topo(foraDir))}`
 
-  // Face inferior: desce a mísula no joelho e corre paralela à água até o cume.
-  const yAgua = (x: number) => topoPilar + (cumeeira - topoPilar) * ((x - esquerda) / (meio - esquerda))
-  const xMisula = esquerda + lMisula
-  const yMisula = yAgua(xMisula) + espViga
+  // Face inferior: a mísula desce abaixo da linha de referência no joelho e morre nela; daí em diante é a própria linha.
+  const yJoelho = yPe + (espMisula - espViga)
+  const xMisula = faceEsq + lMisula
   const alma =
-    `M ${r(esquerda)} ${r(topoPilar + espMisula)} L ${r(xMisula)} ${r(yMisula)} L ${r(meio)} ${r(cumeeira + espViga)} `
-    + `L ${r(direita - lMisula)} ${r(yMisula)} L ${r(direita)} ${r(topoPilar + espMisula)} `
+    `M ${r(faceEsq)} ${r(yJoelho)} L ${r(xMisula)} ${r(ref(xMisula))} L ${r(meio)} ${r(yCume)} `
+    + `L ${r(faceDir - lMisula)} ${r(ref(xMisula))} L ${r(faceDir)} ${r(yJoelho)} `
     // Chapas de topo: é por elas que o pórtico é parafusado em campo.
-    + `M ${r(esquerda)} ${r(topoPilar)} V ${r(topoPilar + espMisula)} `
-    + `M ${r(direita)} ${r(topoPilar)} V ${r(topoPilar + espMisula)} `
-    + `M ${r(meio)} ${r(cumeeira)} V ${r(cumeeira + espViga)}`
+    + `M ${r(faceEsq)} ${r(topo(faceEsq))} V ${r(yJoelho)} `
+    + `M ${r(faceDir)} ${r(topo(faceDir))} V ${r(yJoelho)} `
+    + `M ${r(meio)} ${r(topo(meio))} V ${r(yCume)}`
 
   const solo = `M ${r(moldura.margem * 0.4)} ${r(base)} H ${r(moldura.largura - moldura.margem * 0.4)}`
 
   const yCota = base + moldura.margem * 0.45
   const cotaVao = {
-    caminho: `M ${r(esquerda)} ${r(yCota - 5)} V ${r(yCota + 5)} M ${r(esquerda)} ${r(yCota)} H ${r(direita)} M ${r(direita)} ${r(yCota - 5)} V ${r(yCota + 5)}`,
+    caminho: `M ${r(faceEsq)} ${r(yCota - 5)} V ${r(yCota + 5)} M ${r(faceEsq)} ${r(yCota)} H ${r(faceDir)} M ${r(faceDir)} ${r(yCota - 5)} V ${r(yCota + 5)}`,
     x: r(meio),
     y: r(yCota - 8),
   }
 
-  const xCota = direita + moldura.margem * 0.45
+  const xCota = foraDir + moldura.margem * 0.45
   const cotaPeDireito = {
-    caminho: `M ${r(xCota - 5)} ${r(base)} H ${r(xCota + 5)} M ${r(xCota)} ${r(base)} V ${r(topoPilar)} M ${r(xCota - 5)} ${r(topoPilar)} H ${r(xCota + 5)}`,
+    caminho: `M ${r(xCota - 5)} ${r(base)} H ${r(xCota + 5)} M ${r(xCota)} ${r(base)} V ${r(yPe)} M ${r(xCota - 5)} ${r(yPe)} H ${r(xCota + 5)}`,
     x: r(xCota + 10),
-    y: r((base + topoPilar) / 2),
+    y: r((base + yPe) / 2),
   }
 
-  return { pilares, cobertura, alma, solo, cotaVao, cotaPeDireito, alturaCumeeira: r(alturaCumeeira) }
+  return {
+    pilares, cobertura, alma, solo, cotaVao, cotaPeDireito, alturaCumeeira: alturaTotalExibida(peDireito, vao, inclinacao),
+    referencias: {
+      faceInternaEsquerda: faceEsq, faceInternaDireita: faceDir, faceExternaEsquerda: foraEsq, faceExternaDireita: foraDir,
+      base, peDireito: yPe, cumeeira: yCume, escala,
+    },
+  }
 }
